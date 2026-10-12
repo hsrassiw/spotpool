@@ -1,0 +1,8 @@
+* text=auto
+# Script chạy trên EC2 (Linux) phải giữ LF, nếu không sẽ lỗi \r
+*.sh text eol=lf
+*.py text eol=lf
+Dockerfile text eol=lf
+*.tf text eol=lf
+*.pdf binary
+*.png binary

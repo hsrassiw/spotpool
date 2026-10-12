@@ -1,0 +1,53 @@
+# Key
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+credentials
+*.tfvars
+!*.tfvars.example
+
+# ===== Terraform =====
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+.terraform.tfstate.lock.info
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# ===== Node / React =====
+node_modules/
+dist/
+build/
+.npm/
+
+# ===== Lambda build =====
+*.zip
+.aws-sam/
+
+# ===== Dữ liệu test (video, kết quả) =====
+*.mp4
+*.mkv
+*.mov
+*.avi
+output/
+tmp/
+
+# ===== IDE / hệ điều hành =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Office lock file =====
+~$*
