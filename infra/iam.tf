@@ -1,7 +1,7 @@
 # Tên tài nguyên theo Bảng 2.1 trong báo cáo
 locals {
   queue_names = ["sqs-ondemand", "sqs-spot", "sqs-dlq"]
-  table_names = ["Users", "Jobs", "Usage"]
+  table_names = ["Users", "Jobs", "Tasks", "Usage"]
 
   # Tên S3 bucket phải duy nhất toàn AWS nên thêm hậu tố
   input_bucket  = "input-${local.suffix}"
@@ -130,6 +130,25 @@ data "aws_iam_policy_document" "lambda" {
     sid       = "Queues"
     actions   = ["sqs:SendMessage", "sqs:GetQueueUrl", "sqs:GetQueueAttributes"]
     resources = local.sqs_arns
+  }
+
+  # Lambda xử lý message rơi vào DLQ
+  statement {
+    sid       = "ReadDlq"
+    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:ChangeMessageVisibility"]
+    resources = ["arn:aws:sqs:${var.region}:${local.account_id}:sqs-dlq"]
+  }
+
+  # Lambda billing đọc Stream của bảng Jobs
+  statement {
+    sid = "JobsStream"
+    actions = [
+      "dynamodb:DescribeStream",
+      "dynamodb:GetRecords",
+      "dynamodb:GetShardIterator",
+      "dynamodb:ListStreams",
+    ]
+    resources = ["arn:aws:dynamodb:${var.region}:${local.account_id}:table/Jobs/stream/*"]
   }
 
   statement {
