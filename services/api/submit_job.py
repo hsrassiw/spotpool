@@ -16,9 +16,14 @@ def lambda_handler(event, context):
         user_id = event['requestContext']['authorizer']['userId']
         body = json.loads(event.get('body', '{}'))
         
-        tier = body.get('tier', 'spot')
-        kind = body.get('kind', 'video')
-        vcpu = int(body.get('vcpu', 1))
+        tier = body.get('tier')
+        kind = body.get('kind')
+        vcpu = body.get('vcpu')
+        
+        # Kiểm tra validation tier, kind, vcpu theo yêu cầu
+        if tier not in ['ondemand', 'spot'] or kind not in ['video', 'script'] or vcpu != 1:
+            return {'statusCode': 400, 'body': json.dumps({'error': 'Invalid tier, kind, or vcpu parameters'})}
+
         cost_cap = int(body.get('costCap', 15000))
         files = body.get('files', [])
         params = body.get('params', {})

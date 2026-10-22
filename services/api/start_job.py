@@ -14,7 +14,8 @@ OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 def lambda_handler(event, context):
     try:
         user_id = event['requestContext']['authorizer']['userId']
-        job_id = event.get('pathParameters', {}).get('jobId')
+        # Đọc theo đúng hợp đồng /jobs/{id}
+        job_id = event.get('pathParameters', {}).get('id')
         
         if not job_id:
             return {'statusCode': 400, 'body': json.dumps({'error': 'Missing jobId'})}
@@ -54,7 +55,7 @@ def lambda_handler(event, context):
         if missing_files:
             return {'statusCode': 400, 'body': json.dumps({'error': 'Missing files on S3', 'missingFiles': missing_files})}
             
-        # 1. Chuyển trạng thái job sang QUEUED trước[cite: 8]
+        # Chuyển trạng thái sang QUEUED trước khi ghi manifest
         now = int(time.time())
         jobs_table.update_item(
             Key={'jobId': job_id},
@@ -64,14 +65,13 @@ def lambda_handler(event, context):
             ConditionExpression="#st = :up"
         )
 
-        # 2. Sau đó mới ghi manifest lên S3 với vcpu được ép kiểu int[cite: 8]
         manifest_data = {
             'schemaVersion': 1,
             'jobId': job_id,
             'userId': user_id,
             'tier': job.get('tier'),
             'kind': job.get('kind'),
-            'vcpu': int(job.get('vcpu', 1)),  # Ép kiểu int cho vcpu
+            'vcpu': int(job.get('vcpu', 1)),
             'image': job.get('image'),
             'params': job.get('params', {}),
             'outputBucket': OUTPUT_BUCKET,
