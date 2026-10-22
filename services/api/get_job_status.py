@@ -11,7 +11,7 @@ OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
 def lambda_handler(event, context):
     try:
         user_id = event['requestContext']['authorizer']['userId']
-        job_id = event.get('pathParameters', {}).get('jobId')
+        job_id = event.get('pathParameters', {}).get('id')
         
         if not job_id:
             return {'statusCode': 400, 'body': json.dumps({'error': 'Missing jobId'})}
