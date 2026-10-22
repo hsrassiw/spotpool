@@ -64,6 +64,7 @@ data "aws_iam_policy_document" "worker" {
       "dynamodb:PutItem",
       "dynamodb:UpdateItem",
       "dynamodb:Query",
+      "dynamodb:TransactWriteItems",
     ]
     resources = local.ddb_arns
   }
@@ -160,6 +161,7 @@ data "aws_iam_policy_document" "lambda" {
       "dynamodb:DeleteItem",
       "dynamodb:Query",
       "dynamodb:Scan",
+      "dynamodb:TransactWriteItems",
     ]
     resources = local.ddb_arns
   }

@@ -33,6 +33,7 @@ build/
 # ===== Lambda build =====
 *.zip
 .aws-sam/
+infra/build/
 
 # ===== Dữ liệu test (video, kết quả) =====
 *.mp4
