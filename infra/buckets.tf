@@ -1,5 +1,6 @@
+
 resource "aws_s3_bucket" "input_bucket" {
-  bucket        = "spotpool-input-bucket-ngocanh"
+  bucket        = local.input_bucket
   force_destroy = true
 }
 

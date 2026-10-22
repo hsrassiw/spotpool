@@ -1,3 +1,4 @@
+
 resource "aws_dynamodb_table" "users" {
   name         = "Users"
   billing_mode = "PAY_PER_REQUEST"
@@ -7,13 +8,24 @@ resource "aws_dynamodb_table" "users" {
     name = "userId"
     type = "S"
   }
+
+  attribute {
+    name = "apiKeyHash"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "apiKeyHash-index"
+    hash_key        = "apiKeyHash"
+    projection_type = "ALL"
+  }
 }
 
 resource "aws_dynamodb_table" "jobs" {
-  name           = "Jobs"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "jobId"
-  stream_enabled = true
+  name             = "Jobs"
+  billing_mode     = "PAY_PER_REQUEST"
+  hash_key         = "jobId"
+  stream_enabled   = true
   stream_view_type = "NEW_AND_OLD_IMAGES"
 
   attribute {
@@ -22,21 +34,33 @@ resource "aws_dynamodb_table" "jobs" {
   }
 
   attribute {
-    name = "apiKeyHash"
+    name = "userId"
     type = "S"
   }
 
+  attribute {
+    name = "createdAt"
+    type = "N"
+  }
+
   global_secondary_index {
-    name               = "apiKeyHash-index"
-    hash_key           = "apiKeyHash"
-    projection_type    = "ALL"
+    name            = "userId-createdAt-index"
+    hash_key        = "userId"
+    range_key       = "createdAt"
+    projection_type = "ALL"
   }
 }
 
 resource "aws_dynamodb_table" "tasks" {
   name         = "Tasks"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "taskId"
+  hash_key     = "jobId"
+  range_key    = "taskId"
+
+  attribute {
+    name = "jobId"
+    type = "S"
+  }
 
   attribute {
     name = "taskId"
