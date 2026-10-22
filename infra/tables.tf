@@ -71,7 +71,13 @@ resource "aws_dynamodb_table" "tasks" {
 resource "aws_dynamodb_table" "usage" {
   name         = "Usage"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "usageId"
+  hash_key     = "userId"
+  range_key    = "usageId"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
 
   attribute {
     name = "usageId"

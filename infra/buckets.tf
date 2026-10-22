@@ -29,7 +29,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "input_lifecycle" {
 }
 
 resource "aws_s3_bucket" "output_bucket" {
-  bucket        = "spotpool-output-bucket-ngocanh"
+  bucket        = local.output_bucket
   force_destroy = true
 }
 

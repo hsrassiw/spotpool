@@ -1,236 +1,80 @@
-
 import json
-import os
-import re
-import time
 import uuid
-
+import os
+import time
 import boto3
-from botocore.exceptions import ClientError
+from helper import generate_presigned_upload_url
 
-dynamodb = boto3.resource("dynamodb")
-s3 = boto3.client("s3")
-
-JOBS_TABLE = os.environ["JOBS_TABLE"]
-TASKS_TABLE = os.environ["TASKS_TABLE"]
-INPUT_BUCKET = os.environ["INPUT_BUCKET"]
-
-jobs_table = dynamodb.Table(JOBS_TABLE)
-tasks_table = dynamodb.Table(TASKS_TABLE)
-
-ALLOWED_TIERS = {"ondemand", "spot"}
-ALLOWED_KINDS = {"video", "script"}
-MAX_FILES = 100
-UPLOAD_URL_TTL = 900
-
-
-def response(status_code, payload):
-    return {
-        "statusCode": status_code,
-        "headers": {
-            "Content-Type": "application/json"
-        },
-        "body": json.dumps(payload),
-    }
-
-
-def authenticated_user_id(event):
-    # Lay userId tu JWT claims cua API Gateway
-    claims = (
-        event.get("requestContext", {})
-        .get("authorizer", {})
-        .get("jwt", {})
-        .get("claims", {})
-    )
-    return claims.get("sub")
-
-
-def clean_filename(value):
-    filename = os.path.basename(str(value or ""))
-    filename = re.sub(r"[^A-Za-z0-9._-]", "_", filename)
-
-    if not filename or filename in {".", ".."}:
-        raise ValueError("Invalid fileName")
-
-    return filename
-
+dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+JOBS_TABLE = os.environ['JOBS_TABLE']
+INPUT_BUCKET = os.environ['INPUT_BUCKET']
+PRICE_ONDEMAND = int(os.environ['PRICE_ONDEMAND'])
+PRICE_SPOT = int(os.environ['PRICE_SPOT'])
 
 def lambda_handler(event, context):
     try:
-        # 1. Xac thuc nguoi dung
-        user_id = authenticated_user_id(event)
-
-        if not user_id:
-            return response(401, {
-                "message": "Unauthorized"
-            })
-
-        # 2. Doc request body
-        try:
-            body = json.loads(event.get("body") or "{}")
-        except (json.JSONDecodeError, TypeError):
-            return response(400, {
-                "message": "Invalid JSON body"
-            })
-
-        tier = body.get("tier")
-        kind = body.get("kind")
-        vcpu = body.get("vcpu")
-        files = body.get("files")
-
-        # 3. Kiem tra tham so
-        if (
-            tier not in ALLOWED_TIERS
-            or kind not in ALLOWED_KINDS
-            or type(vcpu) is not int
-            or vcpu != 1
-        ):
-            return response(400, {
-                "message": "Invalid tier, kind, or vcpu parameters"
-            })
-
-        if (
-            not isinstance(files, list)
-            or not files
-            or len(files) > MAX_FILES
-        ):
-            return response(400, {
-                "message": "files must contain 1 to 100 items"
-            })
-
-        # 4. Tao job
+        user_id = event['requestContext']['authorizer']['userId']
+        body = json.loads(event.get('body', '{}'))
+        
+        tier = body.get('tier', 'spot')
+        kind = body.get('kind', 'video')
+        vcpu = int(body.get('vcpu', 1))
+        cost_cap = int(body.get('costCap', 15000))
+        files = body.get('files', [])
+        params = body.get('params', {})
+        
+        if not files or len(files) > 100:
+            return {'statusCode': 400, 'body': json.dumps({'error': 'Files list must contain between 1 and 100 items'})}
+            
         job_id = str(uuid.uuid4())
-        created_at = int(time.time())
-
-        prepared = []
-        task_ids = set()
-
-        # 5. Tao presigned URL cho tung file
-        for item in files:
-            if not isinstance(item, dict):
-                return response(400, {
-                    "message": "Each file must be an object"
-                })
-
-            task_id = str(item.get("taskId") or uuid.uuid4())
-
-            if task_id in task_ids:
-                return response(400, {
-                    "message": "Duplicate taskId"
-                })
-
-            task_ids.add(task_id)
-
-            try:
-                filename = clean_filename(item.get("fileName"))
-            except ValueError:
-                return response(400, {
-                    "message": "Invalid fileName"
-                })
-
-            content_type = str(
-                item.get("contentType")
-                or "application/octet-stream"
-            )
-
-            if (
-                len(content_type) > 200
-                or "\n" in content_type
-                or "\r" in content_type
-            ):
-                return response(400, {
-                    "message": "Invalid contentType"
-                })
-
-            file_key = (
-                f"submissions/{user_id}/{job_id}/"
-                f"{task_id}/{filename}"
-            )
-
-            upload_url = s3.generate_presigned_url(
-                "put_object",
-                Params={
-                    "Bucket": INPUT_BUCKET,
-                    "Key": file_key,
-                    "ContentType": content_type,
-                },
-                ExpiresIn=UPLOAD_URL_TTL,
-            )
-
-            prepared.append({
-                "taskId": task_id,
-                "fileKey": file_key,
-                "fileName": filename,
-                "contentType": content_type,
-                "uploadUrl": upload_url,
+        now = int(time.time())
+        unit_price = PRICE_SPOT if tier == 'spot' else PRICE_ONDEMAND
+        
+        uploads = []
+        formatted_files = []
+        
+        for idx, filename in enumerate(files, start=1):
+            task_id = f"task-{idx:04d}"
+            formatted_files.append(filename)
+            s3_object_key = f"uploads/{user_id}/{job_id}/{task_id}"
+            upload_url = generate_presigned_upload_url(INPUT_BUCKET, s3_object_key, expiration=3600)
+            
+            uploads.append({
+                'taskId': task_id,
+                'fileName': filename,
+                'url': upload_url,
+                'expiresIn': 3600
             })
-
-        # 6. Luu job vao DynamoDB
-        jobs_table.put_item(
-            Item={
-                "jobId": job_id,
-                "userId": user_id,
-                "tier": tier,
-                "kind": kind,
-                "vcpu": vcpu,
-                "status": "UPLOADING",
-                "createdAt": created_at,
-            },
-            ConditionExpression="attribute_not_exists(jobId)",
-        )
-
-        # 7. Luu task voi khoa ghep jobId + taskId
-        try:
-            with tasks_table.batch_writer() as batch:
-                for task in prepared:
-                    batch.put_item(
-                        Item={
-                            "jobId": job_id,
-                            "taskId": task["taskId"],
-                            "fileKey": task["fileKey"],
-                            "status": "UPLOADING",
-                        }
-                    )
-
-        except Exception:
-            # Xoa job neu khong luu duoc danh sach task
-            jobs_table.delete_item(
-                Key={
-                    "jobId": job_id
-                },
-                ConditionExpression="userId = :uid",
-                ExpressionAttributeValues={
-                    ":uid": user_id
-                },
-            )
-            raise
-
-        # 8. Tra jobId va URL upload cho frontend
-        return response(201, {
-            "message": "Job created successfully",
-            "jobId": job_id,
-            "status": "UPLOADING",
-            "uploadExpiresIn": UPLOAD_URL_TTL,
-            "files": [
-                {
-                    "taskId": task["taskId"],
-                    "fileKey": task["fileKey"],
-                    "uploadUrl": task["uploadUrl"],
-                    "method": "PUT",
-                    "contentType": task["contentType"],
-                }
-                for task in prepared
-            ],
-        })
-
-    except ClientError as e:
-        print("AWS service error:", str(e))
-        return response(500, {
-            "message": "AWS service error"
-        })
-
+            
+        table = dynamodb.Table(JOBS_TABLE)
+        job_item = {
+            'jobId': job_id,
+            'userId': user_id,
+            'tier': tier,
+            'kind': kind,
+            'vcpu': vcpu,
+            'image': 'spotpool-video' if kind == 'video' else 'spotpool-script',
+            'params': params,
+            'files': formatted_files,
+            'status': 'UPLOADING',
+            'costCap': cost_cap,
+            'unitPrice': unit_price,
+            'usedVcpuSeconds': 0,
+            'taskCount': len(files),
+            'tasksRemaining': len(files),
+            'tasksSucceeded': 0,
+            'tasksFailed': 0,
+            'createdAt': now
+        }
+        table.put_item(Item=job_item)
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'jobId': job_id,
+                'status': 'UPLOADING',
+                'uploads': uploads
+            })
+        }
     except Exception as e:
-        print("Internal error:", str(e))
-        return response(500, {
-            "message": "Internal server error"
-        })
+        return {'statusCode': 500, 'body': json.dumps({'error': str(e)})}
