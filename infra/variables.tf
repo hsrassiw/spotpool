@@ -18,3 +18,20 @@ variable "vpc_cidr" {
   type    = string
   default = "10.0.0.0/16"
 }
+
+variable "enable_worker" {
+  description = "Tạo ASG worker. Chỉ bật khi đã có bảng DynamoDB và image trên ECR."
+  type        = bool
+  default     = false
+}
+
+variable "worker_instance_type" {
+  type    = string
+  default = "t3.small"
+}
+
+variable "worker_queue" {
+  description = "Hàng đợi worker nhận task: ondemand hoặc spot."
+  type        = string
+  default     = "spot"
+}
