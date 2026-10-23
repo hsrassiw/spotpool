@@ -25,3 +25,7 @@ output "input_bucket_name" {
 output "output_bucket_name" {
   value = local.output_bucket
 }
+
+output "ecr_repository_urls" {
+  value = { for name, repo in aws_ecr_repository.job : name => repo.repository_url }
+}
