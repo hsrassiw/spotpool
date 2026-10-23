@@ -11,7 +11,7 @@ resource "aws_lambda_function" "dispatcher" {
   runtime          = "python3.13"
   handler          = "app.lambda_handler"
   filename         = "${path.module}/build/dispatcher.zip"
-  source_code_hash = filebase64sha256("${path.module}/build/dispatcher.zip")
+  source_code_hash = var.enable_dispatcher ? filebase64sha256("${path.module}/build/dispatcher.zip") : null
   timeout          = 60
   memory_size      = 256
 
@@ -57,7 +57,7 @@ resource "aws_lambda_function" "dlq" {
   runtime          = "python3.13"
   handler          = "dlq.lambda_handler"
   filename         = "${path.module}/build/dlq.zip"
-  source_code_hash = filebase64sha256("${path.module}/build/dlq.zip")
+  source_code_hash = var.enable_dispatcher ? filebase64sha256("${path.module}/build/dlq.zip") : null
   timeout          = 60
   memory_size      = 256
   environment {
