@@ -57,13 +57,19 @@ def lambda_handler(event, context):
             
         # Chuyển trạng thái sang QUEUED trước khi ghi manifest
         now = int(time.time())
+        
         jobs_table.update_item(
             Key={'jobId': job_id},
             UpdateExpression="SET #st = :q, queuedAt = :t",
             ExpressionAttributeNames={'#st': 'status'},
-            ExpressionAttributeValues={':q': 'QUEUED', ':t': now},
+            ExpressionAttributeValues={
+                ':q': 'QUEUED',
+                ':t': now,
+                ':up': 'UPLOADING'
+            },
             ConditionExpression="#st = :up"
         )
+
 
         manifest_data = {
             'schemaVersion': 1,

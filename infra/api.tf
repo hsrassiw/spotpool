@@ -34,7 +34,7 @@ resource "aws_apigatewayv2_stage" "default_stage" {
 data "archive_file" "api_lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../services/api"
-  output_path = "${path.module}/files/api_lambda.zip"
+  output_path = "${path.module}/build/api_lambda.zip"
 }
 
 # 1. Lambda: submit_job
@@ -45,6 +45,9 @@ resource "aws_lambda_function" "submit_job" {
   handler          = "submit_job.lambda_handler"
   runtime          = "python3.13"
   source_code_hash = data.archive_file.api_lambda_zip.output_base64sha256
+
+  timeout     = 30
+  memory_size = 256
 
   environment {
     variables = {
@@ -65,6 +68,9 @@ resource "aws_lambda_function" "start_job" {
   handler          = "start_job.lambda_handler"
   runtime          = "python3.13"
   source_code_hash = data.archive_file.api_lambda_zip.output_base64sha256
+
+  timeout     = 30
+  memory_size = 256
 
   environment {
     variables = {
@@ -87,6 +93,9 @@ resource "aws_lambda_function" "get_job_status" {
   handler          = "get_job_status.lambda_handler"
   runtime          = "python3.13"
   source_code_hash = data.archive_file.api_lambda_zip.output_base64sha256
+
+  timeout     = 30
+  memory_size = 256
 
   environment {
     variables = {
