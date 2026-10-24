@@ -1,6 +1,7 @@
 """Worker EC2 nhận task, chạy Docker và ghi kết quả."""
 
 import json
+import logging
 import math
 import os
 import subprocess
@@ -21,6 +22,7 @@ from spotpool_core.contracts import (
 LOG_LIMIT = 10 * 1024 * 1024
 VISIBILITY_SECONDS = 120
 HEARTBEAT_SECONDS = 30
+logger = logging.getLogger(__name__)
 
 
 class LeaseLost(Exception):
@@ -100,6 +102,12 @@ class Worker:
     def _process_reserved(self, received, message, vcpu):
         try:
             self.process(received, message)
+        except Exception:
+            logger.exception(
+                "Task processing failed: jobId=%s taskId=%s",
+                message.get("jobId"), message.get("taskId"),
+            )
+            raise
         finally:
             self._release(vcpu)
 
@@ -334,11 +342,6 @@ class Worker:
 
     def _finish(self, message, received, owner, attempt, started_at, elapsed, status,
                 result_key, log_key, error):
-        from boto3.dynamodb.types import TypeSerializer
-
-        serialize = TypeSerializer().serialize
-        def item(values):
-            return {key: serialize(value) for key, value in values.items()}
         finished_at = int(time.time())
         vcpu_seconds = message["vcpu"] * elapsed
         usage = {
@@ -355,42 +358,42 @@ class Worker:
                            ("az", "SPOTPOOL_AZ"), ("instanceId", "SPOTPOOL_INSTANCE_ID")):
             if os.environ.get(env):
                 usage[field] = os.environ[env]
-        task_values = {":status": serialize(status), ":running": serialize(TASK_RUNNING),
-                       ":owner": serialize(owner), ":now": serialize(finished_at),
-                       ":log": serialize(log_key), ":error": serialize(error)}
+        task_values = {":status": status, ":running": TASK_RUNNING,
+                       ":owner": owner, ":now": finished_at,
+                       ":log": log_key, ":error": error}
         task_update = "SET #s=:status, finishedAt=:now, logKey=:log, #error=:error"
         if result_key:
-            task_values[":result"] = serialize(result_key)
+            task_values[":result"] = result_key
             task_update += ", resultKey=:result"
-        job_values = {":used": serialize(vcpu_seconds),
-                      ":running": serialize(JOB_RUNNING), ":queued": serialize(JOB_QUEUED)}
+        job_values = {":used": vcpu_seconds,
+                      ":running": JOB_RUNNING, ":queued": JOB_QUEUED}
         job_update = "ADD usedVcpuSeconds :used"
         if status == TASK_PAUSED:
             job_update = "SET #s=:paused ADD usedVcpuSeconds :used"
-            job_values[":paused"] = serialize(JOB_PAUSED)
+            job_values[":paused"] = JOB_PAUSED
         else:
-            job_values[":one"] = serialize(1)
+            job_values[":one"] = 1
             job_update += ", tasksRemaining :minusOne, "
             job_update += "tasksSucceeded :one" if status == TASK_SUCCEEDED else "tasksFailed :one"
-            job_values[":minusOne"] = serialize(-1)
+            job_values[":minusOne"] = -1
         token = str(uuid.uuid5(uuid.NAMESPACE_URL, usage["usageId"] + owner))
         try:
             self.db.meta.client.transact_write_items(
                 ClientRequestToken=token,
                 TransactItems=[
                     {"Update": {"TableName": self.config["TASKS_TABLE"],
-                                "Key": item({"jobId": message["jobId"], "taskId": message["taskId"]}),
+                                "Key": {"jobId": message["jobId"], "taskId": message["taskId"]},
                                 "UpdateExpression": task_update,
                                 "ConditionExpression": "#owner=:owner AND #s=:running",
                                 "ExpressionAttributeNames": {"#s": "status", "#owner": "owner", "#error": "error"},
                                 "ExpressionAttributeValues": task_values}},
                     {"Update": {"TableName": self.config["JOBS_TABLE"],
-                                "Key": item({"jobId": message["jobId"]}),
+                                "Key": {"jobId": message["jobId"]},
                                 "UpdateExpression": job_update,
                                 "ConditionExpression": "#s IN (:queued,:running) AND tasksRemaining > :zero",
                                 "ExpressionAttributeNames": {"#s": "status"},
-                                "ExpressionAttributeValues": {**job_values, ":zero": serialize(0)}}},
-                    {"Put": {"TableName": self.config["USAGE_TABLE"], "Item": item(usage),
+                                "ExpressionAttributeValues": {**job_values, ":zero": 0}}},
+                    {"Put": {"TableName": self.config["USAGE_TABLE"], "Item": usage,
                              "ConditionExpression": "attribute_not_exists(userId) AND attribute_not_exists(usageId)"}},
                 ],
             )
@@ -425,6 +428,10 @@ class Worker:
 def main():
     import boto3
 
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
     names = ("JOBS_TABLE", "TASKS_TABLE", "USAGE_TABLE", "SQS_ONDEMAND_URL", "SQS_SPOT_URL",
              "VIDEO_JOB_IMAGE", "SCRIPT_JOB_IMAGE", "TASK_MAX_SECONDS", "AWS_DEFAULT_REGION")
     config = {key: os.environ[key] for key in names}
