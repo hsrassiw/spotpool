@@ -1,11 +1,12 @@
 import io
 import json
-import sys
 import types
 import unittest
-from unittest.mock import patch
+from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import Mock
 
 from services.dispatcher.app import dispatch_record
+from services.dispatcher.dlq import fail_exhausted
 from spotpool_core.contracts import canonical_json, fingerprint, validate_message
 from worker.agent import Worker, docker_command, remaining_seconds
 
@@ -160,27 +161,77 @@ class WorkerContractTests(unittest.TestCase):
 
     def test_finish_records_task_job_and_usage_atomically(self):
         message = self._message()
-        for status in ("SUCCEEDED", "PAUSED"):
+        for status in ("SUCCEEDED", "FAILED", "PAUSED"):
             with self.subTest(status=status):
                 db, sqs, worker = self._worker(message)
                 db.meta = types.SimpleNamespace(client=FakeTransactionClient())
-                module = types.ModuleType("boto3.dynamodb.types")
-                class Serializer:
-                    def serialize(self, value):
-                        return {"N": str(value)} if type(value) is int else {"S": value}
-                module.TypeSerializer = Serializer
-                with patch.dict(sys.modules, {"boto3": types.ModuleType("boto3"),
-                                              "boto3.dynamodb": types.ModuleType("boto3.dynamodb"),
-                                              "boto3.dynamodb.types": module}):
-                    worker._finish(message, {"ReceiptHandle": "receipt"}, "owner", 1,
-                                   100, 3, status, "result" if status == "SUCCEEDED" else None,
-                                   "log", "")
+                worker._finish(message, {"ReceiptHandle": "receipt"}, "owner", 1,
+                               100, 3, status, "result" if status == "SUCCEEDED" else None,
+                               "log", "")
                 actions = db.meta.client.last_transaction["TransactItems"]
                 self.assertEqual(["Update", "Update", "Put"], [next(iter(a)) for a in actions])
+                task_update = actions[0]["Update"]
+                self.assertEqual({"jobId": JOB, "taskId": "task-0001"}, task_update["Key"])
+                self.assertEqual(status, task_update["ExpressionAttributeValues"][":status"])
+                self.assertEqual("owner", task_update["ExpressionAttributeValues"][":owner"])
+                if status == "SUCCEEDED":
+                    self.assertEqual("result", task_update["ExpressionAttributeValues"][":result"])
+                job_values = actions[1]["Update"]["ExpressionAttributeValues"]
+                self.assertEqual(3, job_values[":used"])
+                self.assertIs(type(job_values[":used"]), int)
+                self.assertEqual(0, job_values[":zero"])
+                usage = actions[2]["Put"]["Item"]
+                self.assertEqual(USER, usage["userId"])
+                self.assertEqual(3, usage["vcpuSeconds"])
+                self.assertEqual(status, usage["outcome"])
                 job_expression = actions[1]["Update"]["UpdateExpression"]
                 self.assertIn("usedVcpuSeconds", job_expression)
-                self.assertEqual(status == "SUCCEEDED", "tasksRemaining" in job_expression)
+                self.assertEqual(status != "PAUSED", "tasksRemaining" in job_expression)
                 self.assertEqual("receipt", sqs.deleted["ReceiptHandle"])
+
+    def test_thread_failure_logs_traceback_and_releases_capacity(self):
+        message = self._message()
+        _, sqs, worker = self._worker(message)
+        worker.process = Mock(side_effect=RuntimeError("transaction failed"))
+        self.assertTrue(worker._reserve(1))
+        with self.assertLogs("worker.agent", level="ERROR") as captured:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(worker._process_reserved, {}, message, 1)
+                with self.assertRaisesRegex(RuntimeError, "transaction failed"):
+                    future.result(timeout=5)
+        self.assertEqual(0, worker._used_slots)
+        self.assertFalse(hasattr(sqs, "deleted"))
+        self.assertIn(JOB, captured.output[0])
+        self.assertIn(message["taskId"], captured.output[0])
+        self.assertIn("Traceback", captured.output[0])
+        self.assertIsInstance(captured.records[0].exc_info[1], RuntimeError)
+
+    def test_dlq_transaction_uses_native_python_values(self):
+        message = self._message()
+        for status in ("QUEUED", "RUNNING"):
+            with self.subTest(status=status):
+                db, _, _ = self._worker(message, task_status=status)
+                db.tables["Tasks"].rows[(JOB, "task-0001")]["leaseUntil"] = 99
+                db.meta = types.SimpleNamespace(client=FakeTransactionClient())
+                self.assertTrue(fail_exhausted(message, db, "Tasks", "Jobs", now=100))
+                actions = db.meta.client.last_transaction["TransactItems"]
+                self.assertEqual(["Update", "Update"], [next(iter(a)) for a in actions])
+                task_update, job_update = (action["Update"] for action in actions)
+                self.assertEqual({"jobId": JOB, "taskId": "task-0001"}, task_update["Key"])
+                self.assertEqual("FAILED", task_update["ExpressionAttributeValues"][":failed"])
+                self.assertEqual(100, task_update["ExpressionAttributeValues"][":now"])
+                self.assertEqual(fingerprint(message), task_update["ExpressionAttributeValues"][":fp"])
+                self.assertEqual({"jobId": JOB}, job_update["Key"])
+                self.assertEqual(-1, job_update["ExpressionAttributeValues"][":minusOne"])
+                self.assertEqual(1, job_update["ExpressionAttributeValues"][":one"])
+
+    def test_dlq_does_not_fail_task_with_active_lease(self):
+        message = self._message()
+        db, _, _ = self._worker(message, task_status="RUNNING")
+        db.tables["Tasks"].rows[(JOB, "task-0001")]["leaseUntil"] = 200
+        db.meta = types.SimpleNamespace(client=FakeTransactionClient())
+        self.assertFalse(fail_exhausted(message, db, "Tasks", "Jobs", now=100))
+        self.assertFalse(hasattr(db.meta.client, "last_transaction"))
 
     @staticmethod
     def _message():

@@ -11,8 +11,6 @@ from spotpool_core.contracts import (
 
 
 def fail_exhausted(message, dynamodb, tasks_table, jobs_table, now=None):
-    from boto3.dynamodb.types import TypeSerializer
-
     validate_message(message)
     now = int(time.time()) if now is None else now
     task = dynamodb.Table(tasks_table).get_item(
@@ -24,33 +22,30 @@ def fail_exhausted(message, dynamodb, tasks_table, jobs_table, now=None):
     if not (task.get("status") == TASK_QUEUED or
             task.get("status") == TASK_RUNNING and int(task.get("leaseUntil", now + 1)) < now):
         return False
-    serializer = TypeSerializer()
-    def attrs(values):
-        return {key: serializer.serialize(value) for key, value in values.items()}
     try:
         dynamodb.meta.client.transact_write_items(TransactItems=[
             {"Update": {
                 "TableName": tasks_table,
-                "Key": attrs({"jobId": message["jobId"], "taskId": message["taskId"]}),
+                "Key": {"jobId": message["jobId"], "taskId": message["taskId"]},
                 "UpdateExpression": "SET #s=:failed, finishedAt=:now, #error=:error",
                 "ConditionExpression": "fingerprint=:fp AND (#s=:queued OR (#s=:running AND leaseUntil<:now))",
                 "ExpressionAttributeNames": {"#s": "status", "#error": "error"},
-                "ExpressionAttributeValues": attrs({":failed": TASK_FAILED, ":now": now,
-                                                    ":error": "SQS retries exhausted",
-                                                    ":fp": fingerprint(message),
-                                                    ":queued": TASK_QUEUED,
-                                                    ":running": TASK_RUNNING}),
+                "ExpressionAttributeValues": {":failed": TASK_FAILED, ":now": now,
+                                              ":error": "SQS retries exhausted",
+                                              ":fp": fingerprint(message),
+                                              ":queued": TASK_QUEUED,
+                                              ":running": TASK_RUNNING},
             }},
             {"Update": {
                 "TableName": jobs_table,
-                "Key": attrs({"jobId": message["jobId"]}),
+                "Key": {"jobId": message["jobId"]},
                 "UpdateExpression": "ADD tasksRemaining :minusOne, tasksFailed :one",
                 "ConditionExpression": "#s IN (:queued,:running) AND tasksRemaining>:zero",
                 "ExpressionAttributeNames": {"#s": "status"},
-                "ExpressionAttributeValues": attrs({":minusOne": -1, ":one": 1,
-                                                    ":queued": JOB_QUEUED,
-                                                    ":running": JOB_RUNNING,
-                                                    ":zero": 0}),
+                "ExpressionAttributeValues": {":minusOne": -1, ":one": 1,
+                                              ":queued": JOB_QUEUED,
+                                              ":running": JOB_RUNNING,
+                                              ":zero": 0},
             }},
         ])
     except Exception as error:
