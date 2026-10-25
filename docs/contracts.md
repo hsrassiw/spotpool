@@ -40,7 +40,7 @@ Giá trị cho phép:
 | ECR | `spotpool-video`, `spotpool-script` | danh sách image được phép |
 | API Gateway | REST API, Lambda authorizer kiểu `TOKEN` | không dùng HTTP API: authorizer đọc `authorizationToken`, `methodArn` và Lambda đọc `requestContext.authorizer.userId`, chỉ REST API có |
 | S3 + CloudFront | bucket `web-<accountId>` (private) sau CloudFront | cổng web và trang quản trị; CloudFront cho HTTPS, đọc bucket qua Origin Access Control |
-| EC2 | `c7i-flex.large` (2 vCPU, 4 GB) | đủ 2 suất 1,5 GB; gói Free của tài khoản cho phép |
+| EC2 | `c7i-flex.large` (2 vCPU, 4 GB); gói Tiết kiệm dùng thêm `m7i-flex.large` (2 vCPU, 8 GB) | mỗi máy chạy 2 suất 1,5 GB; gói Free của tài khoản cho phép cả hai loại, cả hai có Spot ở 3 AZ |
 
 `maxReceiveCount` để 10 thay vì 5: mỗi lần Spot bị thu hồi hoặc worker chết, message được nhận lại và bị đếm thêm một lần, để thấp thì task bị thu hồi vài lần có thể rơi nhầm vào DLQ.
 
@@ -55,6 +55,7 @@ Biến môi trường do Terraform truyền vào. Code **không đặt giá tr�
 | `PRICE_ONDEMAND`, `PRICE_SPOT` | API (credit/vCPU-giờ) |
 | `TASK_MAX_SECONDS` | worker (thời gian chạy tối đa của một task) |
 | `AWS_DEFAULT_REGION` | worker (`ap-southeast-1`; Lambda tự có sẵn) |
+| `SPOTPOOL_QUEUE` | worker: `ondemand` hoặc `spot`, hàng đợi máy này nhận việc (mục 8) |
 
 ## 3. Luồng chính
 
