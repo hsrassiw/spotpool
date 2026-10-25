@@ -34,7 +34,7 @@ def lambda_handler(event, context):
             return {'statusCode': 400, 'body': json.dumps({'error': 'Job is not in UPLOADING state'})}
             
         missing_files = []
-        task_count = job.get('taskCount', 0)
+        task_count = int(job.get('taskCount', 0))
         files = job.get('files', [])
         
         inputs = []
