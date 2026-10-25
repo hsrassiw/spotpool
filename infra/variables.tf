@@ -26,8 +26,9 @@ variable "enable_worker" {
 }
 
 variable "worker_instance_type" {
-  type    = string
-  default = "t3.small"
+  description = "2 vCPU, 4 GB: đủ 2 suất 1,5 GB. Gói Free của tài khoản cho phép loại này."
+  type        = string
+  default     = "c7i-flex.large"
 }
 
 variable "worker_queue" {
