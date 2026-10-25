@@ -1,6 +1,7 @@
 # Hợp đồng giữa các thành phần SpotPool
 
 Bản 1 – 18/10/2026, chốt trong buổi họp nhóm.
+Bản 2 – 25/10/2026: sau M1. Chuyển mẫu job video sang Khuê, thêm cổng web qua CloudFront, chốt API Gateway REST, cập nhật phụ lục.
 
 File này quy định tên tài nguyên, tên trường, trạng thái và cách các phần (API, dispatcher, worker, tính phí, web) trao đổi với nhau. Code khác với file này là code sai. Muốn đổi thì sửa file này trước (mục 14).
 
@@ -37,6 +38,9 @@ Giá trị cho phép:
 | S3 | `input-<accountId>` | xóa sau 7 ngày; CORS cho phép `PUT` từ địa chỉ web |
 | S3 | `output-<accountId>` | xóa sau 7 ngày; CORS cho phép `GET` từ địa chỉ web (xem log ngay trên trang) |
 | ECR | `spotpool-video`, `spotpool-script` | danh sách image được phép |
+| API Gateway | REST API, Lambda authorizer kiểu `TOKEN` | không dùng HTTP API: authorizer đọc `authorizationToken`, `methodArn` và Lambda đọc `requestContext.authorizer.userId`, chỉ REST API có |
+| S3 + CloudFront | bucket `web-<accountId>` (private) sau CloudFront | cổng web và trang quản trị; CloudFront cho HTTPS, đọc bucket qua Origin Access Control |
+| EC2 | `c7i-flex.large` (2 vCPU, 4 GB) | đủ 2 suất 1,5 GB; gói Free của tài khoản cho phép |
 
 `maxReceiveCount` để 10 thay vì 5: mỗi lần Spot bị thu hồi hoặc worker chết, message được nhận lại và bị đếm thêm một lần, để thấp thì task bị thu hồi vài lần có thể rơi nhầm vào DLQ.
 
@@ -438,7 +442,9 @@ Quyết toán: Lambda billing đọc DynamoDB Stream của `Jobs`, chạy khi jo
 
 Code:
 - `spotpool_core/contracts.py` chứa hằng số và hàm kiểm tra dữ liệu dùng chung. Khuê giữ, sửa qua PR có cả nhóm xem. Mọi Lambda đóng gói kèm thư mục `spotpool_core/`.
-- Terraform chung một thư mục `infra/`, mỗi người một file: `network.tf`, `iam.tf` (Nghĩa); `queues.tf`, `dispatcher.tf` (Khuê); `tables.tf`, `buckets.tf`, `api.tf` (Ngọc Anh).
+- Terraform chung một thư mục `infra/`, mỗi người một file: `network.tf`, `iam.tf`, `compute.tf`, `web.tf` (Nghĩa); `queues.tf`, `dispatcher.tf` (Khuê); `tables.tf`, `buckets.tf`, `api.tf` (Ngọc Anh).
+- Image job trong `job-templates/script/`, `job-templates/video/`: Khuê.
+- Code web và trang quản trị trong `web/`, một app React chung: Ngọc Anh dựng app và các trang người dùng; Khuê thêm trang quản trị.
 - Bucket input chỉ có **một** `aws_s3_bucket_notification`, đặt trong `dispatcher.tf`. Khai báo hai cái cho cùng một bucket thì cái sau ghi đè cái trước.
 - Khi bảng và hàng đợi đã có trong Terraform, `iam.tf` tham chiếu trực tiếp (ví dụ `aws_dynamodb_table.jobs.arn`) thay vì gõ tên.
 
@@ -449,6 +455,8 @@ Code:
 - Số lần bị thu hồi lưu trong bảng `Tasks` chứ không nằm trong message SQS (Bảng 2.2, giao diện 9).
 - Thời gian chạy tối đa do worker tính từ ngân sách còn lại lúc bắt đầu chạy, không nằm trong message, vì nó thay đổi khi người dùng nạp thêm.
 - Thêm Lambda xử lý `sqs-dlq` và Lambda billing chạy theo DynamoDB Stream của `Jobs`.
+- Cổng web đặt sau CloudFront thay vì mở thẳng từ S3, vì static website hosting của S3 chỉ có HTTP.
+- Máy worker cài Docker và nạp worker agent bằng user data khi khởi động, thay cho Custom AMI.
 
 ## 13. Chưa chốt
 
@@ -456,7 +464,7 @@ Code:
 |---|---|---|
 | Đơn giá mỗi gói | Chốt sau khi đo ở tuần 3–4 như báo cáo. Tạm dùng `PRICE_ONDEMAND = 6000`, `PRICE_SPOT = 3000` | Cả nhóm |
 | Hạn mức mặc định | Credit ban đầu 50.000; 2 job đồng thời; 3 job lỗi miễn phí mỗi ngày | Cả nhóm |
-| Định dạng job script | File `.py` hay `.zip` kèm dữ liệu | Ngọc Anh, hạng mục 8 |
+| Định dạng job script | Tạm thời một file `.py`, kết quả là stdout (image hiện tại). Có cần `.zip` kèm dữ liệu không | Khuê, hạng mục 8 |
 | Giới hạn dung lượng file tải lên | Link `PUT` không giới hạn được dung lượng; cần thì đổi sang presigned POST | Ngọc Anh |
 | Thời gian chạy tối đa của một task | `TASK_MAX_SECONDS = 7200` | Khuê |
 | Suất đôi trên worker | Trường `vcpu` đã có; API chỉ mở `vcpu = 2` khi worker hỗ trợ | Khuê |
@@ -471,20 +479,18 @@ Code:
 
 ## Phụ lục: việc cần sửa
 
+Việc của bản 1 đã xong hết; M1 chạy được trên AWS ngày 25/10. Việc còn lại sau M1:
+
 **Ngọc Anh**
-- Đổi tên bảng, bucket và trường (`tier`, `kind`, trạng thái chữ hoa, thời gian epoch, tiền số nguyên); bỏ giá trị mặc định của biến môi trường.
-- `POST /jobs` nhận danh sách file, key theo `taskId`; thêm `POST /jobs/{id}/start` ghi manifest.
-- Authorizer: dùng GSI thay cho `scan`, policy `/*/*`, trả kèm `role`.
-- `GET /jobs/{id}` đọc bảng `Tasks`, link tải hạn 15 phút; sửa mã lỗi 440 thành 404.
-- Viết Terraform cho bảng (kèm GSI và Stream) và bucket (kèm CORS, xóa sau 7 ngày).
+- `api.tf`: đổi HTTP API sang REST API; resource `/jobs`, `/jobs/{id}`, `/jobs/{id}/start` tích hợp `AWS_PROXY`; authorizer `TOKEN` cache 300 giây; `deployment`, `stage`, `lambda_permission`; CORS.
+- `/start`: giữ credit bằng `TransactWriteItems` (mục 4); job đã `QUEUED` thì ghi lại manifest; đổi `Decimal` trong `params` về số trước khi `json.dumps`.
+- Hạng mục 13: dựng app React trong `web/`, các trang người dùng.
 
 **Khuê**
-- Bảng `Tasks` khóa `jobId` + `taskId`; `taskId` lấy từ manifest; `kind` đổi `python` thành `script`; thêm `vcpu`, `image`, `params`.
-- Worker bỏ kiểm tra `tier` khác hàng đợi; thêm `PAUSED` vào các trạng thái được xóa message.
-- Ghi kết thúc bằng `TransactWriteItems` (Tasks, Jobs, Usage); kết thúc job khi `tasksRemaining = 0`.
-- RAM theo `vcpu` (1536 MB mỗi vCPU), thời gian tối đa theo ngân sách; tải log lên S3.
-- Gộp DLQ thành `sqs-dlq`, `maxReceiveCount = 10`; viết Lambda DLQ; chuyển Terraform vào `infra/queues.tf`.
+- Hạng mục 8: image `spotpool-video` trong `job-templates/video/` (FFmpeg, ra MP4, `params.height` mặc định 720).
+- Hạng mục 12: xử lý thu hồi Spot.
 
 **Nghĩa**
-- `iam.tf`: thêm bảng `Tasks`; role Lambda thêm quyền nhận và xóa message ở `sqs-dlq`, quyền đọc Stream của `Jobs` (xong).
-- Hạng mục 9: tạo ECR `spotpool-video`, `spotpool-script`.
+- `web.tf`: bucket `web-<accountId>` và CloudFront.
+- `compute.tf`: worker đang chạy Python 3.9 có sẵn của Amazon Linux 2023, đổi sang 3.13 cho đúng mục 1.
+- Hạng mục 10, 11: ASG Spot nhiều AZ, co giãn theo backlog.
