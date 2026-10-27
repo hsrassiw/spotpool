@@ -2,8 +2,8 @@
 # User data cho worker EC2, Terraform điền các biến khi tạo launch template
 set -euo pipefail
 
-dnf install -y docker python3-pip amazon-ecr-credential-helper
-pip3 install boto3
+dnf install -y docker python3.13 python3.13-pip amazon-ecr-credential-helper
+python3.13 -m pip install boto3
 systemctl enable --now docker
 
 # docker pull từ ECR dùng quyền của IAM role, không cần docker login
@@ -45,7 +45,7 @@ Requires=docker.service
 EnvironmentFile=/etc/spotpool-worker.env
 Environment=PYTHONPATH=/opt/spotpool
 Environment=HOME=/root
-ExecStart=/usr/bin/python3 /opt/spotpool/worker/agent.py
+ExecStart=/usr/bin/python3.13 /opt/spotpool/worker/agent.py
 Restart=always
 RestartSec=10
 

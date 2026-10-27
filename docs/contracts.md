@@ -2,6 +2,7 @@
 
 Bản 1 – 18/10/2026, chốt trong buổi họp nhóm.
 Bản 2 – 25/10/2026: sau M1. Chuyển mẫu job video sang Khuê, thêm cổng web qua CloudFront, chốt API Gateway REST, cập nhật phụ lục.
+Bản 3 – 25/10/2026, chốt trong buổi họp sau M1. Đổi việc: Khuê làm trang người dùng (HM 13), Ngọc Anh làm trang quản trị (HM 15) và mẫu video (HM 8). Chốt luồng job hết trần (mục 8, 10), tỷ giá credit và giờ hoạt động gói Ổn định (mục 13). Worker dùng Python 3.13.
 
 File này quy định tên tài nguyên, tên trường, trạng thái và cách các phần (API, dispatcher, worker, tính phí, web) trao đổi với nhau. Code khác với file này là code sai. Muốn đổi thì sửa file này trước (mục 14).
 
@@ -361,12 +362,14 @@ Khi nhận message:
 4. Thời gian tối đa của container = `min(TASK_MAX_SECONDS, ngân sách còn lại / vcpu)`.
 
 Trong lúc chạy:
-- Mỗi 30 giây: `leaseUntil = now + 120`, `heartbeatAt = now` (điều kiện `owner` là mình và `status = RUNNING`), gia hạn visibility 120 giây. Điều kiện sai (ví dụ job bị hủy) thì dừng container, không ghi gì thêm.
+- Mỗi 30 giây: `leaseUntil = now + 120`, `heartbeatAt = now` (điều kiện `owner` là mình và `status = RUNNING`), gia hạn visibility 120 giây. Trước đó đọc `Jobs`:
+  - Job `CANCELLED` hoặc điều kiện của `Tasks` sai (task đã bị API hủy, hoặc worker khác đã giành lại): dừng container, không ghi gì thêm.
+  - Job `PAUSED` (task khác đã chạm trần): dừng container và kết thúc lần chạy như hết trần: task `PAUSED`, `Usage.outcome = PAUSED`, có tính tiền phần đã chạy. Không để task ở `RUNNING`.
 - Mỗi 5 giây hỏi IMDSv2 `spot/instance-action`.
 
 Khi lần chạy kết thúc, ghi **trong một `TransactWriteItems`** để không bao giờ cộng trùng:
 1. `Tasks`: trạng thái mới, `resultKey`, `logKey`, `finishedAt`, `error` (điều kiện `owner` là mình và `status = RUNNING`).
-2. `Jobs`: cộng `usedVcpuSeconds` (trừ khi bị thu hồi). Task kết thúc hẳn (`SUCCEEDED` hoặc `FAILED`) thì `tasksRemaining − 1` và `tasksSucceeded + 1` hoặc `tasksFailed + 1`.
+2. `Jobs`: cộng `usedVcpuSeconds` (trừ khi bị thu hồi). Task kết thúc hẳn (`SUCCEEDED` hoặc `FAILED`) thì `tasksRemaining − 1` và `tasksSucceeded + 1` hoặc `tasksFailed + 1`. Điều kiện: job đang `QUEUED`, `RUNNING` hoặc `PAUSED`. Phải chấp nhận `PAUSED`, vì task chạy song song có thể xong sau khi task khác đã làm job hết trần; nếu từ chối thì task kẹt ở `RUNNING` mãi.
 3. `Usage`: thêm một dòng (điều kiện chưa tồn tại).
 
 Gọi lại giao dịch thì dùng cùng `ClientRequestToken`. Giao dịch bị từ chối mà task đã ở đúng trạng thái mình định ghi thì coi như đã ghi xong.
@@ -375,6 +378,8 @@ Sau giao dịch:
 - Thành công hoặc lỗi: thử chuyển job sang `SUCCEEDED`, không được thì thử `FAILED` (điều kiện ở mục 7.1), rồi xóa message.
 - Hết trần: job chuyển `PAUSED`, xóa message.
 - Spot bị thu hồi: ngừng nhận việc mới, dừng container, task chuyển `QUEUED`, `interruptCount + 1`. Nếu `interruptCount > 2` thì `Tasks.queue = ondemand`, gửi nguyên văn message sang `sqs-ondemand` rồi xóa message ở `sqs-spot`. Ngược lại đặt visibility về 0 để máy khác lấy.
+
+Quy tắc khi job `PAUSED`: mọi task chưa kết thúc của job phải ở `PAUSED`, không còn task `QUEUED` hay `RUNNING`. Vì vậy worker nhận message của job đã `PAUSED` thì chuyển task `QUEUED` sang `PAUSED` rồi mới xóa message (bước 1 ở trên), và nạp thêm (mục 4) chỉ cần gửi lại các task `PAUSED`. Task bị dừng vì hết trần chạy lại từ đầu sau khi nạp thêm; không lưu trạng thái giữa chừng (checkpoint là hướng mở rộng như báo cáo).
 
 Kết quả và log của mỗi lần chạy nằm trong một thư mục riêng, nên lần chạy cũ không ghi đè được kết quả của lần chạy mới:
 - `results/{userId}/{jobId}/{taskId}/{attempt}/result`
@@ -416,7 +421,7 @@ Worker chỉ ghi sự kiện (`Usage`, `Jobs.usedVcpuSeconds`). Lambda billing q
 | `outcome` của lần chạy | Tính vào ngân sách job | Tính tiền |
 |---|---|---|
 | `SUCCEEDED` | có | có |
-| `PAUSED` (bị cắt vì hết trần) | có | có |
+| `PAUSED` (bị cắt vì hết trần, kể cả bị dừng vì task khác đã làm job hết trần) | có | có. Sau khi nạp thêm, task chạy lại từ đầu và lần chạy mới tính tiền riêng |
 | `FAILED` (lỗi của job) | có | miễn phí nếu còn lượt lỗi miễn phí trong ngày, hết lượt thì tính |
 | `INTERRUPTED` (Spot bị thu hồi) | không | không, nền tảng chịu |
 | Mất nhịp tim, bị hủy giữa chừng | không có dòng `Usage` | không |
@@ -444,8 +449,8 @@ Quyết toán: Lambda billing đọc DynamoDB Stream của `Jobs`, chạy khi jo
 Code:
 - `spotpool_core/contracts.py` chứa hằng số và hàm kiểm tra dữ liệu dùng chung. Khuê giữ, sửa qua PR có cả nhóm xem. Mọi Lambda đóng gói kèm thư mục `spotpool_core/`.
 - Terraform chung một thư mục `infra/`, mỗi người một file: `network.tf`, `iam.tf`, `compute.tf`, `web.tf` (Nghĩa); `queues.tf`, `dispatcher.tf` (Khuê); `tables.tf`, `buckets.tf`, `api.tf` (Ngọc Anh).
-- Image job trong `job-templates/script/`, `job-templates/video/`: Khuê.
-- Code web và trang quản trị trong `web/`, một app React chung: Ngọc Anh dựng app và các trang người dùng; Khuê thêm trang quản trị.
+- Image job: `job-templates/script/` Khuê (đã xong); `job-templates/video/` Ngọc Anh.
+- Code web và trang quản trị trong `web/`, một app React chung: Khuê dựng app và các trang người dùng (HM 13); Ngọc Anh thêm trang quản trị (HM 15) và trang hóa đơn (HM 14).
 - Bucket input chỉ có **một** `aws_s3_bucket_notification`, đặt trong `dispatcher.tf`. Khai báo hai cái cho cùng một bucket thì cái sau ghi đè cái trước.
 - Khi bảng và hàng đợi đã có trong Terraform, `iam.tf` tham chiếu trực tiếp (ví dụ `aws_dynamodb_table.jobs.arn`) thay vì gõ tên.
 
@@ -470,7 +475,8 @@ Code:
 | Thời gian chạy tối đa của một task | `TASK_MAX_SECONDS = 7200` | Khuê |
 | Suất đôi trên worker | Trường `vcpu` đã có; API chỉ mở `vcpu = 2` khi worker hỗ trợ | Khuê |
 | Job `PAUSED` quá 7 ngày | File đầu vào đã bị xóa nên không chạy tiếp được, coi như hủy | Cả nhóm |
-| Giờ hoạt động của gói Ổn định | | Nghĩa, hạng mục 11 |
+| Quy đổi credit | Đã chốt: 1 credit = 1 đồng. Trang quản trị quy đổi chi phí AWS theo tỷ giá cố định 1 USD = 26.000 credit | Cả nhóm |
+| Giờ hoạt động của gói Ổn định | Đã chốt: mặc định 8h–23h giờ Việt Nam, mọi ngày; đổi được qua biến Terraform `ondemand_hours_start`, `ondemand_hours_end` (ví dụ mở rộng hôm demo). Ngoài giờ ASG Ổn định về 0 máy, job vẫn chạy nhờ luật bật máy từ 0 nhưng không cam kết chờ ≤ 1 phút | Nghĩa, hạng mục 11 |
 
 ## 14. Đổi hợp đồng
 
@@ -482,16 +488,25 @@ Code:
 
 Việc của bản 1 đã xong hết; M1 chạy được trên AWS ngày 25/10. Việc còn lại sau M1:
 
-**Ngọc Anh**
-- `api.tf`: đổi HTTP API sang REST API; resource `/jobs`, `/jobs/{id}`, `/jobs/{id}/start` tích hợp `AWS_PROXY`; authorizer `TOKEN` cache 300 giây; `deployment`, `stage`, `lambda_permission`; CORS.
-- `/start`: giữ credit bằng `TransactWriteItems` (mục 4); job đã `QUEUED` thì ghi lại manifest; đổi `Decimal` trong `params` về số trước khi `json.dumps`.
-- Hạng mục 13: dựng app React trong `web/`, các trang người dùng.
-
-**Khuê**
+**Ngọc Anh** (HM 5 xong trước thứ 4, 28/10)
+- `api.tf`: đổi HTTP API sang REST API (xóa HTTP API `SpotPool-API` đang rỗng); resource `/jobs`, `/jobs/{id}`, `/jobs/{id}/start` tích hợp `AWS_PROXY`; authorizer `TOKEN` cache 300 giây; `deployment`, `stage`, `lambda_permission`; CORS.
+- Lambda `POST /users`, `POST /users/me/rotate-key`, `POST /jobs/{id}/cancel` (mục 4).
+- `/start`: giữ credit bằng `TransactWriteItems` (mục 4); job đã `QUEUED` thì ghi lại manifest; đổi `Decimal` trong `params` về số trước khi `json.dumps` (job video có `params.height` cần việc này).
+- `POST /jobs`: `costCap` phải là số nguyên dương. Không chặn thì `costCap` âm sẽ cộng credit cho người dùng khi giữ credit.
+- `GET /jobs/{id}`: thêm `interrupted`, `queuedAt`, `startedAt`, `finishedAt`, `chargedCredit` (mục 4).
+- Xóa `services/api/db_schema.md` (schema cũ, khác mục 6).
 - Hạng mục 8: image `spotpool-video` trong `job-templates/video/` (FFmpeg, ra MP4, `params.height` mặc định 720).
+- Hạng mục 14: billing, nạp thêm theo quy tắc job `PAUSED` ở mục 8; trang hóa đơn.
+- Hạng mục 15: `GET /admin/overview` (quyền `ec2:DescribeInstances`, `sqs:GetQueueAttributes`, `ce:GetCostAndUsage`; chi phí AWS cập nhật mỗi ngày một lần, không gọi Cost Explorer mỗi lần tải trang) và trang quản trị.
+
+**Khuê** (HM 12 phần lõi xong trước M2, chủ nhật 1/11)
+- `worker/agent.py` theo quy tắc job `PAUSED` ở mục 8: nhận message của job `PAUSED` thì chuyển task sang `PAUSED`; nhịp tim thấy job `PAUSED` thì kết thúc lần chạy là `PAUSED`; giao dịch kết thúc chấp nhận job `PAUSED`.
 - Hạng mục 12: xử lý thu hồi Spot.
+- Hạng mục 13: dựng app React trong `web/`, các trang người dùng (gọi REST API của Ngọc Anh).
 
 **Nghĩa**
+- Hạng mục 9: test worker chạy Python 3.13 trên máy thật (user data đã đổi).
+- Hạng mục 10 (xong trước thứ 4, 28/10), 11: ASG Spot nhiều AZ (`c7i-flex.large`, `m7i-flex.large`), co giãn theo backlog, giờ hoạt động gói Ổn định theo mục 13.
+- `iam.tf`: worker chỉ được dùng bảng `Jobs`, `Tasks`, `Usage` và hàng đợi `sqs-ondemand`, `sqs-spot`.
+- Hạng mục 16: bật cost allocation tag `Project` sớm (Cost Explorer chỉ có dữ liệu từ ngày bật).
 - `web.tf`: bucket `web-<accountId>` và CloudFront.
-- `compute.tf`: worker đang chạy Python 3.9 có sẵn của Amazon Linux 2023, đổi sang 3.13 cho đúng mục 1.
-- Hạng mục 10, 11: ASG Spot nhiều AZ, co giãn theo backlog.
