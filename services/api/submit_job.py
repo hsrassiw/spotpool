@@ -25,6 +25,9 @@ def lambda_handler(event, context):
             return {'statusCode': 400, 'body': json.dumps({'error': 'Invalid tier, kind, or vcpu parameters'})}
 
         cost_cap = int(body.get('costCap', 15000))
+        if cost_cap <= 0:
+            return {'statusCode': 400, 'body': json.dumps({'error': 'costCap must be greater than 0'})}
+
         files = body.get('files', [])
         params = body.get('params', {})
         
