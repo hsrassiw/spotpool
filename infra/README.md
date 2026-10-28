@@ -7,7 +7,7 @@ Terraform cho hạ tầng AWS (region `ap-southeast-1`).
 Tên tài nguyên theo Bảng 2.1 trong báo cáo:
 
 - Hàng đợi SQS: `sqs-ondemand`, `sqs-spot`, `sqs-dlq`.
-- Bảng DynamoDB: `Users`, `Jobs`, `Usage`.
+- Bảng DynamoDB: `Users`, `Jobs`, `Tasks`, `Usage`.
 - S3 bucket: `input-<suffix>`, `output-<suffix>`. Tên bucket phải duy nhất trên toàn AWS nên thêm hậu tố, mặc định là account id.
 - Mọi tài nguyên có tag `Project=spotpool` (đã gắn sẵn bằng `default_tags`).
 
@@ -26,6 +26,17 @@ cd ..
 terraform init -backend-config="bucket=<tên bucket ở trên>" -backend-config="region=ap-southeast-1"
 terraform plan
 terraform apply
+```
+
+Trước khi apply, đóng gói Lambda dispatcher: `python3 services/dispatcher/build.py` (Lambda API tự đóng gói khi plan).
+
+## Bật, tắt worker
+
+Mỗi gói một ASG: `spotpool-worker-ondemand` (On-Demand `c7i-flex.large`) và `spotpool-worker-spot` (Spot `c7i-flex.large`, `m7i-flex.large`, 3 AZ). Máy chỉ nhận việc từ hàng đợi của gói mình (`SPOTPOOL_QUEUE`).
+
+```bash
+terraform apply -var enable_worker=true    # bật 2 ASG
+terraform apply -var enable_worker=false   # tắt sau khi test cho đỡ tốn tiền
 ```
 
 `terraform destroy` trong `infra/` để dọn khi không dùng.
