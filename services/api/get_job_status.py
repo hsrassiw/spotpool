@@ -87,7 +87,7 @@ def lambda_handler(event, context):
             },
             'createdAt': int(job.get('createdAt', 0)),
             'queuedAt': int(job.get('queuedAt', 0)) if 'queuedAt' in job else None,
-            'startedAt': int(job.get('startedAt', 0)) if 'startedAt`' in job else None,
+            'startedAt': int(job.get('startedAt', 0)) if 'startedAt' in job else None,
             'finishedAt': int(job.get('finishedAt', 0)) if 'finishedAt' in job else None,
             'tasks': tasks_output
         }

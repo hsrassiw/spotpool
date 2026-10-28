@@ -21,7 +21,6 @@ def lambda_handler(event, context):
             
         jobs_table = dynamodb.Table(JOBS_TABLE)
         
-        # Cập nhật job với điều kiện status IN (UPLOADING, QUEUED, RUNNING, PAUSED)
         try:
             jobs_table.update_item(
                 Key={'jobId': job_id},
@@ -40,13 +39,12 @@ def lambda_handler(event, context):
         except ClientError as e:
             if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
                 return {
-                    'statusCode': 400,
+                    'statusCode': 404,
                     'headers': {'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({'error': 'Job not found or cannot be cancelled in its current state'})
                 }
             raise e
         
-        # Cập nhật các task con sang CANCELLED (bỏ qua nếu task nào không thỏa điều kiện)
         tasks_table = dynamodb.Table(TASKS_TABLE)
         tasks_resp = tasks_table.query(
             KeyConditionExpression='jobId = :jid',
@@ -70,7 +68,6 @@ def lambda_handler(event, context):
                 )
             except ClientError as ce:
                 if ce.response['Error']['Code'] == 'ConditionalCheckFailedException':
-                    # Bỏ qua task đã SUCCEEDED/FAILED/CANCELLED
                     continue
                 raise ce
         
