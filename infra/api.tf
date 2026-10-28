@@ -155,70 +155,7 @@ resource "aws_lambda_function" "cancel_job" {
 }
 
 
-# --- 4. MODULE CẤU HÌNH CORS CHO API GATEWAY REST ---
-
-module "cors_users" {
-  source          = "squat/cors/aws"
-  version         = "0.4.0"
-  api_id          = aws_api_gateway_rest_api.spotpool_api.id
-  resource_id     = aws_api_gateway_resource.users.id
-  allow_headers   = ["*"]
-  allow_methods   = ["POST", "OPTIONS"]
-  allow_origin    = "*"
-}
-
-module "cors_users_rotate" {
-  source          = "squat/cors/aws"
-  version         = "0.4.0"
-  api_id          = aws_api_gateway_rest_api.spotpool_api.id
-  resource_id     = aws_api_gateway_resource.users_rotate_key.id
-  allow_headers   = ["*"]
-  allow_methods   = ["POST", "OPTIONS"]
-  allow_origin    = "*"
-}
-
-module "cors_jobs" {
-  source          = "squat/cors/aws"
-  version         = "0.4.0"
-  api_id          = aws_api_gateway_rest_api.spotpool_api.id
-  resource_id     = aws_api_gateway_resource.jobs.id
-  allow_headers   = ["*"]
-  allow_methods   = ["POST", "OPTIONS"]
-  allow_origin    = "*"
-}
-
-module "cors_job_item" {
-  source          = "squat/cors/aws"
-  version         = "0.4.0"
-  api_id          = aws_api_gateway_rest_api.spotpool_api.id
-  resource_id     = aws_api_gateway_resource.job_item.id
-  allow_headers   = ["*"]
-  allow_methods   = ["GET", "OPTIONS"]
-  allow_origin    = "*"
-}
-
-module "cors_job_start" {
-  source          = "squat/cors/aws"
-  version         = "0.4.0"
-  api_id          = aws_api_gateway_rest_api.spotpool_api.id
-  resource_id     = aws_api_gateway_resource.job_start.id
-  allow_headers   = ["*"]
-  allow_methods   = ["POST", "OPTIONS"]
-  allow_origin    = "*"
-}
-
-module "cors_job_cancel" {
-  source          = "squat/cors/aws"
-  version         = "0.4.0"
-  api_id          = aws_api_gateway_rest_api.spotpool_api.id
-  resource_id     = aws_api_gateway_resource.job_cancel.id
-  allow_headers   = ["*"]
-  allow_methods   = ["POST", "OPTIONS"]
-  allow_origin    = "*"
-}
-
-
-# --- 5. CẤU TRÚC ROUTING TRÊN REST API GATEWAY ---
+# --- 4. CẤU TRÚC ROUTING TRÊN REST API GATEWAY ---
 
 # /users
 resource "aws_api_gateway_resource" "users" {
@@ -371,7 +308,75 @@ resource "aws_api_gateway_integration" "integration_post_job_cancel" {
 }
 
 
-# --- 6. DEPLOYMENT & PERMISSIONS (VỚI TRIGGERS TỰ ĐỘNG DEPLOY) ---
+# --- 5. NATIVE MOCK CORS CONFIGURATION ---
+
+locals {
+  cors_resources = {
+    users      = aws_api_gateway_resource.users.id
+    rotate_key = aws_api_gateway_resource.users_rotate_key.id
+    jobs       = aws_api_gateway_resource.jobs.id
+    job_item   = aws_api_gateway_resource.job_item.id
+    job_start  = aws_api_gateway_resource.job_start.id
+    job_cancel = aws_api_gateway_resource.job_cancel.id
+  }
+}
+
+resource "aws_api_gateway_method" "options" {
+  for_each      = local.cors_resources
+  rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id   = each.value
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "options" {
+  for_each          = local.cors_resources
+  rest_api_id       = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id       = each.value
+  http_method       = aws_api_gateway_method.options[each.key].http_method
+  type              = "MOCK"
+  request_templates = { "application/json" = "{\"statusCode\": 200}" }
+}
+
+resource "aws_api_gateway_method_response" "options" {
+  for_each    = local.cors_resources
+  rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.options[each.key].http_method
+  status_code = "200"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Headers" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "options" {
+  for_each    = local.cors_resources
+  rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.options[each.key].http_method
+  status_code = aws_api_gateway_method_response.options[each.key].status_code
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Authorization,Content-Type'"
+  }
+  depends_on = [aws_api_gateway_integration.options]
+}
+
+resource "aws_api_gateway_gateway_response" "cors" {
+  for_each      = toset(["DEFAULT_4XX", "DEFAULT_5XX"])
+  rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
+  response_type = each.key
+  response_parameters = {
+    "gatewayresponse.header.Access-Control-Allow-Origin"  = "'*'"
+    "gatewayresponse.header.Access-Control-Allow-Headers" = "'Authorization,Content-Type'"
+  }
+}
+
+
+# --- 6. DEPLOYMENT & PERMISSIONS (CÓ ĐỦ OPTIONS TRONG TRIGGERS) ---
 
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
@@ -380,11 +385,13 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     aws_api_gateway_integration.integration_post_jobs,
     aws_api_gateway_integration.integration_get_job_status,
     aws_api_gateway_integration.integration_post_job_start,
-    aws_api_gateway_integration.integration_post_job_cancel
+    aws_api_gateway_integration.integration_post_job_cancel,
+    aws_api_gateway_integration.options,
+    aws_api_gateway_integration_response.options,
+    aws_api_gateway_gateway_response.cors
   ]
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
 
-  # Triggers băm nội dung file source để tự động deploy lại khi có thay đổi
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.users.id,
@@ -405,6 +412,9 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       aws_api_gateway_resource.job_cancel.id,
       aws_api_gateway_method.post_job_cancel.id,
       aws_api_gateway_integration.integration_post_job_cancel.id,
+      aws_api_gateway_integration.options,
+      aws_api_gateway_integration_response.options,
+      aws_api_gateway_gateway_response.cors,
     ]))
   }
 

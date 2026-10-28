@@ -68,6 +68,8 @@ def lambda_handler(event, context):
                 'logUrl': log_url
             })
             
+        charged_credit = int(job['chargedCredit']) if 'chargedCredit' in job else None
+            
         response_data = {
             'jobId': job['jobId'],
             'status': job['status'],
@@ -76,7 +78,7 @@ def lambda_handler(event, context):
             'kind': job.get('kind'),
             'vcpu': int(job.get('vcpu', 1)),
             'costCap': int(job.get('costCap', 0)),
-            'chargedCredit': int(job.get('chargedCredit', 0)),
+            'chargedCredit': charged_credit,
             'usedVcpuSeconds': int(job.get('usedVcpuSeconds', 0)),
             'progress': {
                 'total': int(job.get('taskCount', 0)),
@@ -85,7 +87,7 @@ def lambda_handler(event, context):
             },
             'createdAt': int(job.get('createdAt', 0)),
             'queuedAt': int(job.get('queuedAt', 0)) if 'queuedAt' in job else None,
-            'startedAt': int(job.get('startedAt', 0)) if 'startedAt' in job else None,
+            'startedAt': int(job.get('startedAt', 0)) if 'startedAt`' in job else None,
             'finishedAt': int(job.get('finishedAt', 0)) if 'finishedAt' in job else None,
             'tasks': tasks_output
         }
@@ -94,7 +96,7 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': '*'
+                'Access-Control-Allow-Headers': 'Authorization,Content-Type'
             },
             'body': json.dumps(response_data, default=decimal_default)
         }
@@ -103,7 +105,7 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': '*'
+                'Access-Control-Allow-Headers': 'Authorization,Content-Type'
             },
             'body': json.dumps({'error': str(e)})
         }

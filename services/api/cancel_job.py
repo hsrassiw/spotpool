@@ -1,6 +1,7 @@
 import json
 import os
 import boto3
+from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
 JOBS_TABLE = os.environ['JOBS_TABLE']
@@ -19,35 +20,33 @@ def lambda_handler(event, context):
             }
             
         jobs_table = dynamodb.Table(JOBS_TABLE)
-        response = jobs_table.get_item(Key={'jobId': job_id})
-        job = response.get('Item')
         
-        if not job or job.get('userId') != user_id:
-            return {
-                'statusCode': 404,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Job not found'})
-            }
-            
-        current_status = job.get('status')
-        valid_cancel_statuses = ['UPLOADING', 'QUEUED', 'RUNNING', 'PAUSED']
+        # Cập nhật job với điều kiện status IN (UPLOADING, QUEUED, RUNNING, PAUSED)
+        try:
+            jobs_table.update_item(
+                Key={'jobId': job_id},
+                UpdateExpression="SET #st = :c",
+                ConditionExpression="#st IN (:u, :q, :r, :p) and userId = :uid",
+                ExpressionAttributeNames={'#st': 'status'},
+                ExpressionAttributeValues={
+                    ':c': 'CANCELLED',
+                    ':u': 'UPLOADING',
+                    ':q': 'QUEUED',
+                    ':r': 'RUNNING',
+                    ':p': 'PAUSED',
+                    ':uid': user_id
+                }
+            )
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+                return {
+                    'statusCode': 400,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Job not found or cannot be cancelled in its current state'})
+                }
+            raise e
         
-        if current_status not in valid_cancel_statuses:
-            return {
-                'statusCode': 400,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': f'Cannot cancel job in {current_status} state'})
-            }
-            
-        # Cập nhật trạng thái job thành CANCELLED
-        jobs_table.update_item(
-            Key={'jobId': job_id},
-            UpdateExpression="SET #st = :c",
-            ExpressionAttributeNames={'#st': 'status'},
-            ExpressionAttributeValues={':c': 'CANCELLED'}
-        )
-        
-        # Chuyển các task đang chờ/chạy sang CANCELLED
+        # Cập nhật các task con sang CANCELLED (bỏ qua nếu task nào không thỏa điều kiện)
         tasks_table = dynamodb.Table(TASKS_TABLE)
         tasks_resp = tasks_table.query(
             KeyConditionExpression='jobId = :jid',
@@ -56,13 +55,24 @@ def lambda_handler(event, context):
         tasks = tasks_resp.get('Items', [])
         
         for task in tasks:
-            if task.get('status') in ['QUEUED', 'RUNNING', 'PAUSED']:
+            try:
                 tasks_table.update_item(
                     Key={'jobId': job_id, 'taskId': task['taskId']},
                     UpdateExpression="SET #st = :c",
+                    ConditionExpression="#st IN (:q, :r, :p)",
                     ExpressionAttributeNames={'#st': 'status'},
-                    ExpressionAttributeValues={':c': 'CANCELLED'}
+                    ExpressionAttributeValues={
+                        ':c': 'CANCELLED',
+                        ':q': 'QUEUED',
+                        ':r': 'RUNNING',
+                        ':p': 'PAUSED'
+                    }
                 )
+            except ClientError as ce:
+                if ce.response['Error']['Code'] == 'ConditionalCheckFailedException':
+                    # Bỏ qua task đã SUCCEEDED/FAILED/CANCELLED
+                    continue
+                raise ce
         
         return {
             'statusCode': 200,

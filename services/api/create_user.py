@@ -20,11 +20,9 @@ def lambda_handler(event, context):
         body = json.loads(event.get('body', '{}'))
         email = body.get('email') or ""
         
-        # Luôn tạo userId bằng uuid4
         user_id = str(uuid.uuid4())
         now = int(time.time())
         
-        # Sinh API Key ngẫu nhiên
         raw_api_key = f"sp_{secrets.token_hex(24)}"
         api_key_hash = hashlib.sha256(raw_api_key.encode('utf-8')).hexdigest()
         
@@ -38,12 +36,11 @@ def lambda_handler(event, context):
             'creditHeld': Decimal('0'),
             'role': 'user',
             'runningJobs': Decimal('0'),
-            'maxConcurrentJobs': Decimal('2'),
+            'maxConcurrentJobs': Decimal('100'), # Tạm set 100 cho user test, sẽ quyết toán HM14 sau
             'freeErrorQuotaPerDay': Decimal('3'),
             'createdAt': Decimal(str(now))
         }
         
-        # Tránh ghi đè tài khoản khác
         table.put_item(
             Item=user_item,
             ConditionExpression="attribute_not_exists(userId)"
@@ -53,7 +50,7 @@ def lambda_handler(event, context):
             'statusCode': 201,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': '*'
+                'Access-Control-Allow-Headers': 'Authorization,Content-Type'
             },
             'body': json.dumps({
                 'message': 'User registered successfully. Save your API key securely, it will not be shown again.',
@@ -67,7 +64,7 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': '*'
+                'Access-Control-Allow-Headers': 'Authorization,Content-Type'
             },
             'body': json.dumps({'error': str(e)})
         }
