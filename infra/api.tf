@@ -1,4 +1,4 @@
-# --- 1. API GATEWAY KIỂU REST (Thay thế HTTP API cũ) ---
+# --- 1. API GATEWAY KIỂU REST ---
 resource "aws_api_gateway_rest_api" "spotpool_api" {
   name        = "${var.name_prefix}-SpotPool-API"
   description = "SpotPool REST API Gateway"
@@ -22,7 +22,6 @@ data "archive_file" "api_lambda_zip" {
 
 # --- 3. KHAI BÁO CÁC HÀM LAMBDA ---
 
-# Lambda: authorizer
 resource "aws_lambda_function" "authorizer" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-authorizer"
@@ -40,7 +39,6 @@ resource "aws_lambda_function" "authorizer" {
   }
 }
 
-# Lambda: create_user (POST /users)
 resource "aws_lambda_function" "create_user" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-create-user"
@@ -58,7 +56,6 @@ resource "aws_lambda_function" "create_user" {
   }
 }
 
-# Lambda: rotate_key (POST /users/me/rotate-key)
 resource "aws_lambda_function" "rotate_key" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-rotate-key"
@@ -76,7 +73,6 @@ resource "aws_lambda_function" "rotate_key" {
   }
 }
 
-# Lambda: submit_job (POST /jobs)
 resource "aws_lambda_function" "submit_job" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-submit-job"
@@ -98,7 +94,6 @@ resource "aws_lambda_function" "submit_job" {
   }
 }
 
-# Lambda: start_job (POST /jobs/{id}/start)
 resource "aws_lambda_function" "start_job" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-start-job"
@@ -122,7 +117,6 @@ resource "aws_lambda_function" "start_job" {
   }
 }
 
-# Lambda: get_job_status (GET /jobs/{id})
 resource "aws_lambda_function" "get_job_status" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-get-job-status"
@@ -142,7 +136,6 @@ resource "aws_lambda_function" "get_job_status" {
   }
 }
 
-# Lambda: cancel_job (POST /jobs/{id}/cancel)
 resource "aws_lambda_function" "cancel_job" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-cancel-job"
@@ -155,15 +148,78 @@ resource "aws_lambda_function" "cancel_job" {
 
   environment {
     variables = {
-      JOBS_TABLE = aws_dynamodb_table.jobs.name
+      JOBS_TABLE  = aws_dynamodb_table.jobs.name
+      TASKS_TABLE = aws_dynamodb_table.tasks.name
     }
   }
 }
 
 
-# --- 4. CẤU TRÚC ROUTING TRÊN REST API GATEWAY ---
+# --- 4. MODULE CẤU HÌNH CORS CHO API GATEWAY REST ---
 
-# Root resources
+module "cors_users" {
+  source          = "squat/cors/aws"
+  version         = "0.4.0"
+  api_id          = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id     = aws_api_gateway_resource.users.id
+  allow_headers   = ["*"]
+  allow_methods   = ["POST", "OPTIONS"]
+  allow_origin    = "*"
+}
+
+module "cors_users_rotate" {
+  source          = "squat/cors/aws"
+  version         = "0.4.0"
+  api_id          = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id     = aws_api_gateway_resource.users_rotate_key.id
+  allow_headers   = ["*"]
+  allow_methods   = ["POST", "OPTIONS"]
+  allow_origin    = "*"
+}
+
+module "cors_jobs" {
+  source          = "squat/cors/aws"
+  version         = "0.4.0"
+  api_id          = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id     = aws_api_gateway_resource.jobs.id
+  allow_headers   = ["*"]
+  allow_methods   = ["POST", "OPTIONS"]
+  allow_origin    = "*"
+}
+
+module "cors_job_item" {
+  source          = "squat/cors/aws"
+  version         = "0.4.0"
+  api_id          = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id     = aws_api_gateway_resource.job_item.id
+  allow_headers   = ["*"]
+  allow_methods   = ["GET", "OPTIONS"]
+  allow_origin    = "*"
+}
+
+module "cors_job_start" {
+  source          = "squat/cors/aws"
+  version         = "0.4.0"
+  api_id          = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id     = aws_api_gateway_resource.job_start.id
+  allow_headers   = ["*"]
+  allow_methods   = ["POST", "OPTIONS"]
+  allow_origin    = "*"
+}
+
+module "cors_job_cancel" {
+  source          = "squat/cors/aws"
+  version         = "0.4.0"
+  api_id          = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id     = aws_api_gateway_resource.job_cancel.id
+  allow_headers   = ["*"]
+  allow_methods   = ["POST", "OPTIONS"]
+  allow_origin    = "*"
+}
+
+
+# --- 5. CẤU TRÚC ROUTING TRÊN REST API GATEWAY ---
+
 # /users
 resource "aws_api_gateway_resource" "users" {
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
@@ -171,7 +227,6 @@ resource "aws_api_gateway_resource" "users" {
   path_part   = "users"
 }
 
-# POST /users (Đăng ký tài khoản - Không cần auth)
 resource "aws_api_gateway_method" "post_users" {
   rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
   resource_id   = aws_api_gateway_resource.users.id
@@ -202,7 +257,6 @@ resource "aws_api_gateway_resource" "users_rotate_key" {
   path_part   = "rotate-key"
 }
 
-# POST /users/me/rotate-key (Yêu cầu Authorizer)
 resource "aws_api_gateway_method" "post_rotate_key" {
   rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
   resource_id   = aws_api_gateway_resource.users_rotate_key.id
@@ -220,7 +274,6 @@ resource "aws_api_gateway_integration" "integration_rotate_key" {
   uri                     = aws_lambda_function.rotate_key.invoke_arn
 }
 
-
 # /jobs
 resource "aws_api_gateway_resource" "jobs" {
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
@@ -228,7 +281,6 @@ resource "aws_api_gateway_resource" "jobs" {
   path_part   = "jobs"
 }
 
-# POST /jobs (Tạo job)
 resource "aws_api_gateway_method" "post_jobs" {
   rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
   resource_id   = aws_api_gateway_resource.jobs.id
@@ -246,7 +298,6 @@ resource "aws_api_gateway_integration" "integration_post_jobs" {
   uri                     = aws_lambda_function.submit_job.invoke_arn
 }
 
-
 # /jobs/{id}
 resource "aws_api_gateway_resource" "job_item" {
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
@@ -254,7 +305,6 @@ resource "aws_api_gateway_resource" "job_item" {
   path_part   = "{id}"
 }
 
-# GET /jobs/{id} (Xem trạng thái job)
 resource "aws_api_gateway_method" "get_job_status" {
   rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
   resource_id   = aws_api_gateway_resource.job_item.id
@@ -272,7 +322,6 @@ resource "aws_api_gateway_integration" "integration_get_job_status" {
   uri                     = aws_lambda_function.get_job_status.invoke_arn
 }
 
-
 # /jobs/{id}/start
 resource "aws_api_gateway_resource" "job_start" {
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
@@ -280,7 +329,6 @@ resource "aws_api_gateway_resource" "job_start" {
   path_part   = "start"
 }
 
-# POST /jobs/{id}/start (Bấm chạy job)
 resource "aws_api_gateway_method" "post_job_start" {
   rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
   resource_id   = aws_api_gateway_resource.job_start.id
@@ -298,7 +346,6 @@ resource "aws_api_gateway_integration" "integration_post_job_start" {
   uri                     = aws_lambda_function.start_job.invoke_arn
 }
 
-
 # /jobs/{id}/cancel
 resource "aws_api_gateway_resource" "job_cancel" {
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
@@ -306,7 +353,6 @@ resource "aws_api_gateway_resource" "job_cancel" {
   path_part   = "cancel"
 }
 
-# POST /jobs/{id}/cancel (Hủy job)
 resource "aws_api_gateway_method" "post_job_cancel" {
   rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
   resource_id   = aws_api_gateway_resource.job_cancel.id
@@ -325,7 +371,7 @@ resource "aws_api_gateway_integration" "integration_post_job_cancel" {
 }
 
 
-# --- 5. DEPLOYMENT & QUYỀN GỌI LAMBDA (PERMISSION) ---
+# --- 6. DEPLOYMENT & PERMISSIONS (VỚI TRIGGERS TỰ ĐỘNG DEPLOY) ---
 
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
@@ -337,6 +383,34 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     aws_api_gateway_integration.integration_post_job_cancel
   ]
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
+
+  # Triggers băm nội dung file source để tự động deploy lại khi có thay đổi
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.users.id,
+      aws_api_gateway_method.post_users.id,
+      aws_api_gateway_integration.integration_post_users.id,
+      aws_api_gateway_resource.users_rotate_key.id,
+      aws_api_gateway_method.post_rotate_key.id,
+      aws_api_gateway_integration.integration_rotate_key.id,
+      aws_api_gateway_resource.jobs.id,
+      aws_api_gateway_method.post_jobs.id,
+      aws_api_gateway_integration.integration_post_jobs.id,
+      aws_api_gateway_resource.job_item.id,
+      aws_api_gateway_method.get_job_status.id,
+      aws_api_gateway_integration.integration_get_job_status.id,
+      aws_api_gateway_resource.job_start.id,
+      aws_api_gateway_method.post_job_start.id,
+      aws_api_gateway_integration.integration_post_job_start.id,
+      aws_api_gateway_resource.job_cancel.id,
+      aws_api_gateway_method.post_job_cancel.id,
+      aws_api_gateway_integration.integration_post_job_cancel.id,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_stage" "api_stage" {
@@ -345,7 +419,6 @@ resource "aws_api_gateway_stage" "api_stage" {
   stage_name    = "prod"
 }
 
-# Cấp quyền cho API Gateway gọi các hàm Lambda
 locals {
   lambda_functions = {
     create_user    = aws_lambda_function.create_user.arn
@@ -367,7 +440,6 @@ resource "aws_lambda_permission" "apigw_lambda" {
   source_arn    = "${aws_api_gateway_rest_api.spotpool_api.execution_arn}/*/*"
 }
 
-# Xuất URL của REST API để tiện theo dõi
 output "rest_api_url" {
   value = "${aws_api_gateway_stage.api_stage.invoke_url}"
 }
