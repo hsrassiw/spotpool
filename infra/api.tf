@@ -373,6 +373,10 @@ resource "aws_api_gateway_gateway_response" "cors" {
     "gatewayresponse.header.Access-Control-Allow-Origin"  = "'*'"
     "gatewayresponse.header.Access-Control-Allow-Headers" = "'Authorization,Content-Type'"
   }
+  # Ghi rõ mẫu mặc định của AWS, để trống thì lần plan nào cũng thấy thay đổi
+  response_templates = {
+    "application/json" = "{\"message\":$context.error.messageString}"
+  }
 }
 
 
@@ -412,9 +416,10 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       aws_api_gateway_resource.job_cancel.id,
       aws_api_gateway_method.post_job_cancel.id,
       aws_api_gateway_integration.integration_post_job_cancel.id,
-      aws_api_gateway_integration.options,
-      aws_api_gateway_integration_response.options,
-      aws_api_gateway_gateway_response.cors,
+      # Chỉ lấy id và header CORS: cả object có trường AWS tự điền nên mã băm đổi giữa plan và apply
+      [for k, v in aws_api_gateway_integration.options : v.id],
+      [for k, v in aws_api_gateway_integration_response.options : v.response_parameters],
+      [for k, v in aws_api_gateway_gateway_response.cors : v.response_parameters],
     ]))
   }
 
@@ -451,5 +456,5 @@ resource "aws_lambda_permission" "apigw_lambda" {
 }
 
 output "rest_api_url" {
-  value = "${aws_api_gateway_stage.api_stage.invoke_url}"
+  value = aws_api_gateway_stage.api_stage.invoke_url
 }
