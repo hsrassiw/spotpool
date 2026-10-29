@@ -12,6 +12,13 @@ locals {
     "arn:aws:dynamodb:${var.region}:${local.account_id}:table/${t}",
     "arn:aws:dynamodb:${var.region}:${local.account_id}:table/${t}/index/*",
   ]])
+
+  # Worker không đọc Users và không gửi thẳng vào DLQ
+  worker_sqs_arns = [for q in ["sqs-ondemand", "sqs-spot"] : "arn:aws:sqs:${var.region}:${local.account_id}:${q}"]
+  worker_ddb_arns = flatten([for t in ["Jobs", "Tasks", "Usage"] : [
+    "arn:aws:dynamodb:${var.region}:${local.account_id}:table/${t}",
+    "arn:aws:dynamodb:${var.region}:${local.account_id}:table/${t}/index/*",
+  ]])
 }
 
 # ---------- Worker (EC2) ----------
@@ -42,7 +49,7 @@ data "aws_iam_policy_document" "worker" {
       "sqs:GetQueueAttributes",
       "sqs:GetQueueUrl",
     ]
-    resources = local.sqs_arns
+    resources = local.worker_sqs_arns
   }
 
   statement {
@@ -66,7 +73,14 @@ data "aws_iam_policy_document" "worker" {
       "dynamodb:Query",
       "dynamodb:TransactWriteItems",
     ]
-    resources = local.ddb_arns
+    resources = local.worker_ddb_arns
+  }
+
+  # Máy đang chạy task tự bật bảo vệ để ASG không chọn tắt khi giảm máy
+  statement {
+    sid       = "ScaleInProtection"
+    actions   = ["autoscaling:SetInstanceProtection"]
+    resources = ["arn:aws:autoscaling:${var.region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${var.name_prefix}-worker-*"]
   }
 
   statement {

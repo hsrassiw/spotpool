@@ -29,6 +29,7 @@ VIDEO_JOB_IMAGE=${video_image}
 SCRIPT_JOB_IMAGE=${script_image}
 TASK_MAX_SECONDS=7200
 SPOTPOOL_QUEUE=${worker_queue}
+SPOTPOOL_ASG=${worker_asg}
 SPOTPOOL_INSTANCE_ID=$(md instance-id)
 SPOTPOOL_INSTANCE_TYPE=$(md instance-type)
 SPOTPOOL_AZ=$(md placement/availability-zone)

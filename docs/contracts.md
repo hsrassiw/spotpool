@@ -57,6 +57,7 @@ Biến môi trường do Terraform truyền vào. Code **không đặt giá tr�
 | `TASK_MAX_SECONDS` | worker (thời gian chạy tối đa của một task) |
 | `AWS_DEFAULT_REGION` | worker (`ap-southeast-1`; Lambda tự có sẵn) |
 | `SPOTPOOL_QUEUE` | worker: `ondemand` hoặc `spot`, hàng đợi máy này nhận việc (mục 8) |
+| `SPOTPOOL_ASG` | worker: tên ASG của máy, để bật/tắt bảo vệ khi giảm máy (mục 8) |
 
 ## 3. Luồng chính
 
@@ -366,6 +367,8 @@ Trong lúc chạy:
   - Job `CANCELLED` hoặc điều kiện của `Tasks` sai (task đã bị API hủy, hoặc worker khác đã giành lại): dừng container, không ghi gì thêm.
   - Job `PAUSED` (task khác đã chạm trần): dừng container và kết thúc lần chạy như hết trần: task `PAUSED`, `Usage.outcome = PAUSED`, có tính tiền phần đã chạy. Không để task ở `RUNNING`.
 - Mỗi 5 giây hỏi IMDSv2 `spot/instance-action`.
+
+Bảo vệ khi giảm máy: ASG co giãn theo (task chờ + task đang chạy) / số máy, khi giảm có thể chọn trúng máy đang chạy. Nhận task vào suất đầu tiên thì gọi `SetInstanceProtection(ProtectedFromScaleIn=True)` cho máy mình (`SPOTPOOL_INSTANCE_ID`, `SPOTPOOL_ASG`); cả 2 suất trống thì gọi với `False`. Gọi lỗi thì ghi log rồi chạy tiếp, không dừng worker: máy bị tắt giữa chừng thì task vẫn chạy lại nhờ hết `leaseUntil`.
 
 Khi lần chạy kết thúc, ghi **trong một `TransactWriteItems`** để không bao giờ cộng trùng:
 1. `Tasks`: trạng thái mới, `resultKey`, `logKey`, `finishedAt`, `error` (điều kiện `owner` là mình và `status = RUNNING`).

@@ -36,3 +36,31 @@ variable "spot_instance_types" {
   type        = list(string)
   default     = ["c7i-flex.large", "m7i-flex.large"]
 }
+
+# Quota của tài khoản: 16 vCPU On-Demand, 32 vCPU Spot. Mỗi máy 2 vCPU.
+variable "ondemand_max_size" {
+  type    = number
+  default = 4
+}
+
+variable "spot_max_size" {
+  type    = number
+  default = 4
+}
+
+variable "ondemand_hours_start" {
+  description = "Giờ bắt đầu giữ sẵn 1 máy On-Demand (giờ Việt Nam, 0–23)."
+  type        = number
+  default     = 8
+}
+
+variable "ondemand_hours_end" {
+  description = "Giờ hết giữ sẵn máy On-Demand (giờ Việt Nam, 0–23), phải sau giờ bắt đầu."
+  type        = number
+  default     = 23
+
+  validation {
+    condition     = var.ondemand_hours_start >= 0 && var.ondemand_hours_start < var.ondemand_hours_end && var.ondemand_hours_end <= 23
+    error_message = "Cần 0 <= ondemand_hours_start < ondemand_hours_end <= 23."
+  }
+}
