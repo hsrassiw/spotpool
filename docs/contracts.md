@@ -3,6 +3,7 @@
 Bản 1 – 18/10/2026, chốt trong buổi họp nhóm.
 Bản 2 – 25/10/2026: sau M1. Chuyển mẫu job video sang Khuê, thêm cổng web qua CloudFront, chốt API Gateway REST, cập nhật phụ lục.
 Bản 3 – 25/10/2026, chốt trong buổi họp sau M1. Đổi việc: Khuê làm trang người dùng (HM 13), Ngọc Anh làm trang quản trị (HM 15) và mẫu video (HM 8). Chốt luồng job hết trần (mục 8, 10), tỷ giá credit và giờ hoạt động gói Ổn định (mục 13). Worker dùng Python 3.13.
+Bản 4 – 30/10/2026: theo mockup web. Thêm `GET /users/me`, chốt response của `GET /jobs` và `GET /admin/overview` (mục 4).
 
 File này quy định tên tài nguyên, tên trường, trạng thái và cách các phần (API, dispatcher, worker, tính phí, web) trao đổi với nhau. Code khác với file này là code sai. Muốn đổi thì sửa file này trước (mục 14).
 
@@ -92,6 +93,7 @@ Mọi response có header CORS vì web chạy khác domain với API.
 |---|---|---|---|
 | POST | `/users` | Đăng ký, không cần khóa. Trả `userId`, `apiKey` (chỉ hiện một lần) | 5 |
 | POST | `/users/me/rotate-key` | Đổi khóa API | 5 |
+| GET | `/users/me` | Email, vai trò, số dư của mình | 13 |
 | POST | `/jobs` | Tạo job, trả link tải lên | 5 |
 | POST | `/jobs/{id}/start` | Bấm "Chạy" | 5 |
 | GET | `/jobs/{id}` | Trạng thái, tiến độ, link tải | 5 |
@@ -181,6 +183,75 @@ Request: `{"amount": 5000}`.
 
 - Một `TransactWriteItems`: `Users` (`creditAvailable -= amount`, `creditHeld += amount`, điều kiện `creditAvailable >= amount`) và `Jobs` (`costCap += amount`, điều kiện trạng thái là `QUEUED`, `RUNNING` hoặc `PAUSED`).
 - Nếu job đang `PAUSED`: `Jobs.status = QUEUED`, mọi task `PAUSED` chuyển sang `QUEUED` và được gửi lại message vào hàng đợi ghi trong `Tasks.queue`.
+
+### GET /users/me
+
+`GetItem` trên `Users` theo `userId` của authorizer. Không trả `apiKeyHash`.
+
+```json
+{
+  "userId": "…",
+  "email": "khue@example.com",
+  "role": "user",
+  "creditAvailable": 45000,
+  "creditHeld": 5000,
+  "runningJobs": 1,
+  "maxConcurrentJobs": 2,
+  "createdAt": 1760781600
+}
+```
+
+Web hiện "Credit khả dụng" là `creditAvailable`, "Đang giữ" là `creditHeld`. `Users` không có tên người dùng nên góc trên hiện `email`.
+
+### GET /jobs
+
+Query GSI `userId-createdAt-index`, mới nhất trước (`ScanIndexForward = false`). Chỉ đọc `Jobs`, không query `Tasks`, để trang danh sách nhẹ.
+
+- `?limit=`: mặc định 20, tối đa 50.
+- `?next=`: chuỗi `next` của trang trước (`LastEvaluatedKey` dạng JSON, mã hóa base64url). Không còn trang sau thì `next = null`.
+- `?status=`: không bắt buộc, lọc theo một trạng thái ở mục 7.1 (`FilterExpression`).
+
+```json
+{
+  "jobs": [
+    {"jobId": "…", "status": "RUNNING", "tier": "spot", "kind": "video",
+     "name": "bai-giang-01.mp4", "progress": {"total": 20, "succeeded": 12, "failed": 0},
+     "costCap": 5000, "chargedCredit": null, "createdAt": 1760781600}
+  ],
+  "next": "eyJ1c2VySWQiOi…"
+}
+```
+
+- `name` = `files[0]` của job. Job chưa có trường tên riêng; web hiện `name`, có nhiều file thì thêm "và N file khác" theo `progress.total`.
+- Tìm theo tên trên web lọc trong các job đã tải, không cần API riêng.
+- Ô "Đang chạy", "Hoàn thành" ở trang Job của tôi đếm trên danh sách này.
+
+### GET /admin/overview
+
+Chỉ `role = admin`, khác thì trả 403. Quyền: `ec2:DescribeInstances`, `sqs:GetQueueAttributes`, `ce:GetCostAndUsage`, đọc `Jobs`.
+
+```json
+{
+  "machines": [
+    {"tier": "ondemand", "instanceType": "c7i-flex.large", "az": "ap-southeast-1a", "count": 1},
+    {"tier": "spot", "instanceType": "c7i-flex.large", "az": "ap-southeast-1b", "count": 2}
+  ],
+  "queues": {
+    "ondemand": {"waiting": 2, "running": 1, "slots": 2},
+    "spot": {"waiting": 6, "running": 3, "slots": 6}
+  },
+  "daily": [
+    {"date": "2026-10-29", "revenue": 30000, "awsCost": 21500}
+  ],
+  "awsCostUpdatedAt": 1761696000
+}
+```
+
+- `machines`: `DescribeInstances` lọc tag `Project = spotpool`, trạng thái `running`, gộp theo tag `Tier`, loại máy, AZ.
+- `queues`: `waiting` = `ApproximateNumberOfMessages`, `running` = `ApproximateNumberOfMessagesNotVisible` của `sqs-<gói>` (đơn vị là task, không phải job). `slots` = 2 × số máy của gói. Suất đang dùng hiện theo gói (`running` / `slots`), không theo từng máy.
+- `daily`: 7 ngày gần nhất theo giờ Việt Nam, ngày cũ trước.
+  - `revenue`: tổng `chargedCredit` của các job có `settledAt` trong ngày (scan `Jobs`, đủ nhanh ở quy mô đồ án).
+  - `awsCost`: Cost Explorer, chi phí theo ngày lọc tag `Project = spotpool`, nhân 26.000 (mục 13), làm tròn. Cost Explorer tính phí mỗi lần gọi và chậm khoảng 1 ngày, nên lưu kết quả vào `cache/aws-cost.json` trong bucket output, quá 24 giờ mới gọi lại. `awsCostUpdatedAt` là lúc gọi gần nhất.
 
 ## 5. Manifest và message SQS
 
@@ -460,12 +531,13 @@ Code:
 ## 12. Khác so với báo cáo tiến độ (ghi vào báo cáo cuối kỳ)
 
 - Thêm bảng `Tasks` để theo dõi từng việc của một job.
-- Thêm endpoint: `POST /users`, `POST /users/me/rotate-key`, `POST /jobs/{id}/start`, `GET /jobs`, `POST /credits`, `GET /admin/overview`.
+- Thêm endpoint: `POST /users`, `POST /users/me/rotate-key`, `GET /users/me`, `POST /jobs/{id}/start`, `GET /jobs`, `POST /credits`, `GET /admin/overview`.
 - Số lần bị thu hồi lưu trong bảng `Tasks` chứ không nằm trong message SQS (Bảng 2.2, giao diện 9).
 - Thời gian chạy tối đa do worker tính từ ngân sách còn lại lúc bắt đầu chạy, không nằm trong message, vì nó thay đổi khi người dùng nạp thêm.
 - Thêm Lambda xử lý `sqs-dlq` và Lambda billing chạy theo DynamoDB Stream của `Jobs`.
 - Cổng web đặt sau CloudFront thay vì mở thẳng từ S3, vì static website hosting của S3 chỉ có HTTP.
 - Máy worker cài Docker và nạp worker agent bằng user data khi khởi động, thay cho Custom AMI.
+- Backlog-per-instance tính cả task đang chạy: (`ApproximateNumberOfMessagesVisible` + `ApproximateNumberOfMessagesNotVisible`) / `GroupInServiceInstances`, mục tiêu 2 (Bảng 2.2, giao diện 15 chỉ ghi số task chờ). Chỉ tính task chờ thì lúc hàng đợi vừa hết mà máy còn đang chạy, ASG thấy backlog bằng 0 và giảm máy quá sớm.
 
 ## 13. Chưa chốt
 
@@ -500,12 +572,12 @@ Việc của bản 1 đã xong hết; M1 chạy được trên AWS ngày 25/10. 
 - Xóa `services/api/db_schema.md` (schema cũ, khác mục 6).
 - Hạng mục 8: image `spotpool-video` trong `job-templates/video/` (FFmpeg, ra MP4, `params.height` mặc định 720).
 - Hạng mục 14: billing, nạp thêm theo quy tắc job `PAUSED` ở mục 8; trang hóa đơn.
-- Hạng mục 15: `GET /admin/overview` (quyền `ec2:DescribeInstances`, `sqs:GetQueueAttributes`, `ce:GetCostAndUsage`; chi phí AWS cập nhật mỗi ngày một lần, không gọi Cost Explorer mỗi lần tải trang) và trang quản trị.
+- Hạng mục 15: `GET /admin/overview` theo response ở mục 4 (quyền `ec2:DescribeInstances`, `sqs:GetQueueAttributes`, `ce:GetCostAndUsage`; chi phí AWS lưu ở `cache/aws-cost.json`, không gọi Cost Explorer mỗi lần tải trang) và một trang Tổng quan quản trị; các mục Máy xử lý, Hàng đợi, Doanh thu riêng để hướng mở rộng.
 
 **Khuê** (HM 12 phần lõi xong trước M2, chủ nhật 1/11)
 - `worker/agent.py` theo quy tắc job `PAUSED` ở mục 8: nhận message của job `PAUSED` thì chuyển task sang `PAUSED`; nhịp tim thấy job `PAUSED` thì kết thúc lần chạy là `PAUSED`; giao dịch kết thúc chấp nhận job `PAUSED`.
 - Hạng mục 12: xử lý thu hồi Spot.
-- Hạng mục 13: dựng app React trong `web/`, các trang người dùng (gọi REST API của Ngọc Anh).
+- Hạng mục 13: dựng app React trong `web/`, các trang người dùng (gọi REST API của Ngọc Anh). Lambda `GET /jobs`, `GET /users/me` (mục 4) trong `services/api/`, thêm resource vào `api.tf` theo mẫu các endpoint đã có.
 
 **Nghĩa**
 - Hạng mục 9: test worker chạy Python 3.13 trên máy thật (user data đã đổi).
