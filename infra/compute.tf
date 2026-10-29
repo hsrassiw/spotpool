@@ -37,7 +37,14 @@ data "aws_ssm_parameter" "al2023" {
 
 locals {
   # Mỗi gói một ASG, máy chỉ nhận việc từ hàng đợi của gói mình
-  worker_tiers = toset(["ondemand", "spot"])
+  worker_tiers       = toset(["ondemand", "spot"])
+  worker_asg_names   = { for tier in local.worker_tiers : tier => "${var.name_prefix}-worker-${tier}" }
+  worker_queue_names = { ondemand = aws_sqs_queue.ondemand.name, spot = aws_sqs_queue.spot.name }
+  scaling_tiers      = var.enable_worker ? local.worker_tiers : toset([])
+
+  # Giờ Việt Nam lúc tạo ASG, để tạo ngoài giờ thì không bật sẵn máy On-Demand
+  vn_hour           = tonumber(formatdate("h", timeadd(timestamp(), "7h")))
+  ondemand_in_hours = local.vn_hour >= var.ondemand_hours_start && local.vn_hour < var.ondemand_hours_end
 
   # Code worker nhét thẳng vào user data (đã nén), không cần nơi lưu riêng
   worker_user_data = { for tier in local.worker_tiers : tier => templatefile("${path.module}/templates/worker-user-data.sh", {
@@ -48,6 +55,7 @@ locals {
     video_image      = "${aws_ecr_repository.job["spotpool-video"].repository_url}:latest"
     script_image     = "${aws_ecr_repository.job["spotpool-script"].repository_url}:latest"
     worker_queue     = tier
+    worker_asg       = local.worker_asg_names[tier]
     agent_py         = base64gzip(file("${path.module}/../worker/agent.py"))
     contracts_py     = base64gzip(file("${path.module}/../spotpool_core/contracts.py"))
   }) }
@@ -82,14 +90,15 @@ resource "aws_launch_template" "worker" {
   }
 }
 
-# Gói Ổn định: On-Demand. Tạm cố định 1 máy, co giãn ở hạng mục 11.
+# Gói Ổn định: On-Demand, giữ sẵn 1 máy trong giờ hoạt động
 resource "aws_autoscaling_group" "ondemand" {
-  count               = var.enable_worker ? 1 : 0
-  name                = "${var.name_prefix}-worker-ondemand"
-  min_size            = 1
-  max_size            = 1
-  desired_capacity    = 1
-  vpc_zone_identifier = aws_subnet.public[*].id
+  count                   = var.enable_worker ? 1 : 0
+  name                    = local.worker_asg_names["ondemand"]
+  min_size                = local.ondemand_in_hours ? 1 : 0
+  max_size                = var.ondemand_max_size
+  vpc_zone_identifier     = aws_subnet.public[*].id
+  default_instance_warmup = 180
+  enabled_metrics         = ["GroupInServiceInstances", "GroupDesiredCapacity"]
 
   launch_template {
     id      = aws_launch_template.worker["ondemand"].id
@@ -103,16 +112,22 @@ resource "aws_autoscaling_group" "ondemand" {
       min_healthy_percentage = 0
     }
   }
+
+  # Sau khi tạo, min_size do lịch giờ hoạt động đặt
+  lifecycle {
+    ignore_changes = [min_size]
+  }
 }
 
-# Gói Tiết kiệm: toàn bộ là Spot, chọn loại máy và AZ ít bị thu hồi mà rẻ
+# Gói Tiết kiệm: toàn bộ là Spot, chọn loại máy và AZ ít bị thu hồi mà rẻ. Hết việc thì về 0 máy.
 resource "aws_autoscaling_group" "spot" {
-  count               = var.enable_worker ? 1 : 0
-  name                = "${var.name_prefix}-worker-spot"
-  min_size            = 1
-  max_size            = 1
-  desired_capacity    = 1
-  vpc_zone_identifier = aws_subnet.public[*].id
+  count                   = var.enable_worker ? 1 : 0
+  name                    = local.worker_asg_names["spot"]
+  min_size                = 0
+  max_size                = var.spot_max_size
+  vpc_zone_identifier     = aws_subnet.public[*].id
+  default_instance_warmup = 180
+  enabled_metrics         = ["GroupInServiceInstances", "GroupDesiredCapacity"]
 
   mixed_instances_policy {
     instances_distribution {
@@ -143,4 +158,159 @@ resource "aws_autoscaling_group" "spot" {
       min_healthy_percentage = 0
     }
   }
+}
+
+# ---------- Co giãn ----------
+
+# Backlog-per-instance: (task chờ + task đang chạy) / số máy. Mỗi máy 2 suất nên giữ quanh 2.
+# Task đang chạy vẫn nằm trong hàng đợi (worker gia hạn visibility), nên máy bận không bị tính là thừa.
+resource "aws_autoscaling_policy" "backlog" {
+  for_each               = local.scaling_tiers
+  name                   = "backlog-per-instance"
+  autoscaling_group_name = local.worker_asg_names[each.key]
+  policy_type            = "TargetTrackingScaling"
+
+  target_tracking_configuration {
+    target_value = 2
+
+    customized_metric_specification {
+      metrics {
+        id          = "visible"
+        return_data = false
+        metric_stat {
+          stat = "Average"
+          metric {
+            namespace   = "AWS/SQS"
+            metric_name = "ApproximateNumberOfMessagesVisible"
+            dimensions {
+              name  = "QueueName"
+              value = local.worker_queue_names[each.key]
+            }
+          }
+        }
+      }
+
+      metrics {
+        id          = "inflight"
+        return_data = false
+        metric_stat {
+          stat = "Average"
+          metric {
+            namespace   = "AWS/SQS"
+            metric_name = "ApproximateNumberOfMessagesNotVisible"
+            dimensions {
+              name  = "QueueName"
+              value = local.worker_queue_names[each.key]
+            }
+          }
+        }
+      }
+
+      metrics {
+        id          = "inservice"
+        return_data = false
+        metric_stat {
+          stat = "Average"
+          metric {
+            namespace   = "AWS/AutoScaling"
+            metric_name = "GroupInServiceInstances"
+            dimensions {
+              name  = "AutoScalingGroupName"
+              value = local.worker_asg_names[each.key]
+            }
+          }
+        }
+      }
+
+      # 0 máy thì phép chia không ra số, việc bật máy đầu tiên do alarm bên dưới lo
+      metrics {
+        id          = "backlog"
+        expression  = "(visible + inflight) / inservice"
+        label       = "Backlog per instance"
+        return_data = true
+      }
+    }
+  }
+
+  depends_on = [aws_autoscaling_group.ondemand, aws_autoscaling_group.spot]
+}
+
+# Bật máy đầu tiên khi nhóm đang 0 máy mà hàng đợi có việc
+resource "aws_autoscaling_policy" "from_zero" {
+  for_each               = local.scaling_tiers
+  name                   = "start-from-zero"
+  autoscaling_group_name = local.worker_asg_names[each.key]
+  policy_type            = "SimpleScaling"
+  adjustment_type        = "ExactCapacity"
+  scaling_adjustment     = 1
+  cooldown               = 180
+
+  depends_on = [aws_autoscaling_group.ondemand, aws_autoscaling_group.spot]
+}
+
+resource "aws_cloudwatch_metric_alarm" "from_zero" {
+  for_each            = local.scaling_tiers
+  alarm_name          = "${local.worker_asg_names[each.key]}-from-zero"
+  alarm_description   = "Hang doi co viec ma nhom dang 0 may"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  threshold           = 1
+  # Chỉ số SQS lên CloudWatch trễ 2–3 phút, xét 1 phút gần nhất thì luôn thiếu dữ liệu
+  evaluation_periods  = 3
+  datapoints_to_alarm = 1
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_autoscaling_policy.from_zero[each.key].arn]
+
+  metric_query {
+    id = "visible"
+    metric {
+      namespace   = "AWS/SQS"
+      metric_name = "ApproximateNumberOfMessagesVisible"
+      dimensions  = { QueueName = local.worker_queue_names[each.key] }
+      period      = 60
+      stat        = "Maximum"
+    }
+  }
+
+  metric_query {
+    id = "desired"
+    metric {
+      namespace   = "AWS/AutoScaling"
+      metric_name = "GroupDesiredCapacity"
+      dimensions  = { AutoScalingGroupName = local.worker_asg_names[each.key] }
+      period      = 60
+      stat        = "Maximum"
+    }
+  }
+
+  # Chỉ khi đang 0 máy, để không kéo nhóm đang có nhiều máy về 1
+  metric_query {
+    id          = "start"
+    expression  = "IF(desired == 0 AND visible > 0, 1, 0)"
+    label       = "Start from zero"
+    return_data = true
+  }
+}
+
+# Giờ hoạt động gói Ổn định: trong giờ giữ ít nhất 1 máy chờ sẵn, ngoài giờ cho về 0.
+# Chỉ đổi min_size (-1 là giữ nguyên): đóng giờ không tắt máy ngay, co giãn theo backlog giảm dần khi hết việc.
+resource "aws_autoscaling_schedule" "ondemand_open" {
+  count                  = var.enable_worker ? 1 : 0
+  scheduled_action_name  = "open"
+  autoscaling_group_name = aws_autoscaling_group.ondemand[0].name
+  recurrence             = "0 ${var.ondemand_hours_start} * * *"
+  time_zone              = "Asia/Ho_Chi_Minh"
+  min_size               = 1
+  max_size               = -1
+  desired_capacity       = -1
+}
+
+resource "aws_autoscaling_schedule" "ondemand_close" {
+  count                  = var.enable_worker ? 1 : 0
+  scheduled_action_name  = "close"
+  autoscaling_group_name = aws_autoscaling_group.ondemand[0].name
+  recurrence             = "0 ${var.ondemand_hours_end} * * *"
+  time_zone              = "Asia/Ho_Chi_Minh"
+  min_size               = 0
+  max_size               = -1
+  desired_capacity       = -1
 }

@@ -39,4 +39,11 @@ terraform apply -var enable_worker=true    # bật 2 ASG
 terraform apply -var enable_worker=false   # tắt sau khi test cho đỡ tốn tiền
 ```
 
+Co giãn (hạng mục 11):
+
+- Mỗi ASG giữ (task chờ + task đang chạy) / số máy quanh 2, tức mỗi máy 2 suất. Tối đa 4 máy mỗi gói (`ondemand_max_size`, `spot_max_size`).
+- Đang 0 máy mà hàng đợi có việc thì alarm `spotpool-worker-<gói>-from-zero` bật máy đầu tiên.
+- Gói Tiết kiệm hết việc thì về 0 máy. Gói Ổn định giữ sẵn 1 máy từ 8h đến 23h giờ Việt Nam, ngoài giờ cũng về 0. Đổi giờ hôm demo: `terraform apply -var enable_worker=true -var ondemand_hours_end=23 -var ondemand_hours_start=6`.
+- Hết việc thì giảm máy sau khoảng 15 phút (target tracking chờ đủ 15 điểm dữ liệu mới giảm).
+
 `terraform destroy` trong `infra/` để dọn khi không dùng.
