@@ -48,6 +48,12 @@ variable "spot_max_size" {
   default = 4
 }
 
+variable "web_dev_origins" {
+  description = "Địa chỉ chạy web trên máy khi dev, được phép tải file lên và đọc log như địa chỉ CloudFront."
+  type        = list(string)
+  default     = ["http://localhost:5173"]
+}
+
 variable "ondemand_hours_start" {
   description = "Giờ bắt đầu giữ sẵn 1 máy On-Demand (giờ Việt Nam, 0–23)."
   type        = number
