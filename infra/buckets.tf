@@ -7,10 +7,11 @@ resource "aws_s3_bucket" "input_bucket" {
 resource "aws_s3_bucket_cors_configuration" "input_cors" {
   bucket = aws_s3_bucket.input_bucket.id
 
+  # Web tải file lên bằng link PUT
   cors_rule {
     allowed_headers = ["*"]
-    allowed_methods = ["GET", "PUT", "POST", "DELETE"]
-    allowed_origins = ["*"]
+    allowed_methods = ["PUT"]
+    allowed_origins = local.web_origins
     expose_headers  = ["ETag"]
   }
 }
@@ -36,11 +37,11 @@ resource "aws_s3_bucket" "output_bucket" {
 resource "aws_s3_bucket_cors_configuration" "output_cors" {
   bucket = aws_s3_bucket.output_bucket.id
 
+  # Web đọc log ngay trên trang bằng link GET
   cors_rule {
     allowed_headers = ["*"]
-    allowed_methods = ["GET", "PUT", "POST"]
-    allowed_origins = ["*"]
-    expose_headers  = ["ETag"]
+    allowed_methods = ["GET"]
+    allowed_origins = local.web_origins
   }
 }
 
