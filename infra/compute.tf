@@ -57,6 +57,7 @@ locals {
     worker_queue     = tier
     worker_asg       = local.worker_asg_names[tier]
     agent_py         = base64gzip(file("${path.module}/../worker/agent.py"))
+    spot_py          = base64gzip(file("${path.module}/../worker/spot.py"))
     contracts_py     = base64gzip(file("${path.module}/../spotpool_core/contracts.py"))
   }) }
 }

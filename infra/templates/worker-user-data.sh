@@ -12,6 +12,7 @@ echo '{"credHelpers": {"${registry}": "ecr-login"}}' > /root/.docker/config.json
 
 mkdir -p /opt/spotpool/worker /opt/spotpool/spotpool_core
 echo '${agent_py}' | base64 -d | gunzip > /opt/spotpool/worker/agent.py
+echo '${spot_py}' | base64 -d | gunzip > /opt/spotpool/worker/spot.py
 echo '${contracts_py}' | base64 -d | gunzip > /opt/spotpool/spotpool_core/contracts.py
 touch /opt/spotpool/spotpool_core/__init__.py
 
