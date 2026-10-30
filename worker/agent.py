@@ -16,8 +16,9 @@ from spotpool_core.contracts import (
     JOB_CANCELLED, JOB_FAILED, JOB_PAUSED, JOB_QUEUED, JOB_RUNNING,
     JOB_SUCCEEDED, TASK_CANCELLED, TASK_FAILED, TASK_FINAL, TASK_PAUSED,
     TASK_QUEUED, TASK_RUNNING, TASK_SUCCEEDED, IMAGES, fingerprint,
-    validate_message,
+    OUTCOME_INTERRUPTED, validate_message,
 )
+from worker.spot import SpotInterrupted, SpotMonitor
 
 LOG_LIMIT = 10 * 1024 * 1024
 VISIBILITY_SECONDS = 120
@@ -63,10 +64,28 @@ class Worker:
         self.owner_prefix = f'{os.environ.get("HOSTNAME", "worker")}-{uuid.uuid4()}'
         self._capacity = threading.Condition()
         self._used_slots = 0
+        self._draining = threading.Event()
+        self.spot_monitor = None
+
+    def request_interruption(self, notice):
+        with self._capacity:
+            self._draining.set()
+            self._capacity.notify_all()
+        logger.warning("Spot interruption: action=%s time=%s; stop accepting tasks",
+                       notice["action"], notice["time"])
+
+    def _check_interruption(self, transferred_bytes=None):
+        if self._draining.is_set():
+            raise SpotInterrupted("EC2 Spot interruption notice received")
+
+    def _make_visible(self, received):
+        self.sqs.change_message_visibility(
+            QueueUrl=self.queue_url, ReceiptHandle=received["ReceiptHandle"], VisibilityTimeout=0,
+        )
 
     def _reserve(self, vcpu):
         with self._capacity:
-            if self._used_slots + vcpu > 2:
+            if self._draining.is_set() or self._used_slots + vcpu > 2:
                 return False
             self._used_slots += vcpu
             return True
@@ -77,15 +96,31 @@ class Worker:
             self._capacity.notify_all()
 
     def run(self):
+        if self.queue == "spot":
+            self.spot_monitor = self.spot_monitor or SpotMonitor(self.request_interruption)
+            self.spot_monitor.start()
+        try:
+            self._poll_tasks()
+        finally:
+            if self.spot_monitor is not None:
+                self.spot_monitor.stop()
+
+    def _poll_tasks(self):
         with ThreadPoolExecutor(max_workers=2) as pool:
-            while True:
+            while not self._draining.is_set():
                 with self._capacity:
-                    while self._used_slots >= 2:
+                    while self._used_slots >= 2 and not self._draining.is_set():
                         self._capacity.wait()
+                    if self._draining.is_set():
+                        break
                 response = self.sqs.receive_message(
                     QueueUrl=self.queue_url, MaxNumberOfMessages=1,
                     WaitTimeSeconds=20, VisibilityTimeout=VISIBILITY_SECONDS,
                 )
+                if self._draining.is_set():
+                    for received in response.get("Messages", []):
+                        self._make_visible(received)
+                    break
                 for received in response.get("Messages", []):
                     try:
                         message = json.loads(received["Body"])
@@ -95,10 +130,7 @@ class Worker:
                         continue
                     vcpu = message["vcpu"]
                     if not self._reserve(vcpu):
-                        self.sqs.change_message_visibility(
-                            QueueUrl=self.queue_url, ReceiptHandle=received["ReceiptHandle"],
-                            VisibilityTimeout=0,
-                        )
+                        self._make_visible(received)
                         time.sleep(1)
                         continue
                     pool.submit(self._process_reserved, received, message, vcpu)
@@ -130,6 +162,9 @@ class Worker:
         ).get("Item")
 
     def process(self, received, message):
+        if self._draining.is_set():
+            self._make_visible(received)
+            return
         task, job = self._task(message), self._job(message)
         if not task or not job:
             return  # API hoặc dispatcher có thể chưa ghi xong; SQS sẽ thử lại.
@@ -295,6 +330,7 @@ class Worker:
         )
         if job.get("status") == JOB_PAUSED:
             raise JobPaused("Job paused because its cost cap was reached")
+        self._check_interruption()
         return True
 
     def _execute(self, received, message, job, owner, attempt, allowance):
@@ -312,18 +348,24 @@ class Worker:
             logfile.touch()
             proc, reader, start_monotonic = None, None, None
             try:
+                self._check_interruption()
                 with ThreadPoolExecutor(max_workers=1) as downloader:
                     download = downloader.submit(
                         self.s3.download_file, message["input"]["bucket"],
-                        message["input"]["key"], str(source),
+                        message["input"]["key"], str(source), Callback=self._check_interruption,
                     )
+                    next_heartbeat = time.monotonic() + HEARTBEAT_SECONDS
                     while True:
                         try:
-                            download.result(timeout=HEARTBEAT_SECONDS)
+                            download.result(timeout=min(1, HEARTBEAT_SECONDS))
                             break
                         except FutureTimeout:
-                            if not self._heartbeat(message, received, owner):
-                                raise LeaseLost
+                            self._check_interruption()
+                            if time.monotonic() >= next_heartbeat:
+                                if not self._heartbeat(message, received, owner):
+                                    raise LeaseLost
+                                next_heartbeat = time.monotonic() + HEARTBEAT_SECONDS
+                self._check_interruption()
                 if not self._heartbeat(message, received, owner):
                     raise LeaseLost
                 source.chmod(0o644)
@@ -345,7 +387,9 @@ class Worker:
                 if task_limit <= 0:
                     raise ValueError("TASK_MAX_SECONDS must be positive")
                 deadline = start_monotonic + min(task_limit, allowance)
+                next_heartbeat = start_monotonic + HEARTBEAT_SECONDS
                 while proc.poll() is None:
+                    self._check_interruption()
                     if time.monotonic() >= deadline:
                         if allowance <= task_limit:
                             status = TASK_PAUSED
@@ -354,10 +398,15 @@ class Worker:
                             error = "Task time limit reached"
                         break
                     try:
-                        proc.wait(timeout=min(HEARTBEAT_SECONDS, max(0.1, deadline - time.monotonic())))
+                        proc.wait(timeout=min(1, max(0.1, deadline - time.monotonic())))
                     except subprocess.TimeoutExpired:
+                        pass
+                    if time.monotonic() >= next_heartbeat:
                         if not self._heartbeat(message, received, owner):
                             raise LeaseLost
+                        next_heartbeat = time.monotonic() + HEARTBEAT_SECONDS
+            except SpotInterrupted as exc:
+                status, error = OUTCOME_INTERRUPTED, str(exc)
             except JobPaused as exc:
                 status, error = TASK_PAUSED, str(exc)
             except LeaseLost:
@@ -384,11 +433,16 @@ class Worker:
                         proc.stdout.close()
                 if start_monotonic is not None:
                     elapsed = max(0, math.ceil(time.monotonic() - start_monotonic))
-            if status == TASK_PAUSED:
+            if status in (TASK_PAUSED, OUTCOME_INTERRUPTED):
                 pass
             elif not error and proc is not None and proc.returncode == 0 and (outdir / "result").is_file():
-                self.s3.upload_file(str(outdir / "result"), output_bucket, result_key)
-                status = TASK_SUCCEEDED
+                try:
+                    self._check_interruption()
+                    self.s3.upload_file(str(outdir / "result"), output_bucket, result_key,
+                                        Callback=self._check_interruption)
+                    status = TASK_SUCCEEDED
+                except SpotInterrupted as exc:
+                    status, error = OUTCOME_INTERRUPTED, str(exc)
             else:
                 error = error or f"Container exit code {proc.returncode if proc else 'unknown'}; result file missing or invalid"
             if error and logfile.stat().st_size == 0:
@@ -399,6 +453,28 @@ class Worker:
 
     def _finish(self, message, received, owner, attempt, started_at, elapsed, status,
                 result_key, log_key, error):
+        interrupted = status == OUTCOME_INTERRUPTED
+        target_status = TASK_QUEUED if interrupted else status
+        interrupt_count, target_queue = None, None
+        if interrupted:
+            current = self._task(message)
+            if (not current or current.get("owner") != owner
+                    or int(current.get("attempt", 0)) != attempt):
+                raise LeaseLost("Cannot record interruption after losing task ownership")
+            if current.get("status") == TASK_QUEUED and int(current.get("interruptCount", 0)) > 0:
+                # Giao dịch đã ghi, nhưng lần trước có thể chưa gửi/xóa SQS xong.
+                usage = self.db.Table(self.config["USAGE_TABLE"]).get_item(
+                    Key={"userId": message["userId"],
+                         "usageId": f'{message["jobId"]}#{message["taskId"]}#{attempt}'},
+                    ConsistentRead=True,
+                ).get("Item")
+                if usage and usage.get("outcome") == OUTCOME_INTERRUPTED:
+                    self._return_interrupted(received, current["queue"])
+                    return
+            if current.get("status") != TASK_RUNNING:
+                raise LeaseLost("Task is no longer running")
+            interrupt_count = int(current.get("interruptCount", 0)) + 1
+            target_queue = "ondemand" if interrupt_count > 2 else "spot"
         finished_at = int(time.time())
         vcpu_seconds = message["vcpu"] * elapsed
         usage = {
@@ -415,19 +491,24 @@ class Worker:
                            ("az", "SPOTPOOL_AZ"), ("instanceId", "SPOTPOOL_INSTANCE_ID")):
             if os.environ.get(env):
                 usage[field] = os.environ[env]
-        task_values = {":status": status, ":running": TASK_RUNNING,
+        task_values = {":status": target_status, ":running": TASK_RUNNING,
                        ":owner": owner, ":now": finished_at,
                        ":log": log_key, ":error": error}
         task_update = "SET #s=:status, finishedAt=:now, logKey=:log, #error=:error"
+        task_names = {"#s": "status", "#owner": "owner", "#error": "error"}
+        if interrupted:
+            task_update += ", interruptCount=:interrupts, #queue=:queue"
+            task_values.update({":interrupts": interrupt_count, ":queue": target_queue})
+            task_names["#queue"] = "queue"
         if result_key:
             task_values[":result"] = result_key
             task_update += ", resultKey=:result"
-        job_values = {":used": vcpu_seconds, ":paused": JOB_PAUSED,
+        job_values = {":used": 0 if interrupted else vcpu_seconds, ":paused": JOB_PAUSED,
                       ":running": JOB_RUNNING, ":queued": JOB_QUEUED}
         job_update = "ADD usedVcpuSeconds :used"
         if status == TASK_PAUSED:
             job_update = "SET #s=:paused ADD usedVcpuSeconds :used"
-        else:
+        elif not interrupted:
             job_values[":one"] = 1
             job_update += ", tasksRemaining :minusOne, "
             job_update += "tasksSucceeded :one" if status == TASK_SUCCEEDED else "tasksFailed :one"
@@ -441,7 +522,7 @@ class Worker:
                                 "Key": {"jobId": message["jobId"], "taskId": message["taskId"]},
                                 "UpdateExpression": task_update,
                                 "ConditionExpression": "#owner=:owner AND #s=:running",
-                                "ExpressionAttributeNames": {"#s": "status", "#owner": "owner", "#error": "error"},
+                                "ExpressionAttributeNames": task_names,
                                 "ExpressionAttributeValues": task_values}},
                     {"Update": {"TableName": self.config["JOBS_TABLE"],
                                 "Key": {"jobId": message["jobId"]},
@@ -455,11 +536,24 @@ class Worker:
             )
         except Exception:
             latest = self._task(message)
-            if not latest or latest.get("owner") != owner or latest.get("status") != status:
+            if (not latest or latest.get("owner") != owner or latest.get("status") != target_status
+                    or interrupted and (latest.get("interruptCount") != interrupt_count
+                                        or latest.get("queue") != target_queue)):
                 raise
+        if interrupted:
+            self._return_interrupted(received, target_queue)
+            return
         if status != TASK_PAUSED:
             self._finish_job(message)
         self._delete(received)
+
+    def _return_interrupted(self, received, target_queue):
+        if target_queue == "ondemand":
+            # Gửi nguyên văn để tier/fingerprint vẫn là gói Spot đã mua.
+            self.sqs.send_message(QueueUrl=self.config["SQS_ONDEMAND_URL"], MessageBody=received["Body"])
+            self._delete(received)
+        else:
+            self._make_visible(received)
 
     def _finish_job(self, message):
         jobs = self.db.Table(self.config["JOBS_TABLE"])
@@ -483,6 +577,7 @@ class Worker:
 
 def main():
     import boto3
+    from botocore.config import Config
 
     logging.basicConfig(
         level=logging.INFO,
@@ -495,9 +590,12 @@ def main():
     if queue not in ("ondemand", "spot"):
         raise ValueError("SPOTPOOL_QUEUE must be ondemand or spot")
     region = config["AWS_DEFAULT_REGION"]
-    Worker(dynamodb=boto3.resource("dynamodb", region_name=region),
-           s3=boto3.client("s3", region_name=region),
-           sqs=boto3.client("sqs", region_name=region), config=config, queue=queue).run()
+    aws_config = Config(connect_timeout=3, read_timeout=5,
+                        retries={"mode": "standard", "total_max_attempts": 2})
+    Worker(dynamodb=boto3.resource("dynamodb", region_name=region, config=aws_config),
+           s3=boto3.client("s3", region_name=region, config=aws_config),
+           sqs=boto3.client("sqs", region_name=region, config=aws_config.merge(Config(read_timeout=30))),
+           config=config, queue=queue).run()
 
 
 if __name__ == "__main__":
