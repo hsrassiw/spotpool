@@ -29,6 +29,10 @@ class LeaseLost(Exception):
     pass
 
 
+class JobPaused(Exception):
+    pass
+
+
 def remaining_seconds(job, vcpu):
     price = int(job["unitPrice"])
     if price <= 0:
@@ -143,13 +147,17 @@ class Worker:
             self._set_task_state(message, TASK_CANCELLED)
             self._delete(received)
             return
-        if job.get("status") in (JOB_PAUSED, JOB_SUCCEEDED, JOB_FAILED):
+        if job.get("status") == JOB_PAUSED:
+            if self._pause(message, job):
+                self._delete(received)
+            return
+        if job.get("status") in (JOB_SUCCEEDED, JOB_FAILED):
             self._delete(received)
             return
         allowance = remaining_seconds(job, message["vcpu"])
         if allowance == 0:
-            self._pause(message)
-            self._delete(received)
+            if self._pause(message, job):
+                self._delete(received)
             return
         owner = f"{self.owner_prefix}-{uuid.uuid4()}"
         now = int(time.time())
@@ -184,7 +192,11 @@ class Worker:
             if "ConditionalCheckFailedException" not in str(error):
                 raise
             current = self._job(message)
-            if current and current.get("status") in (JOB_CANCELLED, JOB_PAUSED, JOB_SUCCEEDED, JOB_FAILED):
+            if current and current.get("status") == JOB_PAUSED:
+                if self._pause(message, current, owner=owner):
+                    self._delete(received)
+                return
+            if current and current.get("status") in (JOB_CANCELLED, JOB_SUCCEEDED, JOB_FAILED):
                 target = TASK_CANCELLED if current["status"] == JOB_CANCELLED else TASK_PAUSED
                 try:
                     tasks.update_item(
@@ -215,26 +227,54 @@ class Worker:
             if "ConditionalCheckFailedException" not in str(error):
                 raise
 
-    def _pause(self, message):
-        jobs = self.db.Table(self.config["JOBS_TABLE"])
+    def _pause(self, message, job, owner=None):
+        job_values = {":paused": JOB_PAUSED}
+        job_condition = "#s=:paused"
+        if job["status"] != JOB_PAUSED:
+            # Không tạm dừng từ ngân sách cũ nếu API vừa nạp thêm.
+            job_condition = "#s IN (:queued,:running) AND costCap=:cap AND usedVcpuSeconds=:used"
+            job_values.update({":queued": JOB_QUEUED, ":running": JOB_RUNNING,
+                               ":cap": job["costCap"], ":used": job["usedVcpuSeconds"]})
+        task_names = {"#s": "status"}
+        task_values = {":paused": TASK_PAUSED, ":running": TASK_RUNNING,
+                       ":fp": fingerprint(message)}
+        if owner is None:
+            task_condition = "fingerprint=:fp AND (#s=:queued OR (#s=:running AND leaseUntil<:now))"
+            task_values.update({":queued": TASK_QUEUED, ":now": int(time.time())})
+        else:
+            task_condition = "fingerprint=:fp AND #s=:running AND #owner=:owner"
+            task_names["#owner"] = "owner"
+            task_values[":owner"] = owner
         try:
-            jobs.update_item(
-                Key={"jobId": message["jobId"]},
-                UpdateExpression="SET #s=:paused",
-                ConditionExpression="#s IN (:queued,:running)",
-                ExpressionAttributeNames={"#s": "status"},
-                ExpressionAttributeValues={":paused": JOB_PAUSED, ":queued": JOB_QUEUED,
-                                           ":running": JOB_RUNNING},
-            )
+            self.db.meta.client.transact_write_items(TransactItems=[
+                {"Update": {
+                    "TableName": self.config["JOBS_TABLE"],
+                    "Key": {"jobId": message["jobId"]},
+                    "UpdateExpression": "SET #s=:paused",
+                    "ConditionExpression": job_condition,
+                    "ExpressionAttributeNames": {"#s": "status"},
+                    "ExpressionAttributeValues": job_values,
+                }},
+                {"Update": {
+                    "TableName": self.config["TASKS_TABLE"],
+                    "Key": {"jobId": message["jobId"], "taskId": message["taskId"]},
+                    "UpdateExpression": "SET #s=:paused",
+                    "ConditionExpression": task_condition,
+                    "ExpressionAttributeNames": task_names,
+                    "ExpressionAttributeValues": task_values,
+                }},
+            ])
         except Exception as error:
-            if "ConditionalCheckFailedException" not in str(error):
-                raise
-        self._set_task_state(message, TASK_PAUSED)
+            if "TransactionCanceledException" in str(error):
+                # Job/task đã đổi hoặc giao dịch chưa ghi được: giữ message để retry.
+                return False
+            raise
+        return True
 
     def _heartbeat(self, message, received, owner):
         now = int(time.time())
         job = self._job(message)
-        if not job or job.get("status") in (JOB_CANCELLED, JOB_PAUSED):
+        if not job or job.get("status") in (JOB_CANCELLED, JOB_SUCCEEDED, JOB_FAILED):
             return False
         try:
             self.db.Table(self.config["TASKS_TABLE"]).update_item(
@@ -253,6 +293,8 @@ class Worker:
             QueueUrl=self.queue_url, ReceiptHandle=received["ReceiptHandle"],
             VisibilityTimeout=VISIBILITY_SECONDS,
         )
+        if job.get("status") == JOB_PAUSED:
+            raise JobPaused("Job paused because its cost cap was reached")
         return True
 
     def _execute(self, received, message, job, owner, attempt, allowance):
@@ -267,6 +309,8 @@ class Worker:
             source, outdir, logfile = root / "payload", root / "output", root / "log.txt"
             outdir.mkdir(mode=0o777)
             outdir.chmod(0o777)
+            logfile.touch()
+            proc, reader, start_monotonic = None, None, None
             try:
                 with ThreadPoolExecutor(max_workers=1) as downloader:
                     download = downloader.submit(
@@ -280,6 +324,8 @@ class Worker:
                         except FutureTimeout:
                             if not self._heartbeat(message, received, owner):
                                 raise LeaseLost
+                if not self._heartbeat(message, received, owner):
+                    raise LeaseLost
                 source.chmod(0o644)
                 image_uri = self.config["VIDEO_JOB_IMAGE"] if message["image"] == IMAGES["video"] else self.config["SCRIPT_JOB_IMAGE"]
                 name = f"spotpool-{uuid.uuid4().hex}"
@@ -299,43 +345,54 @@ class Worker:
                 if task_limit <= 0:
                     raise ValueError("TASK_MAX_SECONDS must be positive")
                 deadline = start_monotonic + min(task_limit, allowance)
-                lost_lease = False
-                try:
-                    while proc.poll() is None:
-                        if time.monotonic() >= deadline:
-                            if allowance <= task_limit:
-                                status = TASK_PAUSED
-                                error = "Cost cap reached"
-                            else:
-                                error = "Task time limit reached"
-                            break
-                        try:
-                            proc.wait(timeout=min(HEARTBEAT_SECONDS, max(0.1, deadline - time.monotonic())))
-                        except subprocess.TimeoutExpired:
-                            if not self._heartbeat(message, received, owner):
-                                lost_lease = True
-                                break
-                    if proc.poll() is None:
-                        subprocess.run(["docker", "rm", "-f", name], capture_output=True, timeout=15, check=False)
-                        proc.wait(timeout=15)
-                finally:
-                    reader.join(timeout=15)
-                if lost_lease:
-                    return
-                elapsed = max(0, math.ceil(time.monotonic() - start_monotonic))
-                if status == TASK_PAUSED:
-                    pass
-                elif proc.returncode == 0 and (outdir / "result").is_file():
-                    self.s3.upload_file(str(outdir / "result"), output_bucket, result_key)
-                    status = TASK_SUCCEEDED
-                else:
-                    error = error or f"Container exit code {proc.returncode}; result file missing or invalid"
+                while proc.poll() is None:
+                    if time.monotonic() >= deadline:
+                        if allowance <= task_limit:
+                            status = TASK_PAUSED
+                            error = "Cost cap reached"
+                        else:
+                            error = "Task time limit reached"
+                        break
+                    try:
+                        proc.wait(timeout=min(HEARTBEAT_SECONDS, max(0.1, deadline - time.monotonic())))
+                    except subprocess.TimeoutExpired:
+                        if not self._heartbeat(message, received, owner):
+                            raise LeaseLost
+            except JobPaused as exc:
+                status, error = TASK_PAUSED, str(exc)
             except LeaseLost:
                 return
             except Exception as exc:
                 error = str(exc)[:1000]
-                if not logfile.exists():
-                    logfile.write_text(error, encoding="utf-8")
+            finally:
+                try:
+                    if proc is not None and proc.poll() is None:
+                        try:
+                            subprocess.run(["docker", "rm", "-f", name], capture_output=True,
+                                           timeout=15, check=True)
+                        except subprocess.CalledProcessError:
+                            # Container --rm có thể vừa tự kết thúc giữa poll() và rm.
+                            if proc.poll() is None:
+                                raise
+                        proc.wait(timeout=15)
+                finally:
+                    if reader is not None:
+                        reader.join(timeout=15)
+                        if reader.is_alive():
+                            raise RuntimeError("Container log reader did not stop")
+                    if proc is not None and proc.stdout is not None:
+                        proc.stdout.close()
+                if start_monotonic is not None:
+                    elapsed = max(0, math.ceil(time.monotonic() - start_monotonic))
+            if status == TASK_PAUSED:
+                pass
+            elif not error and proc is not None and proc.returncode == 0 and (outdir / "result").is_file():
+                self.s3.upload_file(str(outdir / "result"), output_bucket, result_key)
+                status = TASK_SUCCEEDED
+            else:
+                error = error or f"Container exit code {proc.returncode if proc else 'unknown'}; result file missing or invalid"
+            if error and logfile.stat().st_size == 0:
+                logfile.write_text(error, encoding="utf-8")
             self.s3.upload_file(str(logfile), output_bucket, log_key)
         self._finish(message, received, owner, attempt, start, elapsed, status,
                      result_key if status == TASK_SUCCEEDED else None, log_key, error[:1000])
@@ -365,12 +422,11 @@ class Worker:
         if result_key:
             task_values[":result"] = result_key
             task_update += ", resultKey=:result"
-        job_values = {":used": vcpu_seconds,
+        job_values = {":used": vcpu_seconds, ":paused": JOB_PAUSED,
                       ":running": JOB_RUNNING, ":queued": JOB_QUEUED}
         job_update = "ADD usedVcpuSeconds :used"
         if status == TASK_PAUSED:
             job_update = "SET #s=:paused ADD usedVcpuSeconds :used"
-            job_values[":paused"] = JOB_PAUSED
         else:
             job_values[":one"] = 1
             job_update += ", tasksRemaining :minusOne, "
@@ -390,7 +446,7 @@ class Worker:
                     {"Update": {"TableName": self.config["JOBS_TABLE"],
                                 "Key": {"jobId": message["jobId"]},
                                 "UpdateExpression": job_update,
-                                "ConditionExpression": "#s IN (:queued,:running) AND tasksRemaining > :zero",
+                                "ConditionExpression": "#s IN (:queued,:running,:paused) AND tasksRemaining > :zero",
                                 "ExpressionAttributeNames": {"#s": "status"},
                                 "ExpressionAttributeValues": {**job_values, ":zero": 0}}},
                     {"Put": {"TableName": self.config["USAGE_TABLE"], "Item": usage,
