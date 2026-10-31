@@ -36,6 +36,7 @@ def lambda_handler(event, context):
         if not isinstance(params, dict):
             return {'statusCode': 400, 'body': json.dumps({'error': 'params must be an object'})}
         if kind == 'video':
+            # Bộ lọc scale của FFmpeg cần chiều cao chẵn; kiểm tra sớm để từ chối cấu hình không hợp lệ.
             height = params.get('height', 720)
             if type(height) is not int or not 2 <= height <= 4320 or height % 2:
                 return {

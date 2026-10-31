@@ -291,6 +291,7 @@ class Worker:
                     video_height = message["params"].get("height", 720)
                     if type(video_height) is not int or not 2 <= video_height <= 4320 or video_height % 2:
                         raise ValueError("Video height must be an even integer between 2 and 4320")
+                # Chỉ truyền chiều cao vào container video; container chạy script vẫn giữ nguyên tham số.
                 command = docker_command(
                     image_uri, message["vcpu"], source, outdir, name, video_height,
                 )

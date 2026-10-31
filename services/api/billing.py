@@ -22,6 +22,7 @@ def _usage_for_job(table, user_id, job_id):
 
     usage = []
     query = table.query
+    # usageId bắt đầu bằng jobId nên chỉ truy vấn các lần chạy của job này, không quét cả bảng.
     response = query(
         KeyConditionExpression=Key("userId").eq(user_id)
         & Key("usageId").begins_with(f"{job_id}#"),
@@ -52,6 +53,7 @@ def _charge_for_job(job, usage, free_failed):
         and not (free_failed and item.get("outcome") == "FAILED")
     )
     measured_charge = (billable_seconds * unit_price + 3599) // 3600
+    # Credit là số nguyên; phí không vượt trần, phần vượt do các task chạy song song sẽ do nền tảng chịu.
     return min(cost_cap, measured_charge)
 
 
@@ -75,6 +77,7 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
         errors_today = int(user.get("errorsToday", 0))
         if errors_day == today:
             if "errorsToday" in user:
+                # So khớp số lượt đã đọc để hai job quyết toán cùng lúc không dùng trùng lượt miễn phí.
                 values.update({
                     ":today": {"S": today},
                     ":previous": {"N": str(errors_today)},
@@ -154,6 +157,7 @@ def settle_job(job_id, dynamodb, table_names, *, today=None, settled_at=None):
         has_failed_work = job.get("status") in {"FAILED", "CANCELLED"}
         quota = int(user.get("freeErrorQuotaPerDay", 0))
         errors_today = int(user.get("errorsToday", 0)) if user.get("errorsDay") == date else 0
+        # Chỉ miễn phí phần chạy lỗi; thời gian chạy thành công hoặc tạm dừng vẫn được tính.
         free_failed = has_failed_work and errors_today < quota
         charge = _charge_for_job(job, usage, free_failed)
         transaction = _transaction(
@@ -162,6 +166,7 @@ def settle_job(job_id, dynamodb, table_names, *, today=None, settled_at=None):
         )
 
         try:
+            # Cập nhật số dư, giảm số job đang chạy và đánh dấu đã quyết toán trong cùng giao dịch.
             dynamodb.meta.client.transact_write_items(TransactItems=transaction)
             return True
         except ClientError as error:

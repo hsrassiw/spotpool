@@ -36,6 +36,7 @@ def lambda_handler(event, context):
             'creditHeld': Decimal('0'),
             'role': 'user',
             'runningJobs': Decimal('0'),
+            # Mức mặc định theo hợp đồng; API chạy job sẽ kiểm tra giới hạn này một cách nguyên tử.
             'maxConcurrentJobs': Decimal('2'),
             'freeErrorQuotaPerDay': Decimal('3'),
             'createdAt': Decimal(str(now))

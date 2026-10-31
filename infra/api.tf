@@ -173,6 +173,7 @@ resource "aws_lambda_function" "billing" {
   }
 }
 
+# Stream của Jobs kích hoạt hàm tính phí; hàm chỉ xử lý job đã kết thúc nhưng chưa quyết toán.
 resource "aws_lambda_event_source_mapping" "billing" {
   event_source_arn               = aws_dynamodb_table.jobs.stream_arn
   function_name                  = aws_lambda_function.billing.arn
