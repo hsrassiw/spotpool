@@ -181,6 +181,8 @@ resource "aws_lambda_event_source_mapping" "billing" {
   batch_size                     = 10
   function_response_types        = ["ReportBatchItemFailures"]
   bisect_batch_on_function_error = true
+  # Tránh một record lỗi chặn cả shard DynamoDB Stream đến hết hạn lưu 24 giờ.
+  maximum_retry_attempts = 3
 }
 
 
