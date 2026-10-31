@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         tasks_output = []
         for t in raw_tasks:
             interrupt_count = int(t.get('interruptCount', 0))
-            if interrupt_count > 0:
+            if t.get('status') in ('QUEUED', 'RUNNING') and interrupt_count > 0:
                 has_interrupted_task = True
 
             result_url = None

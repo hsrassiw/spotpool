@@ -138,6 +138,15 @@ class WorkerContractTests(unittest.TestCase):
                      "--user", "65534:65534", "--cpus", "2", "--memory", "3072m"):
             self.assertIn(flag, command)
 
+    def test_video_height_is_passed_as_a_container_environment_value(self):
+        command = docker_command(
+            "example/video:1", 1, "/tmp/source", "/tmp/out", "test",
+            video_height=720,
+        )
+        self.assertIn("--env", command)
+        self.assertIn("SPOTPOOL_VIDEO_HEIGHT=720", command)
+        self.assertEqual("example/video:1", command[-3])
+
     def test_worker_routes_message_to_current_task_queue(self):
         message = self._message()
         db, sqs, worker = self._worker(message, task_status="QUEUED", queue="ondemand")

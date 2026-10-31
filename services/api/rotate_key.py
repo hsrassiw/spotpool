@@ -7,6 +7,13 @@ import boto3
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
 USERS_TABLE = os.environ['USERS_TABLE']
 
+CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Authorization,Content-Type',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+}
+
+
 def lambda_handler(event, context):
     try:
         # Lấy userId từ Lambda Authorizer truyền xuống sau khi xác thực token cũ thành công
@@ -27,10 +34,15 @@ def lambda_handler(event, context):
         
         return {
             'statusCode': 200,
+            'headers': CORS_HEADERS,
             'body': json.dumps({
                 'message': 'API key rotated successfully. Save your new API key.',
                 'apiKey': new_api_key
             })
         }
     except Exception as e:
-        return {'statusCode': 500, 'body': json.dumps({'error': str(e)})}
+        return {
+            'statusCode': 500,
+            'headers': CORS_HEADERS,
+            'body': json.dumps({'error': str(e)})
+        }
