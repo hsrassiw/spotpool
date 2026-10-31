@@ -36,7 +36,7 @@ def lambda_handler(event, context):
             'creditHeld': Decimal('0'),
             'role': 'user',
             'runningJobs': Decimal('0'),
-            'maxConcurrentJobs': Decimal('100'), # Tạm set 100 cho user test, sẽ quyết toán HM14 sau
+            'maxConcurrentJobs': Decimal('2'),
             'freeErrorQuotaPerDay': Decimal('3'),
             'createdAt': Decimal(str(now))
         }

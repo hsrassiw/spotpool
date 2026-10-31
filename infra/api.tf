@@ -154,6 +154,34 @@ resource "aws_lambda_function" "cancel_job" {
   }
 }
 
+resource "aws_lambda_function" "billing" {
+  filename         = data.archive_file.api_lambda_zip.output_path
+  function_name    = "${var.name_prefix}-billing"
+  role             = aws_iam_role.lambda.arn
+  handler          = "billing.lambda_handler"
+  runtime          = "python3.13"
+  source_code_hash = data.archive_file.api_lambda_zip.output_base64sha256
+  timeout          = 60
+  memory_size      = 256
+
+  environment {
+    variables = {
+      JOBS_TABLE  = aws_dynamodb_table.jobs.name
+      USERS_TABLE = aws_dynamodb_table.users.name
+      USAGE_TABLE = aws_dynamodb_table.usage.name
+    }
+  }
+}
+
+resource "aws_lambda_event_source_mapping" "billing" {
+  event_source_arn               = aws_dynamodb_table.jobs.stream_arn
+  function_name                  = aws_lambda_function.billing.arn
+  starting_position              = "LATEST"
+  batch_size                     = 10
+  function_response_types        = ["ReportBatchItemFailures"]
+  bisect_batch_on_function_error = true
+}
+
 
 # --- 4. CẤU TRÚC ROUTING TRÊN REST API GATEWAY ---
 

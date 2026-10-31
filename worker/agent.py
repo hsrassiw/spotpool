@@ -37,9 +37,9 @@ def remaining_seconds(job, vcpu):
     return max(0, budget // vcpu)
 
 
-def docker_command(image_uri, vcpu, source, output, name):
+def docker_command(image_uri, vcpu, source, output, name, video_height=None):
     memory = f"{vcpu * 1536}m"
-    return [
+    command = [
         "docker", "run", "--rm", "--name", name, "--network", "none",
         "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--pids-limit", "64", "--user", "65534:65534", "--cpus", str(vcpu),
@@ -47,8 +47,11 @@ def docker_command(image_uri, vcpu, source, output, name):
         "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
         "--mount", f"type=bind,source={source},target=/input/payload,readonly",
         "--mount", f"type=bind,source={output},target=/output",
-        image_uri, "/input/payload", "/output/result",
     ]
+    if video_height is not None:
+        command.extend(["--env", f"SPOTPOOL_VIDEO_HEIGHT={video_height}"])
+    command.extend([image_uri, "/input/payload", "/output/result"])
+    return command
 
 
 class Worker:
@@ -283,7 +286,14 @@ class Worker:
                 source.chmod(0o644)
                 image_uri = self.config["VIDEO_JOB_IMAGE"] if message["image"] == IMAGES["video"] else self.config["SCRIPT_JOB_IMAGE"]
                 name = f"spotpool-{uuid.uuid4().hex}"
-                command = docker_command(image_uri, message["vcpu"], source, outdir, name)
+                video_height = None
+                if message["image"] == IMAGES["video"]:
+                    video_height = message["params"].get("height", 720)
+                    if type(video_height) is not int or not 2 <= video_height <= 4320 or video_height % 2:
+                        raise ValueError("Video height must be an even integer between 2 and 4320")
+                command = docker_command(
+                    image_uri, message["vcpu"], source, outdir, name, video_height,
+                )
                 start = int(time.time())
                 start_monotonic = time.monotonic()
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

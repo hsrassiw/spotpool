@@ -33,6 +33,15 @@ def lambda_handler(event, context):
         
         if not files or len(files) > 100:
             return {'statusCode': 400, 'body': json.dumps({'error': 'Files list must contain between 1 and 100 items'})}
+        if not isinstance(params, dict):
+            return {'statusCode': 400, 'body': json.dumps({'error': 'params must be an object'})}
+        if kind == 'video':
+            height = params.get('height', 720)
+            if type(height) is not int or not 2 <= height <= 4320 or height % 2:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps({'error': 'Video height must be an even integer between 2 and 4320'}),
+                }
             
         job_id = str(uuid.uuid4())
         now = int(time.time())
