@@ -60,10 +60,10 @@ def _charge_for_job(job, usage, free_failed):
 def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, free_failed):
     cost_cap = int(job["costCap"])
     values = {
-        ":cap": {"N": str(cost_cap)},
-        ":refund": {"N": str(cost_cap - charge)},
-        ":one": {"N": "1"},
-        ":zero": {"N": "0"},
+        ":cap": cost_cap,
+        ":refund": cost_cap - charge,
+        ":one": 1,
+        ":zero": 0,
     }
     user_update = (
         "SET creditHeld = creditHeld - :cap, "
@@ -79,18 +79,18 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
             if "errorsToday" in user:
                 # So khớp số lượt đã đọc để hai job quyết toán cùng lúc không dùng trùng lượt miễn phí.
                 values.update({
-                    ":today": {"S": today},
-                    ":previous": {"N": str(errors_today)},
-                    ":next": {"N": str(errors_today + 1)},
+                    ":today": today,
+                    ":previous": errors_today,
+                    ":next": errors_today + 1,
                 })
                 user_update += ", errorsToday = :next"
                 quota_condition = "errorsDay = :today AND errorsToday = :previous AND errorsToday < freeErrorQuotaPerDay"
             else:
-                values.update({":today": {"S": today}, ":one_error": {"N": "1"}})
+                values.update({":today": today, ":one_error": 1})
                 user_update += ", errorsToday = :one_error"
                 quota_condition = "errorsDay = :today AND attribute_not_exists(errorsToday) AND freeErrorQuotaPerDay > :zero"
         else:
-            values.update({":today": {"S": today}, ":one_error": {"N": "1"}})
+            values.update({":today": today, ":one_error": 1})
             user_update += ", errorsDay = :today, errorsToday = :one_error"
             quota_condition = "(attribute_not_exists(errorsDay) OR errorsDay <> :today) AND freeErrorQuotaPerDay > :zero"
         user_condition += f" AND ({quota_condition})"
@@ -99,7 +99,7 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
         {
             "Update": {
                 "TableName": users_table,
-                "Key": {"userId": {"S": job["userId"]}},
+                "Key": {"userId": job["userId"]},
                 "UpdateExpression": user_update,
                 "ConditionExpression": user_condition,
                 "ExpressionAttributeValues": values,
@@ -108,7 +108,7 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
         {
             "Update": {
                 "TableName": jobs_table,
-                "Key": {"jobId": {"S": job["jobId"]}},
+                "Key": {"jobId": job["jobId"]},
                 "UpdateExpression": "SET chargedCredit = :charge, settledAt = :settled",
                 "ConditionExpression": (
                     "attribute_not_exists(settledAt) AND attribute_exists(queuedAt) "
@@ -116,11 +116,11 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
                 ),
                 "ExpressionAttributeNames": {"#status": "status"},
                 "ExpressionAttributeValues": {
-                    ":charge": {"N": str(charge)},
-                    ":settled": {"N": str(settled_at)},
-                    ":succeeded": {"S": "SUCCEEDED"},
-                    ":failed": {"S": "FAILED"},
-                    ":cancelled": {"S": "CANCELLED"},
+                    ":charge": charge,
+                    ":settled": settled_at,
+                    ":succeeded": "SUCCEEDED",
+                    ":failed": "FAILED",
+                    ":cancelled": "CANCELLED",
                 },
             }
         },

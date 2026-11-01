@@ -2,7 +2,6 @@ import json
 import os
 import sys
 import unittest
-from decimal import Decimal
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -17,7 +16,7 @@ os.environ.setdefault("PRICE_SPOT", "3000")
 os.environ.setdefault("AWS_EC2_METADATA_DISABLED", "true")
 sys.path.insert(0, str(Path(__file__).parents[1] / "services" / "api"))
 
-from services.api import authorizer, get_job_status, rotate_key, submit_job
+from services.api import authorizer, create_user, get_job_status, rotate_key, submit_job
 
 
 USER_ID = "11111111-1111-4111-8111-111111111111"
@@ -32,7 +31,7 @@ class SubmitJobValidationTests(unittest.TestCase):
             "vcpu": 1,
             "costCap": 5000,
             "files": ["input.py"],
-            "params": {"threshold": 0.75, "options": [1.5, None]},
+            "params": {"threshold": 1, "options": [2, None]},
         }
 
     def test_requires_integer_cost_cap_and_vcpu(self):
@@ -48,14 +47,14 @@ class SubmitJobValidationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     submit_job._validated_request({**self.valid, "files": files})
 
-    def test_nested_params_floats_become_decimal_values(self):
-        request = submit_job._validated_request(self.valid)
-        params = request[-1]
-        self.assertEqual(Decimal("0.75"), params["threshold"])
-        self.assertEqual(Decimal("1.5"), params["options"][0])
+    def test_rejects_nested_params_floats(self):
+        for params in ({"value": 0.75}, {"options": [1, {"value": 1.5}]}, {"value": 1.0}):
+            with self.subTest(params=params):
+                with self.assertRaisesRegex(ValueError, "integers"):
+                    submit_job._validated_request({**self.valid, "params": params})
 
     def test_rejects_non_finite_param_numbers(self):
-        with self.assertRaisesRegex(ValueError, "non-finite"):
+        with self.assertRaisesRegex(ValueError, "integers"):
             submit_job._validated_request({**self.valid, "params": {"value": float("nan")}})
 
     def test_invalid_request_returns_cors_headers(self):
@@ -63,7 +62,7 @@ class SubmitJobValidationTests(unittest.TestCase):
         self.assertEqual(400, response["statusCode"])
         self.assertEqual("*", response["headers"]["Access-Control-Allow-Origin"])
 
-    def test_successful_request_persists_decimal_params_and_returns_cors(self):
+    def test_successful_request_persists_integer_params_and_returns_cors(self):
         table = Mock()
         with (
             patch.object(submit_job.dynamodb, "Table", return_value=table),
@@ -77,11 +76,36 @@ class SubmitJobValidationTests(unittest.TestCase):
         self.assertEqual(200, response["statusCode"])
         self.assertEqual("*", response["headers"]["Access-Control-Allow-Origin"])
         item = table.put_item.call_args.kwargs["Item"]
-        self.assertEqual(Decimal("0.75"), item["params"]["threshold"])
-        self.assertEqual(Decimal("1.5"), item["params"]["options"][0])
+        self.assertEqual(self.valid["params"], item["params"])
+
+    def test_float_params_return_400_without_creating_job(self):
+        with patch.object(submit_job.dynamodb, "Table") as table:
+            response = submit_job.lambda_handler({
+                "body": json.dumps({**self.valid, "params": {"nested": [0.1]}}),
+            }, None)
+        self.assertEqual(400, response["statusCode"])
+        table.assert_not_called()
 
 
 class CorsAndAuthorizerTests(unittest.TestCase):
+    def test_invalid_or_unknown_key_raises_unauthorized(self):
+        for token in (None, 123, "", "Basic key", "Bearer ", "Bearer unknown"):
+            with self.subTest(token=token), patch.object(authorizer.dynamodb, "Table") as table:
+                table.return_value.query.return_value = {"Items": []}
+                with self.assertRaisesRegex(Exception, "^Unauthorized$"):
+                    authorizer.lambda_handler({"authorizationToken": token}, None)
+
+    def test_allow_policy_is_scoped_to_api_stage(self):
+        with patch.object(authorizer.dynamodb, "Table") as table:
+            table.return_value.query.return_value = {"Items": [{"userId": USER_ID}]}
+            response = authorizer.lambda_handler({
+                "authorizationToken": "Bearer valid-key",
+                "methodArn": "arn:aws:execute-api:region:account:api/prod/GET/jobs/123",
+            }, None)
+        self.assertEqual("arn:aws:execute-api:region:account:api/prod/*/*",
+                         response["policyDocument"]["Statement"][0]["Resource"])
+        self.assertEqual(USER_ID, response["context"]["userId"])
+
     def test_rotate_key_success_response_has_cors_headers(self):
         with patch.object(rotate_key.dynamodb, "Table") as table:
             response = rotate_key.lambda_handler({
@@ -99,6 +123,23 @@ class CorsAndAuthorizerTests(unittest.TestCase):
                     "authorizationToken": "Bearer valid-format-token",
                     "methodArn": "arn:aws:execute-api:region:account:api/prod/GET/jobs",
                 }, None)
+
+
+class CreateUserValidationTests(unittest.TestCase):
+    def test_invalid_body_or_email_returns_400_without_database_write(self):
+        for body in (None, "", "{", "null", "[]", "{}", '{"email": 123}',
+                     '{"email": false}', '{"email": []}', '{"email": "  "}'):
+            with self.subTest(body=body), patch.object(create_user.dynamodb, "Table") as table:
+                response = create_user.lambda_handler({"body": body}, None)
+                self.assertEqual(400, response["statusCode"])
+                self.assertEqual("*", response["headers"]["Access-Control-Allow-Origin"])
+                table.assert_not_called()
+
+    def test_valid_email_creates_user(self):
+        with patch.object(create_user.dynamodb, "Table") as table:
+            response = create_user.lambda_handler({"body": '{"email": "user@example.com"}'}, None)
+        self.assertEqual(201, response["statusCode"])
+        table.return_value.put_item.assert_called_once()
 
 
 class InterruptedStatusTests(unittest.TestCase):
