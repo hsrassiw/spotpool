@@ -1,7 +1,9 @@
 import io
 import json
 import subprocess
+import threading
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -174,11 +176,13 @@ class WorkerSpotTests(unittest.TestCase):
         sqs.receive_message = Mock(side_effect=receive)
         worker.process = Mock()
         worker.spot_monitor = Mock()
+        worker._wait_for_shutdown = Mock()
         with self.assertLogs("worker.agent", level="WARNING"):
             worker.run()
         worker.process.assert_not_called()
         worker.spot_monitor.start.assert_called_once()
         worker.spot_monitor.stop.assert_called_once()
+        worker._wait_for_shutdown.assert_called_once_with()
         sqs.change_message_visibility.assert_called_once()
         self.assertEqual([], db.meta.client.usage)
 
@@ -186,12 +190,14 @@ class WorkerSpotTests(unittest.TestCase):
         message, received, db, sqs, worker = self.make_worker()
         worker._used_slots = 2
         worker.spot_monitor = Mock()
+        worker._wait_for_shutdown = Mock()
         worker.spot_monitor.start.side_effect = lambda: worker.request_interruption(NOTICE)
         sqs.receive_message = Mock()
         with self.assertLogs("worker.agent", level="WARNING"):
             worker.run()
         sqs.receive_message.assert_not_called()
         self.assertFalse(worker._reserve(1))
+        worker._wait_for_shutdown.assert_called_once_with()
 
     def test_task_not_claimed_if_notice_arrives_before_process(self):
         message, received, db, sqs, worker = self.make_worker()
@@ -204,6 +210,7 @@ class WorkerSpotTests(unittest.TestCase):
     def test_ondemand_worker_does_not_start_imds_monitor(self):
         message, received, db, sqs, old = self.make_worker()
         worker = Worker(dynamodb=db, s3=None, sqs=sqs, config=old.config, queue="ondemand")
+        worker._wait_for_shutdown = Mock()
         def receive(**kwargs):
             worker._draining.set()
             return {}
@@ -211,6 +218,116 @@ class WorkerSpotTests(unittest.TestCase):
         with patch("worker.agent.SpotMonitor") as monitor:
             worker.run()
         monitor.assert_not_called()
+
+    def test_notice_before_claim_returns_message_without_changing_task(self):
+        for stage in ("task_read", "job_read", "table_lookup"):
+            with self.subTest(stage=stage):
+                message, received, db, sqs, worker = self.make_worker()
+                task = worker._task(message)
+                task["status"] = "QUEUED"
+                job = worker._job(message)
+                worker._task = Mock(return_value=task)
+                worker._job = Mock(return_value=job)
+                worker._execute = Mock()
+                tasks = db.Table("Tasks")
+                tasks.update_item = Mock()
+
+                def interrupt_and_return(value):
+                    worker.request_interruption(NOTICE)
+                    return value
+
+                if stage == "task_read":
+                    worker._task.side_effect = lambda _: interrupt_and_return(task)
+                elif stage == "job_read":
+                    worker._job.side_effect = lambda _: interrupt_and_return(job)
+                else:
+                    original_table = db.Table
+                    db.Table = Mock(side_effect=lambda name: interrupt_and_return(original_table(name)))
+                with self.assertLogs("worker.agent", level="WARNING"):
+                    worker.process(received, message)
+                tasks.update_item.assert_not_called()
+                worker._execute.assert_not_called()
+                sqs.change_message_visibility.assert_called_once_with(
+                    QueueUrl=worker.queue_url, ReceiptHandle=received["ReceiptHandle"], VisibilityTimeout=0,
+                )
+                self.assertEqual("QUEUED", task["status"])
+                self.assertEqual(1, task["attempt"])
+                self.assertEqual([], db.meta.client.usage)
+
+    def test_run_waits_for_both_task_threads_before_parking(self):
+        message, received, db, sqs, worker = self.make_worker()
+        other = {**message, "taskId": "task-0002",
+                 "input": {**message["input"],
+                           "key": message["input"]["key"].replace(message["taskId"], "task-0002")},
+                 "output": {**message["output"],
+                            "key": message["output"]["key"].replace(message["taskId"], "task-0002")}}
+        worker.spot_monitor = Mock()
+        both_running, allow_finish = threading.Barrier(3), threading.Event()
+        finished = []
+        sqs.receive_message = Mock(side_effect=[
+            {"Messages": [received]},
+            {"Messages": [{"Body": json.dumps(other), "ReceiptHandle": "other"}]},
+        ])
+
+        def process(receipt, body):
+            both_running.wait(timeout=3)
+            if not allow_finish.wait(timeout=3):
+                raise RuntimeError("Test did not release task threads")
+            finished.append(body["taskId"])
+
+        def park():
+            self.assertEqual(2, len(finished))
+            self.assertEqual(0, worker._used_slots)
+            worker.spot_monitor.stop.assert_called_once_with()
+
+        worker.process = Mock(side_effect=process)
+        worker._wait_for_shutdown = Mock(side_effect=park)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            running = pool.submit(worker.run)
+            try:
+                both_running.wait(timeout=3)
+                with self.assertLogs("worker.agent", level="WARNING"):
+                    worker.request_interruption(NOTICE)
+                worker._wait_for_shutdown.assert_not_called()
+                self.assertFalse(running.done())
+            finally:
+                allow_finish.set()
+            running.result(timeout=3)
+        worker._wait_for_shutdown.assert_called_once_with()
+        self.assertEqual(2, sqs.receive_message.call_count)
+
+    def test_notice_on_start_parks_without_receiving_messages(self):
+        message, received, db, sqs, worker = self.make_worker()
+        worker.spot_monitor = Mock()
+        worker.spot_monitor.start.side_effect = lambda: worker.request_interruption(NOTICE)
+        worker._wait_for_shutdown = Mock()
+        sqs.receive_message = Mock()
+        with self.assertLogs("worker.agent", level="WARNING"):
+            worker.run()
+        sqs.receive_message.assert_not_called()
+        worker._wait_for_shutdown.assert_called_once_with()
+        worker.spot_monitor.stop.assert_called_once_with()
+
+    def test_normal_run_return_does_not_park(self):
+        message, received, db, sqs, worker = self.make_worker()
+        worker.spot_monitor = Mock()
+        worker._poll_tasks = Mock()
+        worker._wait_for_shutdown = Mock()
+        worker.run()
+        worker._wait_for_shutdown.assert_not_called()
+        worker.spot_monitor.stop.assert_called_once_with()
+
+    def test_shutdown_wait_blocks_even_when_draining_is_already_set(self):
+        message, received, db, sqs, worker = self.make_worker()
+        worker._draining.set()
+        with patch("worker.agent.threading.Event") as event_class:
+            # Giả lập hệ điều hành dừng process, không ngủ thật trong test.
+            event_class.return_value.wait.side_effect = KeyboardInterrupt
+            with self.assertLogs("worker.agent", level="WARNING"):
+                with self.assertRaises(KeyboardInterrupt):
+                    worker._wait_for_shutdown()
+        event_class.assert_called_once_with()
+        event_class.return_value.wait.assert_called_once_with()
 
     def test_notice_during_container_stops_before_next_heartbeat(self):
         message, received, db, sqs, worker = self.make_worker()

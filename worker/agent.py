@@ -133,6 +133,14 @@ class Worker:
         finally:
             if self.spot_monitor is not None:
                 self.spot_monitor.stop()
+        if self._draining.is_set():
+            self._wait_for_shutdown()
+
+    def _wait_for_shutdown(self):
+        logger.warning("Spot tasks drained; waiting for EC2 shutdown")
+        # Không thoát để systemd Restart=always khởi động lại mỗi 10 giây.
+        # Dùng Event mới: _draining đã set nên wait trên nó sẽ trả về ngay.
+        threading.Event().wait()
 
     def _poll_tasks(self):
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -226,6 +234,10 @@ class Worker:
         owner = f"{self.owner_prefix}-{uuid.uuid4()}"
         now = int(time.time())
         tasks = self.db.Table(self.config["TASKS_TABLE"])
+        # Notice có thể xuất hiện trong lúc đọc task/job ở phía trên.
+        if self._draining.is_set():
+            self._make_visible(received)
+            return
         try:
             claimed = tasks.update_item(
                 Key={"jobId": message["jobId"], "taskId": message["taskId"]},
