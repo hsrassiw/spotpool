@@ -57,12 +57,16 @@ def docker_command(image_uri, vcpu, source, output, name):
 
 
 class Worker:
-    def __init__(self, *, dynamodb, s3, sqs, config, queue):
+    def __init__(self, *, dynamodb, s3, sqs, config, queue, autoscaling=None):
         self.db, self.s3, self.sqs = dynamodb, s3, sqs
+        self.autoscaling = autoscaling
+        self.instance_id = config.get("SPOTPOOL_INSTANCE_ID") or os.environ.get("SPOTPOOL_INSTANCE_ID")
+        self.asg_name = config.get("SPOTPOOL_ASG") or os.environ.get("SPOTPOOL_ASG")
         self.config, self.queue = config, queue
         self.queue_url = config["SQS_SPOT_URL"] if queue == "spot" else config["SQS_ONDEMAND_URL"]
         self.owner_prefix = f'{os.environ.get("HOSTNAME", "worker")}-{uuid.uuid4()}'
         self._capacity = threading.Condition()
+        self._protection_lock = threading.Lock()
         self._used_slots = 0
         self._draining = threading.Event()
         self.spot_monitor = None
@@ -84,16 +88,41 @@ class Worker:
         )
 
     def _reserve(self, vcpu):
-        with self._capacity:
-            if self._draining.is_set() or self._used_slots + vcpu > 2:
-                return False
-            self._used_slots += vcpu
+        # Giữ thứ tự bật/tắt bảo vệ khi hai thread nhận và trả suất cùng lúc.
+        with self._protection_lock:
+            with self._capacity:
+                if self._draining.is_set() or self._used_slots + vcpu > 2:
+                    return False
+                was_idle = self._used_slots == 0
+                self._used_slots += vcpu
+            if was_idle:
+                self._set_instance_protection(True)
             return True
 
     def _release(self, vcpu):
-        with self._capacity:
-            self._used_slots -= vcpu
-            self._capacity.notify_all()
+        with self._protection_lock:
+            with self._capacity:
+                self._used_slots -= vcpu
+                is_idle = self._used_slots == 0
+                self._capacity.notify_all()
+            if is_idle:
+                self._set_instance_protection(False)
+
+    def _set_instance_protection(self, protected):
+        if self.autoscaling is None:
+            return  # Cho phép chạy test local không có client AWS.
+        if not self.instance_id or not self.asg_name:
+            logger.warning("Cannot set scale-in protection: missing SPOTPOOL_INSTANCE_ID or SPOTPOOL_ASG")
+            return
+        try:
+            self.autoscaling.set_instance_protection(
+                InstanceIds=[self.instance_id], AutoScalingGroupName=self.asg_name,
+                ProtectedFromScaleIn=protected,
+            )
+        except Exception:
+            # Bảo vệ là best effort; lỗi AWS không được làm mất suất hoặc dừng worker.
+            logger.exception("Cannot set scale-in protection: instanceId=%s asg=%s protected=%s",
+                             self.instance_id, self.asg_name, protected)
 
     def run(self):
         if self.queue == "spot":
@@ -595,6 +624,7 @@ def main():
     Worker(dynamodb=boto3.resource("dynamodb", region_name=region, config=aws_config),
            s3=boto3.client("s3", region_name=region, config=aws_config),
            sqs=boto3.client("sqs", region_name=region, config=aws_config.merge(Config(read_timeout=30))),
+           autoscaling=boto3.client("autoscaling", region_name=region, config=aws_config),
            config=config, queue=queue).run()
 
 
