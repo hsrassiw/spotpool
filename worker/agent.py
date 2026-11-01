@@ -146,6 +146,8 @@ class Worker:
                              self.instance_id, self.asg_name, protected)
 
     def run(self):
+        # Process cũ có thể chết trước khi trả suất/tắt bảo vệ. Chưa nhận task mới.
+        self._set_instance_protection(False)
         if self.queue == "spot":
             self.spot_monitor = self.spot_monitor or SpotMonitor(self.request_interruption)
             self.spot_monitor.start()
