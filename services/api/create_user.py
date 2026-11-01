@@ -17,8 +17,22 @@ def decimal_default(obj):
 
 def lambda_handler(event, context):
     try:
-        body = json.loads(event.get('body', '{}'))
-        email = body.get('email') or ""
+        body = json.loads(event.get('body') or '{}')
+        if not isinstance(body, dict):
+            raise ValueError('Request body must be a JSON object')
+        email = body.get('email')
+        if not isinstance(email, str) or not email.strip():
+            raise ValueError('email must be a non-empty string')
+    except (TypeError, ValueError) as error:
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Authorization,Content-Type'
+            },
+            'body': json.dumps({'error': str(error)})
+        }
+    try:
         
         user_id = str(uuid.uuid4())
         now = int(time.time())

@@ -1,10 +1,8 @@
 import json
 import logging
-import math
 import os
 import time
 import uuid
-from decimal import Decimal
 
 import boto3
 from helper import generate_presigned_upload_url
@@ -32,16 +30,14 @@ def _response(status_code, payload):
 
 
 def _dynamodb_value(value):
-    """Đổi số thực trong params sang Decimal để boto3 ghi được vào DynamoDB."""
+    """Validate nested params before storing them or publishing a manifest."""
     if isinstance(value, float):
-        if not math.isfinite(value):
-            raise ValueError('params must not contain non-finite numbers')
-        return Decimal(str(value))
+        raise ValueError('params numbers must be integers')
     if isinstance(value, list):
         return [_dynamodb_value(item) for item in value]
     if isinstance(value, dict):
         return {key: _dynamodb_value(item) for key, item in value.items()}
-    if value is None or isinstance(value, (str, int, bool, Decimal)):
+    if value is None or isinstance(value, (str, int, bool)):
         return value
     raise ValueError('params contains an unsupported value')
 
