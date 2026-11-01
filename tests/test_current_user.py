@@ -73,6 +73,24 @@ class CurrentUserTests(unittest.TestCase):
         self.assertEqual(0, body["creditAvailable"])
         self.assertEqual("admin", body["role"])
 
+    def test_each_missing_public_field_returns_null_without_500_or_secret_leak(self):
+        for field in self.module.PUBLIC_FIELDS:
+            with self.subTest(field=field):
+                self.table.get_item.return_value = {"Item": {key: value for key, value in self.item.items() if key != field}}
+                result = self.module.lambda_handler(self.event, None)
+                self.assertEqual(200, result["statusCode"])
+                body = json.loads(result["body"])
+                self.assertIsNone(body[field])
+                self.assertEqual(set(self.module.PUBLIC_FIELDS), set(body))
+                self.assertNotIn("never-return-this", result["body"])
+
+    def test_explicit_null_numeric_fields_do_not_raise_during_integer_conversion(self):
+        self.item.update({field: None for field in self.module.NUMBER_FIELDS})
+        result = self.module.lambda_handler(self.event, None)
+        self.assertEqual(200, result["statusCode"])
+        body = json.loads(result["body"])
+        self.assertTrue(all(body[field] is None for field in self.module.NUMBER_FIELDS))
+
 
 if __name__ == "__main__":
     unittest.main()

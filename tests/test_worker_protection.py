@@ -49,6 +49,37 @@ class WorkerProtectionTests(unittest.TestCase):
         self.assertIs(clients["autoscaling"], worker_class.call_args.kwargs["autoscaling"])
         worker_class.return_value.run.assert_called_once_with()
 
+    def test_startup_clears_old_protection_once_before_monitor_and_first_reservation(self):
+        for queue in ("spot", "ondemand"):
+            with self.subTest(queue=queue):
+                worker, client = self.make_worker(queue)
+                events = []
+                client.set_instance_protection.side_effect = lambda **kwargs: events.append(kwargs["ProtectedFromScaleIn"])
+                worker.spot_monitor = Mock() if queue == "spot" else None
+                if worker.spot_monitor:
+                    worker.spot_monitor.start.side_effect = lambda: events.append("monitor")
+
+                def poll():
+                    self.assertEqual([False, "monitor"] if queue == "spot" else [False], events)
+                    self.assertTrue(worker._reserve(1))
+                    worker._release(1)
+
+                worker._poll_tasks = Mock(side_effect=poll)
+                worker.run()
+                self.assertEqual([self.protection_call(value, queue) for value in (False, True, False)],
+                                 client.set_instance_protection.call_args_list)
+                worker._poll_tasks.assert_called_once_with()
+
+    def test_startup_reset_error_is_logged_and_does_not_prevent_polling(self):
+        worker, client = self.make_worker("ondemand")
+        client.set_instance_protection.side_effect = RuntimeError("AWS unavailable")
+        worker._poll_tasks = Mock()
+        with self.assertLogs("worker.agent", level="ERROR") as captured:
+            worker.run()
+        worker._poll_tasks.assert_called_once_with()
+        client.set_instance_protection.assert_called_once_with(**self.protection_call(False, "ondemand").kwargs)
+        self.assertTrue(captured.records[0].exc_info)
+
     def test_two_single_slots_remain_protected_until_both_are_free(self):
         for queue in ("spot", "ondemand"):
             with self.subTest(queue=queue):
