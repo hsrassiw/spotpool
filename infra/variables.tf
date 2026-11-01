@@ -54,6 +54,18 @@ variable "web_dev_origins" {
   default     = ["http://localhost:5173"]
 }
 
+variable "alert_email" {
+  description = "Email nhận cảnh báo, đặt trong terraform.tfvars. Để trống thì không gửi."
+  type        = string
+  default     = ""
+}
+
+variable "monthly_budget_usd" {
+  description = "Budget mỗi tháng (USD, chưa trừ credit)."
+  type        = number
+  default     = 10
+}
+
 variable "ondemand_hours_start" {
   description = "Giờ bắt đầu giữ sẵn 1 máy On-Demand (giờ Việt Nam, 0–23)."
   type        = number

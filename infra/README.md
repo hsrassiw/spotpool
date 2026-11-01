@@ -46,4 +46,14 @@ Co giãn (hạng mục 11):
 - Gói Tiết kiệm hết việc thì về 0 máy. Gói Ổn định giữ sẵn 1 máy từ 8h đến 23h giờ Việt Nam, ngoài giờ cũng về 0. Đổi giờ hôm demo: `terraform apply -var enable_worker=true -var ondemand_hours_end=23 -var ondemand_hours_start=6`.
 - Hết việc thì giảm máy sau khoảng 15 phút (target tracking chờ đủ 15 điểm dữ liệu mới giảm).
 
+## Giám sát và chi phí
+
+Hạng mục 16, trong `monitoring.tf`:
+
+- Dashboard `spotpool` (output `dashboard_url`): hàng đợi, số máy, backlog mỗi máy, lỗi API và Lambda.
+- Email cảnh báo khi có task vào DLQ, billing hoặc dispatcher lỗi, API trả 5XX.
+- Budget `spotpool-monthly`: 10 USD mỗi tháng cho tài nguyên tag `Project=spotpool`, tính trước khi trừ credit.
+
+Email nhận cảnh báo đặt trong `terraform.tfvars`: `alert_email = "ten@example.com"`. Apply lần đầu xong phải bấm link xác nhận AWS gửi về email.
+
 `terraform destroy` trong `infra/` để dọn khi không dùng.
