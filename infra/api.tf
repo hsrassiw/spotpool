@@ -56,6 +56,23 @@ resource "aws_lambda_function" "create_user" {
   }
 }
 
+resource "aws_lambda_function" "get_current_user" {
+  filename         = data.archive_file.api_lambda_zip.output_path
+  function_name    = "${var.name_prefix}-get-current-user"
+  role             = aws_iam_role.lambda.arn
+  handler          = "get_current_user.lambda_handler"
+  runtime          = "python3.13"
+  source_code_hash = data.archive_file.api_lambda_zip.output_base64sha256
+  timeout          = 10
+  memory_size      = 256
+
+  environment {
+    variables = {
+      USERS_TABLE = aws_dynamodb_table.users.name
+    }
+  }
+}
+
 resource "aws_lambda_function" "rotate_key" {
   filename         = data.archive_file.api_lambda_zip.output_path
   function_name    = "${var.name_prefix}-rotate-key"
@@ -113,6 +130,23 @@ resource "aws_lambda_function" "start_job" {
       OUTPUT_BUCKET  = aws_s3_bucket.output_bucket.id
       PRICE_ONDEMAND = "6000"
       PRICE_SPOT     = "3000"
+    }
+  }
+}
+
+resource "aws_lambda_function" "list_jobs" {
+  filename         = data.archive_file.api_lambda_zip.output_path
+  function_name    = "${var.name_prefix}-list-jobs"
+  role             = aws_iam_role.lambda.arn
+  handler          = "list_jobs.lambda_handler"
+  runtime          = "python3.13"
+  source_code_hash = data.archive_file.api_lambda_zip.output_base64sha256
+  timeout          = 10
+  memory_size      = 256
+
+  environment {
+    variables = {
+      JOBS_TABLE = aws_dynamodb_table.jobs.name
     }
   }
 }
@@ -218,6 +252,23 @@ resource "aws_api_gateway_resource" "users_me" {
   path_part   = "me"
 }
 
+resource "aws_api_gateway_method" "get_current_user" {
+  rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id   = aws_api_gateway_resource.users_me.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.lambda_auth.id
+}
+
+resource "aws_api_gateway_integration" "integration_get_current_user" {
+  rest_api_id             = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id             = aws_api_gateway_resource.users_me.id
+  http_method             = aws_api_gateway_method.get_current_user.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.get_current_user.invoke_arn
+}
+
 # /users/me/rotate-key
 resource "aws_api_gateway_resource" "users_rotate_key" {
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
@@ -264,6 +315,23 @@ resource "aws_api_gateway_integration" "integration_post_jobs" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.submit_job.invoke_arn
+}
+
+resource "aws_api_gateway_method" "get_jobs" {
+  rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id   = aws_api_gateway_resource.jobs.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.lambda_auth.id
+}
+
+resource "aws_api_gateway_integration" "integration_get_jobs" {
+  rest_api_id             = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id             = aws_api_gateway_resource.jobs.id
+  http_method             = aws_api_gateway_method.get_jobs.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.list_jobs.invoke_arn
 }
 
 # /jobs/{id}
@@ -344,6 +412,7 @@ resource "aws_api_gateway_integration" "integration_post_job_cancel" {
 locals {
   cors_resources = {
     users      = aws_api_gateway_resource.users.id
+    users_me   = aws_api_gateway_resource.users_me.id
     rotate_key = aws_api_gateway_resource.users_rotate_key.id
     jobs       = aws_api_gateway_resource.jobs.id
     job_item   = aws_api_gateway_resource.job_item.id
@@ -416,8 +485,10 @@ resource "aws_api_gateway_gateway_response" "cors" {
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     aws_api_gateway_integration.integration_post_users,
+    aws_api_gateway_integration.integration_get_current_user,
     aws_api_gateway_integration.integration_rotate_key,
     aws_api_gateway_integration.integration_post_jobs,
+    aws_api_gateway_integration.integration_get_jobs,
     aws_api_gateway_integration.integration_get_job_status,
     aws_api_gateway_integration.integration_post_job_start,
     aws_api_gateway_integration.integration_post_job_cancel,
@@ -432,12 +503,17 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       aws_api_gateway_resource.users.id,
       aws_api_gateway_method.post_users.id,
       aws_api_gateway_integration.integration_post_users.id,
+      aws_api_gateway_resource.users_me.id,
+      aws_api_gateway_method.get_current_user.id,
+      aws_api_gateway_integration.integration_get_current_user.id,
       aws_api_gateway_resource.users_rotate_key.id,
       aws_api_gateway_method.post_rotate_key.id,
       aws_api_gateway_integration.integration_rotate_key.id,
       aws_api_gateway_resource.jobs.id,
       aws_api_gateway_method.post_jobs.id,
       aws_api_gateway_integration.integration_post_jobs.id,
+      aws_api_gateway_method.get_jobs.id,
+      aws_api_gateway_integration.integration_get_jobs.id,
       aws_api_gateway_resource.job_item.id,
       aws_api_gateway_method.get_job_status.id,
       aws_api_gateway_integration.integration_get_job_status.id,
@@ -467,13 +543,15 @@ resource "aws_api_gateway_stage" "api_stage" {
 
 locals {
   lambda_functions = {
-    create_user    = aws_lambda_function.create_user.arn
-    rotate_key     = aws_lambda_function.rotate_key.arn
-    submit_job     = aws_lambda_function.submit_job.arn
-    start_job      = aws_lambda_function.start_job.arn
-    get_job_status = aws_lambda_function.get_job_status.arn
-    cancel_job     = aws_lambda_function.cancel_job.arn
-    authorizer     = aws_lambda_function.authorizer.arn
+    create_user      = aws_lambda_function.create_user.arn
+    get_current_user = aws_lambda_function.get_current_user.arn
+    list_jobs        = aws_lambda_function.list_jobs.arn
+    rotate_key       = aws_lambda_function.rotate_key.arn
+    submit_job       = aws_lambda_function.submit_job.arn
+    start_job        = aws_lambda_function.start_job.arn
+    get_job_status   = aws_lambda_function.get_job_status.arn
+    cancel_job       = aws_lambda_function.cancel_job.arn
+    authorizer       = aws_lambda_function.authorizer.arn
   }
 }
 
