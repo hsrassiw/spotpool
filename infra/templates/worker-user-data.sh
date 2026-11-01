@@ -10,11 +10,10 @@ systemctl enable --now docker
 mkdir -p /root/.docker
 echo '{"credHelpers": {"${registry}": "ecr-login"}}' > /root/.docker/config.json
 
-mkdir -p /opt/spotpool/worker /opt/spotpool/spotpool_core
-echo '${agent_py}' | base64 -d | gunzip > /opt/spotpool/worker/agent.py
-echo '${spot_py}' | base64 -d | gunzip > /opt/spotpool/worker/spot.py
-echo '${contracts_py}' | base64 -d | gunzip > /opt/spotpool/spotpool_core/contracts.py
-touch /opt/spotpool/spotpool_core/__init__.py
+# Code worker tải từ S3 (qua S3 Gateway Endpoint), mỗi lần sửa code là một thư mục mới
+%{ for f in worker_files ~}
+aws s3 cp --region ${region} --only-show-errors "${code_url}/${f}" "/opt/spotpool/${f}"
+%{ endfor ~}
 
 TOKEN=$(curl -s -X PUT http://169.254.169.254/latest/api/token -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
 md() { curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"; }
