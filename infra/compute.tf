@@ -80,14 +80,15 @@ resource "aws_launch_template" "worker" {
     http_endpoint = "enabled"
   }
 
+  # default_tags chỉ gắn lên launch template, máy và ổ đĩa ASG bật lên phải ghi Project ở đây
   tag_specifications {
     resource_type = "instance"
-    tags          = { Name = "${var.name_prefix}-worker-${each.key}", Tier = each.key }
+    tags          = { Name = "${var.name_prefix}-worker-${each.key}", Project = "spotpool", Tier = each.key }
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags          = { Tier = each.key }
+    tags          = { Project = "spotpool", Tier = each.key }
   }
 }
 
