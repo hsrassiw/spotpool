@@ -388,12 +388,13 @@ class WorkerSpotTests(unittest.TestCase):
             if "Callback" in kwargs:
                 worker._draining.set()
                 kwargs["Callback"](1)
-        worker.s3.upload_file.side_effect = upload
+        worker.s3.upload_fileobj.side_effect = upload
         with patch("worker.agent.subprocess.Popen", side_effect=start):
             worker._execute(received, message, {}, "owner", 1, 100)
         self.assertEqual(OUTCOME_INTERRUPTED, worker._finish.call_args.args[6])
         self.assertIsNone(worker._finish.call_args.args[7])
-        self.assertEqual(2, worker.s3.upload_file.call_count)
+        self.assertEqual(1, worker.s3.upload_fileobj.call_count)
+        self.assertEqual(1, worker.s3.upload_file.call_count)
 
 
 if __name__ == "__main__":
