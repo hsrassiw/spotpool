@@ -59,6 +59,12 @@ data "aws_iam_policy_document" "worker" {
   }
 
   statement {
+    sid       = "ReadWorkerCode"
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::${local.worker_code_bucket}/*"]
+  }
+
+  statement {
     sid       = "WriteOutput"
     actions   = ["s3:PutObject", "s3:GetObject"]
     resources = ["arn:aws:s3:::${local.output_bucket}/*"]
