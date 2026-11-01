@@ -4,7 +4,8 @@ import JobsPage from '../pages/JobsPage.jsx';
 import JobDetailPage from '../pages/JobDetailPage.jsx';
 import AccountPage from '../pages/AccountPage.jsx';
 import AccessPage from '../pages/AccessPage.jsx';
-import { AdminPage, BillingPage, CreateJobPage, NotFoundPage } from '../pages/PlannedPages.jsx';
+import { CreateJobPage, NotFoundPage } from '../pages/PlannedPages.jsx';
+import { AdminPage, BillingPage } from '../pages/FinancePages.jsx';
 import { RequireAdmin, RequireAuth } from '../auth/RequireAuth.jsx';
 
 export default function App() {

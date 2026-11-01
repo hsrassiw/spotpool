@@ -23,7 +23,8 @@ class InterruptionTransactions(PauseTransactions):
         self.lose_response = False
 
     def transact_write_items(self, TransactItems, **kwargs):
-        if len(TransactItems) != 3 or TransactItems[2]["Put"]["Item"]["outcome"] != OUTCOME_INTERRUPTED:
+        if (len(TransactItems) != 3 or TransactItems[2]["Put"]["Item"]["outcome"] != OUTCOME_INTERRUPTED
+                or TransactItems[0]['Update']['ExpressionAttributeValues'].get(':status') == 'CANCELLED'):
             return super().transact_write_items(TransactItems, **kwargs)
         self.calls.append(TransactItems)
         task_update, job_update = (action["Update"] for action in TransactItems[:2])
@@ -147,10 +148,28 @@ class WorkerSpotTests(unittest.TestCase):
     def test_cancelled_job_is_not_requeued_by_interruption(self):
         message, received, db, sqs, worker = self.make_worker()
         db.Table("Jobs").item["status"] = "CANCELLED"
-        with self.assertRaisesRegex(RuntimeError, "TransactionCanceledException"):
+        previous_usage = db.Table('Jobs').item['usedVcpuSeconds']
+        self.finish_interrupted(worker, message, received)
+        self.assertEqual('INTERRUPTED', db.meta.client.usage[0]['outcome'])
+        self.assertEqual(previous_usage, db.Table('Jobs').item['usedVcpuSeconds'])
+        self.assertEqual("CANCELLED", worker._task(message)["status"])
+        sqs.change_message_visibility.assert_not_called()
+
+    def test_cancellation_racing_with_interruption_commit_remains_free(self):
+        message, received, db, sqs, worker = self.make_worker()
+        original = db.meta.client.transact_write_items
+        first = True
+        def cancel_before_commit(*args, **kwargs):
+            nonlocal first
+            if first:
+                first = False
+                db.Table('Jobs').item['status'] = 'CANCELLED'
+                raise RuntimeError('TransactionCanceledException')
+            return original(*args, **kwargs)
+        with patch.object(db.meta.client, 'transact_write_items', side_effect=cancel_before_commit):
             self.finish_interrupted(worker, message, received)
-        self.assertEqual([], db.meta.client.usage)
-        self.assertEqual("RUNNING", worker._task(message)["status"])
+        self.assertEqual('INTERRUPTED', db.meta.client.usage[0]['outcome'])
+        self.assertEqual('CANCELLED', worker._task(message)['status'])
         sqs.change_message_visibility.assert_not_called()
 
     def test_both_tasks_on_interrupted_instance_are_returned(self):

@@ -34,6 +34,11 @@ class BillingTests(unittest.TestCase):
         self.assertEqual(4500, _charge_for_job(JOB, usage, True))
         self.assertEqual(7500, _charge_for_job({**JOB, "costCap": 10000}, usage, False))
 
+    def test_cancelled_attempt_is_free_only_with_quota(self):
+        usage = [{'outcome': 'CANCELLED', 'vcpuSeconds': 3600}]
+        self.assertEqual(0, _charge_for_job(JOB, usage, True))
+        self.assertEqual(3000, _charge_for_job(JOB, usage, False))
+
     def test_same_day_quota_update_is_conditioned_on_observed_count(self):
         user = {"errorsDay": "2026-10-31", "errorsToday": 2}
         actions = _transaction(

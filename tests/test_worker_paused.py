@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from worker.agent import JobPaused
+from worker.agent import JobPaused, JobCancelled
 from test_tv2_week1 import JOB, WorkerContractTests
 
 message_fixture = WorkerContractTests._message
@@ -26,6 +26,8 @@ class PauseTransactions:
 
     @staticmethod
     def allowed_states(update):
+        if '#s = :cancelled' in update['ConditionExpression']:
+            return {update['ExpressionAttributeValues'][':cancelled']}
         placeholders = re.search(r"#s IN \(([^)]+)\)", update["ConditionExpression"])[1]
         return {update["ExpressionAttributeValues"][key.strip()]
                 for key in placeholders.split(",")}
@@ -213,6 +215,13 @@ class WorkerPausedTests(unittest.TestCase):
         worker, uploaded = self.run_container_until_heartbeat(False)
         worker._finish.assert_not_called()
         self.assertEqual([], uploaded)
+
+    def test_cancellation_stops_container_and_records_elapsed_usage_and_log(self):
+        worker, uploaded = self.run_container_until_heartbeat(JobCancelled('Job cancelled'))
+        args = worker._finish.call_args.args
+        self.assertEqual((5, 'CANCELLED'), args[5:7])
+        self.assertEqual(1, len(uploaded))
+        self.assertTrue(uploaded[0][0].endswith('/log.txt'))
 
     def test_failed_container_cleanup_does_not_settle(self):
         worker, _ = self.run_container_until_heartbeat(

@@ -60,7 +60,7 @@ test('user cannot render admin page; admin gets the route and navigation item', 
   const admin = createSessionStore({ loadProfile: async () => ({ ...profile, role: 'admin' }), storage: null });
   await admin.signIn('fake-admin-key');
   assert.match(render(admin, '/admin'), /href="\/admin"/);
-  assert.match(render(admin, '/admin'), /Không gian quản trị/);
+  assert.match(render(admin, '/admin'), /Tổng quan quản trị/);
 });
 
 test('transient restore failure renders retry screen without leaking account data', async () => {

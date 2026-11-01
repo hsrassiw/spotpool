@@ -174,12 +174,14 @@ Query `Tasks` theo `jobId`. Link tải tạo mới mỗi lần gọi, hạn 15 p
 ### POST /jobs/{id}/cancel
 
 - `Jobs.status = CANCELLED`, điều kiện trạng thái hiện tại là `UPLOADING`, `QUEUED`, `RUNNING` hoặc `PAUSED`.
-- Mọi task `QUEUED`, `RUNNING`, `PAUSED` chuyển sang `CANCELLED`. Task đang chạy sẽ bị worker dừng ở lần gửi nhịp tim kế tiếp (tối đa 30 giây).
+- Task `QUEUED`, `PAUSED` chuyển sang `CANCELLED` ngay. Task `RUNNING` giữ ownership đến khi worker dừng ở nhịp tim kế tiếp (tối đa 30 giây) và ghi usage/log cuối; sau đó chuyển `CANCELLED`. Billing chờ không còn task RUNNING mới quyết toán. Worker chết được đóng attempt với phí 0 khi lease hết và SQS giao lại.
 - Message còn trong hàng đợi để nguyên, worker tự xóa khi thấy task đã kết thúc.
 
 ### POST /jobs/{id}/topup
 
 Request: `{"amount": 5000}`.
+
+Client nên thêm `requestId` (UUID) và giữ nguyên khi retry để không giữ credit hai lần. Chi tiết API credit, hóa đơn, idempotency và triển khai: [HM8/HM14/HM15](hm8-14-15.md).
 
 - Một `TransactWriteItems`: `Users` (`creditAvailable -= amount`, `creditHeld += amount`, điều kiện `creditAvailable >= amount`) và `Jobs` (`costCap += amount`, điều kiện trạng thái là `QUEUED`, `RUNNING` hoặc `PAUSED`).
 - Nếu job đang `PAUSED`: `Jobs.status = QUEUED`, mọi task `PAUSED` chuyển sang `QUEUED` và được gửi lại message vào hàng đợi ghi trong `Tasks.queue`.
