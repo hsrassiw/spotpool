@@ -181,12 +181,12 @@ resource "aws_cloudwatch_dashboard" "main" {
           region      = var.region
           period      = 60
           annotations = { horizontal = [{ value = 2, label = "Mục tiêu" }] }
-          metrics = flatten([for tier in ["spot", "ondemand"] : [
+          metrics = concat([for tier in ["spot", "ondemand"] : [
             [{ expression = "(${tier}_v + ${tier}_i) / ${tier}_n", label = tier == "spot" ? "Spot" : "On-Demand", id = "${tier}_b" }],
             ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", local.worker_queue_names[tier], { id = "${tier}_v", stat = "Average", visible = false }],
             [".", "ApproximateNumberOfMessagesNotVisible", ".", ".", { id = "${tier}_i", stat = "Average", visible = false }],
             ["AWS/AutoScaling", "GroupInServiceInstances", "AutoScalingGroupName", local.worker_asg_names[tier], { id = "${tier}_n", stat = "Average", visible = false }],
-          ]])
+          ]]...)
         }
       },
       {
