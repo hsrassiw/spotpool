@@ -5,7 +5,7 @@ import os
 import time
 
 from spotpool_core.contracts import (
-    JOB_FAILED, JOB_QUEUED, JOB_RUNNING, JOB_SUCCEEDED, TASK_FAILED,
+    JOB_FAILED, JOB_PAUSED, JOB_QUEUED, JOB_RUNNING, JOB_SUCCEEDED, TASK_FAILED,
     TASK_QUEUED, TASK_RUNNING, fingerprint, validate_message,
 )
 
@@ -40,11 +40,12 @@ def fail_exhausted(message, dynamodb, tasks_table, jobs_table, now=None):
                 "TableName": jobs_table,
                 "Key": {"jobId": message["jobId"]},
                 "UpdateExpression": "ADD tasksRemaining :minusOne, tasksFailed :one",
-                "ConditionExpression": "#s IN (:queued,:running) AND tasksRemaining>:zero",
+                "ConditionExpression": "#s IN (:queued,:running,:paused) AND tasksRemaining>:zero",
                 "ExpressionAttributeNames": {"#s": "status"},
                 "ExpressionAttributeValues": {":minusOne": -1, ":one": 1,
                                               ":queued": JOB_QUEUED,
                                               ":running": JOB_RUNNING,
+                                              ":paused": JOB_PAUSED,
                                               ":zero": 0},
             }},
         ])
@@ -59,10 +60,11 @@ def fail_exhausted(message, dynamodb, tasks_table, jobs_table, now=None):
             jobs.update_item(
                 Key={"jobId": message["jobId"]},
                 UpdateExpression="SET #s=:state, finishedAt=:now",
-                ConditionExpression=f"#s IN (:queued,:running) AND tasksRemaining=:zero AND {failed_condition}",
+                ConditionExpression=f"#s IN (:queued,:running,:paused) AND tasksRemaining=:zero AND {failed_condition}",
                 ExpressionAttributeNames={"#s": "status"},
                 ExpressionAttributeValues={":state": state, ":now": now, ":zero": 0,
-                                           ":queued": JOB_QUEUED, ":running": JOB_RUNNING},
+                                           ":queued": JOB_QUEUED, ":running": JOB_RUNNING,
+                                           ":paused": JOB_PAUSED},
             )
             break
         except Exception as error:
