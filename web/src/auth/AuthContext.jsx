@@ -24,6 +24,7 @@ export function AuthProvider({ children, store: suppliedStore }) {
     restore: store.restore,
     refreshProfile: store.refreshProfile,
     cancelSignIn: store.cancelPending,
+    getSessionSignal: store.getSessionSignal,
     request,
   }), [state, store, request]);
 
