@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import threading
 import time
 from urllib.error import HTTPError
@@ -10,7 +11,8 @@ from urllib.request import ProxyHandler, Request, build_opener
 logger = logging.getLogger(__name__)
 POLL_SECONDS = 5
 TOKEN_TTL_SECONDS = 21600
-IMDS_BASE = "http://169.254.169.254/latest"
+# Test HM17 trỏ sang IMDS giả trên máy (worker/imds_mock.py), bình thường để trống
+IMDS_BASE = os.environ.get("SPOTPOOL_IMDS_BASE") or "http://169.254.169.254/latest"
 
 
 class SpotInterrupted(Exception):

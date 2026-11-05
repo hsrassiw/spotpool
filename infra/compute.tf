@@ -51,6 +51,7 @@ locals {
   worker_files = {
     "worker/agent.py"            = "${path.module}/../worker/agent.py"
     "worker/spot.py"             = "${path.module}/../worker/spot.py"
+    "worker/imds_mock.py"        = "${path.module}/../worker/imds_mock.py"
     "spotpool_core/__init__.py"  = "${path.module}/../spotpool_core/__init__.py"
     "spotpool_core/contracts.py" = "${path.module}/../spotpool_core/contracts.py"
   }
@@ -68,6 +69,7 @@ locals {
     worker_asg       = local.worker_asg_names[tier]
     code_url         = "s3://${aws_s3_bucket.worker_code.id}/${local.worker_code_version}"
     worker_files     = keys(local.worker_files)
+    imds_mock        = var.spot_interrupt_test && tier == "spot"
   }) }
 }
 
