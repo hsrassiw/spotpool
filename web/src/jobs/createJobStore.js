@@ -108,7 +108,7 @@ export function createJobStore({ api, uploadFile, refreshProfile, now = Date.now
       const rejected = error.code === 'CONFIG' || (error.status >= 400 && error.status < 500 && error.status !== 408);
       update({ phase: rejected ? 'draft' : 'create-unknown', error: rejected ? error.message
         : error.details?.jobId ? 'Đã nhận mã job nhưng thông tin tải lên chưa hợp lệ. Hãy hủy job này trước khi tạo lại.'
-          : 'Chưa xác định được kết quả tạo job. Gửi lại có thể tạo thêm một job. Hãy kiểm tra danh sách hoặc báo nhóm trước.',
+          : 'Chưa xác định được kết quả tạo job. Gửi lại có thể tạo thêm một job. Hãy kiểm tra danh sách job trước khi tạo lại.',
         jobId: error.details?.jobId ?? null });
     }
   }

@@ -10,7 +10,7 @@ export class ApiError extends Error {
 
 function httpMessage(status, body) {
   if (status === 401 || status === 403) return 'Khóa API không hợp lệ hoặc chưa được cho phép truy cập.';
-  if (status === 404) return 'Chưa tìm thấy dữ liệu hoặc endpoint chưa được triển khai. Vui lòng kiểm tra với nhóm.';
+  if (status === 404) return 'Không tìm thấy dữ liệu được yêu cầu. Vui lòng làm mới trang hoặc thử lại sau.';
   if (status === 429) return 'Có quá nhiều yêu cầu. Vui lòng chờ một chút rồi thử lại.';
   if (status >= 500) return 'Dịch vụ đang gặp lỗi. Vui lòng thử lại sau.';
   if (body?.error === 'Insufficient credit or maxConcurrentJobs limit reached') return 'Không đủ credit hoặc đã đạt hạn mức job đồng thời. Hãy làm mới hồ sơ và thử lại khi đủ điều kiện.';

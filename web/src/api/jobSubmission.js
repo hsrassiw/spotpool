@@ -2,7 +2,7 @@ import { ApiError } from './client.js';
 import { jobStatuses } from './jobs.js';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const invalid = () => new ApiError('Response tạo/chạy job chưa đúng hợp đồng. Hãy kiểm tra job hiện tại trước khi gửi lại.', { code: 'INVALID_RESPONSE' });
+const invalid = () => new ApiError('Chưa xác nhận được thông tin job. Hãy kiểm tra job hiện tại trước khi gửi lại.', { code: 'INVALID_RESPONSE' });
 
 export function validateUploadUrl(value) {
   try {
