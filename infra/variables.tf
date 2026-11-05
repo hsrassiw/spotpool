@@ -25,6 +25,12 @@ variable "enable_worker" {
   default     = false
 }
 
+variable "spot_interrupt_test" {
+  description = "Máy Spot chạy IMDS giả để giả lập cảnh báo thu hồi (HM17, thay FIS). Chỉ bật hôm test."
+  type        = bool
+  default     = false
+}
+
 variable "ondemand_instance_type" {
   description = "Máy gói Ổn định. 2 vCPU, 4 GB: đủ 2 suất 1,5 GB. Gói Free của tài khoản cho phép loại này."
   type        = string

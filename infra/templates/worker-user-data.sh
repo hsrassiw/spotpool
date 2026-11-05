@@ -36,6 +36,24 @@ SPOTPOOL_AZ=$(md placement/availability-zone)
 SPOTPOOL_LIFECYCLE=$(md instance-life-cycle)
 EOF
 
+%{ if imds_mock ~}
+# Test HM17: worker đọc metadata qua IMDS giả, touch /run/spotpool-interrupt để giả lập cảnh báo thu hồi
+echo "SPOTPOOL_IMDS_BASE=http://127.0.0.1:1338/latest" >> /etc/spotpool-worker.env
+cat > /etc/systemd/system/spotpool-imds-mock.service <<EOF
+[Unit]
+Description=SpotPool IMDS mock (HM17)
+
+[Service]
+ExecStart=/usr/bin/python3.13 /opt/spotpool/worker/imds_mock.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now spotpool-imds-mock
+%{ endif ~}
+
 cat > /etc/systemd/system/spotpool-worker.service <<EOF
 [Unit]
 Description=SpotPool worker
