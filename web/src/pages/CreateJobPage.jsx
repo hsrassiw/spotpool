@@ -58,7 +58,7 @@ export function CreateJobView({ state, actions, profile }) {
     if (window.confirm('Hủy job này? Các lượt upload đang chạy sẽ dừng. File đã tải không tự xóa ngay trên S3.')) actions.cancelJob();
   }
   function newAttempt() {
-    if (window.confirm('Bạn đã kiểm tra kết quả tạo job với nhóm? Gửi lại có thể tạo thêm một job khác.')) actions.acknowledgeUnknownCreate();
+    if (window.confirm('Bạn đã kiểm tra danh sách job và muốn tạo lại? Gửi lại có thể tạo thêm một job khác.')) actions.acknowledgeUnknownCreate();
   }
   return (
     <>
@@ -75,8 +75,9 @@ export function CreateJobView({ state, actions, profile }) {
         <h2>{state.phase === 'cancelled' ? 'Đã hủy job' : 'Đã gửi yêu cầu chạy'}</h2>
         <p className="form-help">Mã job: <span className="mono">{state.jobId}</span></p>
         {state.remoteStatus && <div className="create-message"><StatusBadge status={state.remoteStatus} /></div>}
-        <p className="form-help">Theo dõi trạng thái hiện tại tại danh sách job. Task, log và tải kết quả sẽ được hoàn thiện ở bước 5.</p>
-        <div className="create-actions"><ButtonLink to="/jobs" icon="jobs">Xem danh sách job</ButtonLink>
+        <p className="form-help">Mở chi tiết job để xem tiến độ từng task, log và kết quả.</p>
+        <div className="create-actions"><ButtonLink to={`/jobs/${encodeURIComponent(state.jobId)}`} icon="jobs">Xem chi tiết job</ButtonLink>
+          <ButtonLink to="/jobs" variant="secondary">Xem danh sách job</ButtonLink>
           <Button variant="secondary" onClick={() => { setConfirmed(false); actions.reset(); }}>Tạo job khác</Button>
           {state.profileError && <Button variant="secondary" disabled={state.refreshingProfile} onClick={() => actions.refreshCredit()}>Đọc lại credit</Button>}
         </div>
@@ -96,6 +97,7 @@ export function CreateJobView({ state, actions, profile }) {
                   <option value="spot">Tiết kiệm — Spot</option><option value="ondemand">Ổn định — On-Demand</option>
                 </select><FieldError>{state.errors.tier}</FieldError>
                 <p className="form-help">{state.draft.tier === 'spot' ? 'Giá tiết kiệm hơn; task có thể bị gián đoạn và tự chạy lại.' : 'Phù hợp khi cần hạn chế gián đoạn do thu hồi Spot.'}</p>
+                {state.draft.kind === 'script' && state.draft.tier === 'spot' && <div className="notice notice--warning" role="note"><p>Script chạy lâu ở gói Tiết kiệm: nếu máy bị thu hồi thì script phải chạy lại từ đầu.</p></div>}
               </div>
               <div className="form-field"><label htmlFor="job-cap">Trần chi phí (credit)</label>
                 <input id="job-cap" type="text" inputMode="numeric" autoComplete="off" value={state.draft.costCap} required
@@ -139,7 +141,7 @@ export function CreateJobView({ state, actions, profile }) {
             </div>
           </section>}
           {state.phase === 'create-unknown' && !state.jobId && <section className="panel create-panel">
-            <h2>Kiểm tra kết quả trước khi tạo lại</h2><p className="form-help">Một job có thể đã được tạo nhưng web chưa nhận được mã. Kiểm tra danh sách hoặc phối hợp với nhóm để xác định trước.</p>
+            <h2>Kiểm tra kết quả trước khi tạo lại</h2><p className="form-help">Một job có thể đã được tạo nhưng web chưa nhận được mã. Hãy kiểm tra danh sách job trước khi tạo lại.</p>
             <div className="create-actions"><ButtonLink to="/jobs" variant="secondary">Mở danh sách job</ButtonLink><Button variant="secondary" onClick={newAttempt}>Tôi đã kiểm tra, cho phép tạo lại</Button></div>
           </section>}
         </div>
