@@ -32,7 +32,7 @@ function UploadRows({ state, actions }) {
             <div className="upload-file-heading"><strong title={row.name}>{row.name}</strong><span>{formatBytes(row.size)}</span></div>
             {!editable && <>
               <p className="upload-task-label">{row.taskId} · {labels[row.status]}</p>
-              {row.status === 'uploading' && row.measured && <><progress aria-label={`Tải ${row.name}, ${row.taskId}`} max={row.size || 1} value={row.loaded} /><span className="form-help">{formatBytes(row.loaded)} / {formatBytes(row.size)} đã gửi; chờ S3 xác nhận.</span></>}
+              {row.status === 'uploading' && row.measured && <><progress aria-label={`Tải ${row.name}, ${row.taskId}`} max={row.size || 1} value={row.loaded} /><span className="form-help">{row.loaded >= row.size ? 'Đang hoàn tất tải lên…' : `${formatBytes(row.loaded)} / ${formatBytes(row.size)}`}</span></>}
               {row.error && <p className="upload-file-error" role="alert">{row.error}</p>}
             </>}
           </div>
@@ -55,7 +55,7 @@ export function CreateJobView({ state, actions, profile }) {
   const step = state.phase === 'draft' || state.phase === 'creating' || state.phase === 'create-unknown' ? 0 : ready || done || ['starting', 'checking', 'uncertain'].includes(state.phase) ? 2 : 1;
   const cap = Number(state.draft.costCap);
   function confirmCancel() {
-    if (window.confirm('Hủy job này? Các lượt upload đang chạy sẽ dừng. File đã tải không tự xóa ngay trên S3.')) actions.cancelJob();
+    if (window.confirm('Hủy job này? Các lượt tải lên đang chạy sẽ dừng. File đã tải sẽ không bị xóa ngay.')) actions.cancelJob();
   }
   function newAttempt() {
     if (window.confirm('Bạn đã kiểm tra danh sách job và muốn tạo lại? Gửi lại có thể tạo thêm một job khác.')) actions.acknowledgeUnknownCreate();
@@ -90,14 +90,15 @@ export function CreateJobView({ state, actions, profile }) {
                 <select id="job-kind" value={state.draft.kind} aria-invalid={Boolean(state.errors.kind)} onChange={(event) => actions.configure({ kind: event.target.value })}>
                   <option value="script">Chạy Python</option><option value="video">Nén video</option>
                 </select><FieldError>{state.errors.kind}</FieldError>
-                <p className="form-help">{state.draft.kind === 'script' ? 'Nhận file .py, kết quả là stdout. Script chạy trong container cách ly, không có mạng để cài thêm thư viện.' : 'Mỗi video là một task. Khả năng xử lý phụ thuộc định dạng/nội dung file; dùng cấu hình mặc định của mẫu video.'}</p>
+                <p className="form-help">{state.draft.kind === 'script' ? 'Nhận file .py, trả về kết quả dạng văn bản. Không hỗ trợ cài thêm thư viện.' : 'Chọn video cần nén.'}</p>
               </div>
               <div className="form-field"><label htmlFor="job-tier">Gói xử lý</label>
                 <select id="job-tier" value={state.draft.tier} aria-invalid={Boolean(state.errors.tier)} onChange={(event) => actions.configure({ tier: event.target.value })}>
                   <option value="spot">Tiết kiệm — Spot</option><option value="ondemand">Ổn định — On-Demand</option>
                 </select><FieldError>{state.errors.tier}</FieldError>
-                <p className="form-help">{state.draft.tier === 'spot' ? 'Giá tiết kiệm hơn; task có thể bị gián đoạn và tự chạy lại.' : 'Phù hợp khi cần hạn chế gián đoạn do thu hồi Spot.'}</p>
+                <p className="form-help">{state.draft.tier === 'spot' ? 'Giá tiết kiệm hơn; task có thể bị gián đoạn.' : 'Phù hợp khi cần hạn chế gián đoạn do thu hồi Spot.'}</p>
                 {state.draft.kind === 'script' && state.draft.tier === 'spot' && <div className="notice notice--warning" role="note"><p>Script chạy lâu ở gói Tiết kiệm: nếu máy bị thu hồi thì script phải chạy lại từ đầu.</p></div>}
+                {state.draft.kind === 'video' && state.draft.tier === 'spot' && <div className="notice notice--warning" role="note"><p>Video bị gián đoạn sẽ làm tiếp phần đang dở.</p></div>}
               </div>
               <div className="form-field"><label htmlFor="job-cap">Trần chi phí (credit)</label>
                 <input id="job-cap" type="text" inputMode="numeric" autoComplete="off" value={state.draft.costCap} required
@@ -125,7 +126,7 @@ export function CreateJobView({ state, actions, profile }) {
 
           {state.jobId && <section className="panel create-panel" aria-label="Tải file và chạy job">
             <h2>2. Tải file</h2>
-            <p className="form-help">{state.rows.filter((row) => row.status === 'uploaded').length} / {state.rows.length} file đã được S3 xác nhận. Link tải lên có thời hạn; file và link chỉ được giữ trong trang này.</p>
+            <p className="form-help">Đã tải {state.rows.filter((row) => row.status === 'uploaded').length}/{state.rows.length} file.</p>
             <UploadRows state={state} actions={actions} />
             {state.phase === 'upload' && state.rows.some((row) => row.status === 'error' && !row.expired) && <Button variant="secondary" onClick={() => actions.uploadPending()}>Tải lại các file lỗi</Button>}
             <div className="create-start-section">
@@ -137,7 +138,7 @@ export function CreateJobView({ state, actions, profile }) {
                 {state.phase === 'uncertain' && <Button variant="secondary" onClick={() => actions.checkStatus()}>Kiểm tra trạng thái</Button>}
                 {['upload', 'queued', 'create-unknown'].includes(state.phase) && <Button variant="secondary" onClick={confirmCancel}>Hủy job này</Button>}
               </div>
-              {busy && <p className="form-help" role="status">{state.phase === 'checking' ? 'Đang kiểm tra trạng thái từ API…' : state.phase === 'cancelling' ? 'Đang hủy job…' : 'Đang gửi yêu cầu…'}</p>}
+              {busy && <p className="form-help" role="status">{state.phase === 'checking' ? 'Đang kiểm tra trạng thái…' : state.phase === 'cancelling' ? 'Đang hủy job…' : 'Đang gửi yêu cầu…'}</p>}
             </div>
           </section>}
           {state.phase === 'create-unknown' && !state.jobId && <section className="panel create-panel">
@@ -150,9 +151,8 @@ export function CreateJobView({ state, actions, profile }) {
           <dl className="key-values"><div><dt>Loại</dt><dd>{kindLabel(state.draft.kind)}</dd></div><div><dt>Gói</dt><dd>{tierLabel(state.draft.tier)}</dd></div>
             <div><dt>Số file</dt><dd>{state.files.length}</dd></div><div><dt>Trần chi phí</dt><dd>{Number.isSafeInteger(cap) && cap > 0 ? `${formatCredit(cap)} credit` : '—'}</dd></div>
             <div><dt>Credit khả dụng</dt><dd>{formatCredit(profile.creditAvailable)}</dd></div><div><dt>Đang dùng hạn mức</dt><dd>{profile.runningJobs} / {profile.maxConcurrentJobs} job</dd></div></dl>
-          {(cap > profile.creditAvailable || profile.runningJobs >= profile.maxConcurrentJobs) && <p className="form-error">Số dư hoặc hạn mức hiện tại có thể chưa đủ để chạy. API sẽ kiểm tra lại khi bạn xác nhận chạy.</p>}
+          {(cap > profile.creditAvailable || profile.runningJobs >= profile.maxConcurrentJobs) && <p className="form-error">Số dư hoặc hạn mức hiện tại có thể chưa đủ để chạy. Hãy kiểm tra tài khoản trước khi xác nhận.</p>}
           {state.jobId && <p className="form-help">Mã job: <span className="mono">{state.jobId}</span></p>}
-          <p className="form-help">Tạo job và upload chưa giữ credit. API quyết định số dư, hạn mức và giá xử lý thực tế.</p>
           <Link to="/account" className="text-link">Xem tài khoản</Link>
         </aside>
       </div>}

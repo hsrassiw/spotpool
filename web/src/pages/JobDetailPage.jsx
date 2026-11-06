@@ -62,7 +62,7 @@ export function JobDetailView({ jobId, state, fileState, cancelState = {}, cance
           <ProgressBar completed={completed} total={job.progress.total} tone={job.status === 'PAUSED' ? 'paused' : job.status === 'SUCCEEDED' ? 'success' : 'primary'} label="Tiến độ job" />
           <div className="progress-summary"><span>Thành công: <strong>{job.progress.succeeded}</strong></span><span>Thất bại: <strong>{job.progress.failed}</strong></span></div>
           <p className="form-help">Tiến độ tính theo task thành công hoặc thất bại; task bị hủy không được cộng vào số đã xử lý.</p>
-          <p className="form-help">{isActiveJob(job) ? 'Tự cập nhật khoảng mỗi 5 giây khi tab đang hiển thị.' : needsSettlement(job) && !state.settlementTimedOut ? 'Đang kiểm tra quyết toán trong tối đa 60 giây.' : 'Bạn có thể bấm Làm mới để lấy dữ liệu mới nhất.'}</p>
+          <p className="form-help">{isActiveJob(job) ? 'Tự động cập nhật.' : needsSettlement(job) && !state.settlementTimedOut ? 'Đang chờ tính phí.' : 'Bấm Làm mới để cập nhật.'}</p>
           {state.updatedAt != null && <p className="form-help">Cập nhật: {formatDateTime(Math.floor(state.updatedAt / 1000))}</p>}
         </section>
         <section className="panel detail-panel" aria-label="Chi phí và cấu hình"><h2>Chi phí và cấu hình</h2>
@@ -78,7 +78,7 @@ export function JobDetailView({ jobId, state, fileState, cancelState = {}, cance
         {[['createdAt', 'Tạo job'], ['queuedAt', 'Vào hàng đợi'], ['startedAt', 'Bắt đầu chạy'], ['finishedAt', 'Kết thúc']].map(([key, label]) => <div key={key}><dt>{label}</dt><dd>{formatDateTime(job[key])}</dd></div>)}
       </dl><p className="form-help">Giờ Việt Nam (UTC+7).</p></section>
       <section className="panel jobs-panel" aria-label="Các task của job">
-        <div className="detail-panel task-heading"><h2>File và kết quả</h2><p className="form-help">Kết quả Python là stdout; kết quả video là MP4. File được lưu tối đa 7 ngày.</p></div>
+        <div className="detail-panel task-heading"><h2>File và kết quả</h2><p className="form-help">Kết quả Python dạng văn bản; video dạng MP4. File được lưu tối đa 7 ngày.</p></div>
         {job.tasks.length === 0 ? <EmptyState title={['UPLOADING', 'QUEUED', 'RUNNING'].includes(job.status) ? 'Đang chuẩn bị các task' : 'Chưa có task để hiển thị'} description="Làm mới để kiểm tra lại danh sách task." /> : <div className="table-scroll" role="region" tabIndex={0} aria-label="Bảng task, có thể cuộn ngang">
           <table className="jobs-table tasks-table"><caption className="sr-only">Trạng thái, log và kết quả của từng task</caption>
             <thead><tr><th scope="col">File</th><th scope="col">Trạng thái</th><th scope="col">Gián đoạn</th><th scope="col">Log</th><th scope="col">Kết quả</th></tr></thead>

@@ -40,10 +40,9 @@ export default function JobsPage() {
         <StatCard title="Credit khả dụng" value={formatCredit(profile.creditAvailable)} icon="coins">
           Đang giữ: {formatCredit(profile.creditHeld)} credit
         </StatCard>
-        <StatCard title="Đang chạy" value={list.hasLoaded ? `${list.jobs.filter((job) => job.status === 'RUNNING').length} job` : '—'} icon="play" tone="success" />
-        <StatCard title="Hoàn thành" value={list.hasLoaded ? `${list.jobs.filter((job) => job.status === 'SUCCEEDED').length} job` : '—'} icon="check" tone="success" />
+        <StatCard title="Đang chạy" value={list.hasLoaded ? `${list.jobs.filter((job) => job.status === 'RUNNING').length} job` : '—'} icon="play" tone="success">Trong danh sách đã tải</StatCard>
+        <StatCard title="Hoàn thành" value={list.hasLoaded ? `${list.jobs.filter((job) => job.status === 'SUCCEEDED').length} job` : '—'} icon="check" tone="success">Trong danh sách đã tải</StatCard>
       </div>
-      <p className="stats-context"><Icon name="alert" size={15} />Số job đếm trên danh sách đã tải theo bộ lọc trạng thái, trước khi tìm tên file.</p>
 
       <div className="jobs-toolbar">
         <div className="search-field">
