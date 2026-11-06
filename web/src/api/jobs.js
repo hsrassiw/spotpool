@@ -2,7 +2,7 @@ import { ApiError } from './client.js';
 
 export const jobStatuses = Object.freeze(['UPLOADING', 'QUEUED', 'RUNNING', 'PAUSED', 'SUCCEEDED', 'FAILED', 'CANCELLED']);
 const isCount = (value) => Number.isSafeInteger(value) && value >= 0;
-const invalid = () => new ApiError('Danh sách job từ API chưa đúng hợp đồng. Vui lòng báo nhóm kiểm tra.', { code: 'INVALID_RESPONSE' });
+const invalid = () => new ApiError('Chưa tải được danh sách job đầy đủ. Vui lòng thử lại sau.', { code: 'INVALID_RESPONSE' });
 
 export function parseJobsPage(value) {
   if (!value || !Array.isArray(value.jobs) || !(value.next === null || (typeof value.next === 'string' && value.next.length > 0))) throw invalid();

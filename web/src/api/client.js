@@ -1,17 +1,20 @@
 export class ApiError extends Error {
-  constructor(message, { status = 0, code = 'REQUEST_FAILED' } = {}) {
+  constructor(message, { status = 0, code = 'REQUEST_FAILED', details = null } = {}) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.code = code;
+    this.details = details;
   }
 }
 
 function httpMessage(status, body) {
   if (status === 401 || status === 403) return 'Khóa API không hợp lệ hoặc chưa được cho phép truy cập.';
-  if (status === 404) return 'Chưa tìm thấy dữ liệu hoặc endpoint chưa được triển khai. Vui lòng kiểm tra với nhóm.';
+  if (status === 404) return 'Không tìm thấy dữ liệu được yêu cầu. Vui lòng làm mới trang hoặc thử lại sau.';
   if (status === 429) return 'Có quá nhiều yêu cầu. Vui lòng chờ một chút rồi thử lại.';
   if (status >= 500) return 'Dịch vụ đang gặp lỗi. Vui lòng thử lại sau.';
+  if (body?.error === 'Insufficient credit or maxConcurrentJobs limit reached') return 'Không đủ credit hoặc đã đạt hạn mức job đồng thời. Hãy làm mới hồ sơ và thử lại khi đủ điều kiện.';
+  if (body?.error === 'Missing files on S3') return 'S3 chưa nhận đủ file. Hãy tải lại các file được đánh dấu rồi mới chạy job.';
   const message = body?.error ?? body?.message;
   return typeof message === 'string' && message.length <= 220 ? message : 'Yêu cầu chưa thực hiện được. Vui lòng kiểm tra lại.';
 }
@@ -48,7 +51,12 @@ export function createApiClient({ baseUrl, fetchImpl = globalThis.fetch, timeout
       try { data = text ? JSON.parse(text) : null; } catch {
         if (result.ok) throw new ApiError('API trả dữ liệu không đúng định dạng.', { code: 'INVALID_RESPONSE' });
       }
-      if (!result.ok) throw new ApiError(httpMessage(result.status, data), { status: result.status, code: 'HTTP' });
+      if (!result.ok) {
+        const missing = data?.missingFiles;
+        const details = Array.isArray(missing) && missing.length <= 100 && missing.every((id) => typeof id === 'string' && /^task-\d{4}$/.test(id))
+          ? { missingFiles: [...missing] } : null;
+        throw new ApiError(httpMessage(result.status, data), { status: result.status, code: 'HTTP', details });
+      }
       return data;
     } catch (error) {
       if (signals.some((source) => source.aborted)) throw new DOMException('Request cancelled', 'AbortError');

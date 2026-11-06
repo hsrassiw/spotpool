@@ -110,7 +110,7 @@ export default function AccessPage({ register = false }) {
             </div>
           </div>}
           {(error || (!register && auth.error)) && <p className="form-error" role="alert">{error || auth.error}</p>}
-          {unknownOutcome && <div className="notice notice--warning"><p>Kết quả tạo tài khoản chưa rõ. Gửi lại có thể tạo thêm một tài khoản. Hãy kiểm tra với nhóm trước.</p></div>}
+          {unknownOutcome && <div className="notice notice--warning"><p>Kết quả tạo tài khoản chưa rõ. Gửi lại có thể tạo thêm một tài khoản. Hãy liên hệ hỗ trợ để kiểm tra kết quả trước khi gửi lại.</p></div>}
           <Button type="submit" disabled={busy || unknownOutcome || (!register && !key.trim())}>
             {busy ? 'Đang xử lý…' : register ? 'Tạo tài khoản' : 'Truy cập'}
           </Button>
