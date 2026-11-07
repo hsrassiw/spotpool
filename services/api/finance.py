@@ -1,4 +1,4 @@
-"""Virtual credit deposits, budget increases, and personal invoices (HM14)."""
+"""Xử lý nạp tín dụng ảo, tăng ngân sách và hóa đơn cá nhân (HM14)."""
 
 import json
 import logging
@@ -107,7 +107,7 @@ def credits_handler(event, context):
 
 
 def _resume(job, request_id):
-    """Repeatable delivery: persist queued tasks before sending; retain pending on failure."""
+    """Gửi lặp an toàn: lưu task đang chờ trước khi gửi; giữ trạng thái chờ nếu gửi lỗi."""
     tasks = dynamodb.Table(os.environ['TASKS_TABLE'])
     for task in query_all(tasks, KeyConditionExpression=Key('jobId').eq(job['jobId']), ConsistentRead=True):
         if task['status'] == 'PAUSED':
@@ -205,7 +205,7 @@ def invoices_handler(event, context):
     if not user_id:
         return response(401, {'error': 'Unauthorized'})
     try:
-        # The project-scale invoice view is scoped to this user, including all query pages.
+        # Chỉ hiển thị hóa đơn theo quy mô dự án của người dùng này, bao gồm mọi trang truy vấn.
         jobs = query_all(dynamodb.Table(os.environ['JOBS_TABLE']), IndexName='userId-createdAt-index',
                          KeyConditionExpression=Key('userId').eq(user_id), ScanIndexForward=False)
         today = datetime.now(VN).date()

@@ -1,4 +1,4 @@
-"""Admin-only fleet, queue, revenue and cached AWS cost overview (HM15)."""
+"""Tổng quan dành riêng cho quản trị viên về máy, hàng đợi, doanh thu và chi phí AWS đã lưu cache (HM15)."""
 
 import json
 import logging
@@ -61,7 +61,7 @@ def lambda_handler(event, context):
     if auth.get('role') != 'admin':
         return response(403, {'error': 'Admin role required'})
     try:
-        # Recheck the stored role so a revoked admin does not retain access through authorizer cache.
+        # Kiểm tra lại vai trò đã lưu để quản trị viên bị thu hồi quyền không tiếp tục truy cập qua cache authorizer.
         db = boto3.resource('dynamodb', region_name='ap-southeast-1')
         user = db.Table(os.environ['USERS_TABLE']).get_item(Key={'userId': auth['userId']}, ConsistentRead=True).get('Item')
         if not user or user.get('role') != 'admin':
@@ -102,7 +102,7 @@ def lambda_handler(event, context):
             if not page.get('LastEvaluatedKey'):
                 break
             scan['ExclusiveStartKey'] = page['LastEvaluatedKey']
-        # Cost Explorer uses UTC calendar dates; revenue uses the project's VN business day.
+        # Cost Explorer dùng ngày UTC; doanh thu dùng ngày làm việc theo giờ Việt Nam của dự án.
         cache, warning = aws_cost(boto3.client('s3', region_name='ap-southeast-1'),
             boto3.client('ce', region_name='us-east-1'), os.environ['OUTPUT_BUCKET'],
             days[0], today.isoformat(), now)

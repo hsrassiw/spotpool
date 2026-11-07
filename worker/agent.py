@@ -246,7 +246,7 @@ class Worker:
             if task.get('status') == TASK_RUNNING:
                 if int(task.get('leaseUntil', 0)) >= int(time.time()):
                     return
-                # A crashed worker cannot report its elapsed time. Close its abandoned attempt at zero cost.
+                # Worker bị lỗi không thể báo thời gian đã chạy. Kết thúc lượt thử còn bỏ dở với chi phí bằng 0.
                 self._finish(message, received, task['owner'], int(task['attempt']),
                              int(task.get('startedAt', time.time())), 0, TASK_CANCELLED, None,
                              task.get('logKey', ''), 'Cancelled after worker lease expired')

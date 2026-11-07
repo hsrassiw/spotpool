@@ -1,4 +1,4 @@
-# HM14/HM15 share the existing API package and REST authorizer.
+# HM14/HM15 dùng chung package API hiện tại và REST authorizer.
 locals {
   finance_functions = {
     credits        = { handler = "finance.credits_handler", timeout = 30 }
@@ -88,7 +88,7 @@ resource "aws_lambda_permission" "finance" {
   source_arn    = "${aws_api_gateway_rest_api.spotpool_api.execution_arn}/*/*"
 }
 
-# Cost Explorer and fleet inspection belong only to the admin Lambda.
+# Chỉ Lambda quản trị viên được dùng Cost Explorer và xem thông tin đội máy.
 resource "aws_iam_role" "admin_overview" {
   name               = "${var.name_prefix}-admin-overview"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
