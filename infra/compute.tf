@@ -46,7 +46,18 @@ locals {
   vn_hour           = tonumber(formatdate("h", timeadd(timestamp(), "7h")))
   ondemand_in_hours = local.vn_hour >= var.ondemand_hours_start && local.vn_hour < var.ondemand_hours_end
 
-  # Code worker nhét thẳng vào user data (đã nén), không cần nơi lưu riêng
+  # Code worker để trên S3, máy tải về khi khởi động. User data giới hạn 16 KB nên không nhét code vào được nữa.
+  worker_code_bucket = "worker-${local.suffix}"
+  worker_files = {
+    "worker/agent.py"            = "${path.module}/../worker/agent.py"
+    "worker/spot.py"             = "${path.module}/../worker/spot.py"
+    "worker/imds_mock.py"        = "${path.module}/../worker/imds_mock.py"
+    "spotpool_core/__init__.py"  = "${path.module}/../spotpool_core/__init__.py"
+    "spotpool_core/contracts.py" = "${path.module}/../spotpool_core/contracts.py"
+  }
+  # Sửa code thì đổi thư mục trên S3, user data đổi theo nên ASG thay máy mới
+  worker_code_version = substr(md5(join(",", [for name, src in local.worker_files : "${name}:${filemd5(src)}"])), 0, 12)
+
   worker_user_data = { for tier in local.worker_tiers : tier => templatefile("${path.module}/templates/worker-user-data.sh", {
     region           = var.region
     registry         = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com"
@@ -56,10 +67,28 @@ locals {
     script_image     = "${aws_ecr_repository.job["spotpool-script"].repository_url}:latest"
     worker_queue     = tier
     worker_asg       = local.worker_asg_names[tier]
-    agent_py         = base64gzip(file("${path.module}/../worker/agent.py"))
-    spot_py          = base64gzip(file("${path.module}/../worker/spot.py"))
-    contracts_py     = base64gzip(file("${path.module}/../spotpool_core/contracts.py"))
+    code_url         = "s3://${aws_s3_bucket.worker_code.id}/${local.worker_code_version}"
+    worker_files     = keys(local.worker_files)
+    imds_mock        = var.spot_interrupt_test && tier == "spot"
   }) }
+}
+
+resource "aws_s3_bucket" "worker_code" {
+  bucket        = local.worker_code_bucket
+  force_destroy = true
+}
+
+resource "aws_s3_object" "worker_code" {
+  for_each = local.worker_files
+  bucket   = aws_s3_bucket.worker_code.id
+  key      = "${local.worker_code_version}/${each.key}"
+  source   = each.value
+  etag     = filemd5(each.value)
+
+  # Máy cũ đang chạy vẫn có code, nhưng máy mới bật trong lúc apply cần bản mới có sẵn trước
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_launch_template" "worker" {
@@ -90,6 +119,8 @@ resource "aws_launch_template" "worker" {
     resource_type = "volume"
     tags          = { Project = "spotpool", Tier = each.key }
   }
+
+  depends_on = [aws_s3_object.worker_code]
 }
 
 # Gói Ổn định: On-Demand, giữ sẵn 1 máy trong giờ hoạt động

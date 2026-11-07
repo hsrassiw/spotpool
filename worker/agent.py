@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os
+import stat
 import subprocess
 import tempfile
 import threading
@@ -36,6 +37,23 @@ class JobPaused(Exception):
 
 class JobCancelled(Exception):
     pass
+
+
+def open_result_file(path):
+    """Chỉ mở file thường và giữ nguyên descriptor đã kiểm tra để upload."""
+    before = path.lstat()  # Không đi theo symlink, kể cả link trỏ tới file tồn tại.
+    if not stat.S_ISREG(before.st_mode):
+        raise ValueError("Result must be a regular file, not a symlink or special file")
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
+    descriptor = os.open(path, flags)
+    try:
+        opened = os.fstat(descriptor)
+        if not stat.S_ISREG(opened.st_mode) or not os.path.samestat(before, opened):
+            raise ValueError("Result file changed before upload")
+        return os.fdopen(descriptor, "rb")
+    except BaseException:
+        os.close(descriptor)
+        raise
 
 
 def remaining_seconds(job, vcpu):
@@ -132,6 +150,8 @@ class Worker:
                              self.instance_id, self.asg_name, protected)
 
     def run(self):
+        # Process cũ có thể chết trước khi trả suất/tắt bảo vệ. Chưa nhận task mới.
+        self._set_instance_protection(False)
         if self.queue == "spot":
             self.spot_monitor = self.spot_monitor or SpotMonitor(self.request_interruption)
             self.spot_monitor.start()
@@ -507,12 +527,19 @@ class Worker:
                     elapsed = max(0, math.ceil(time.monotonic() - start_monotonic))
             if status in (TASK_PAUSED, TASK_CANCELLED, OUTCOME_INTERRUPTED):
                 pass
-            elif not error and proc is not None and proc.returncode == 0 and (outdir / "result").is_file():
+            elif not error and proc is not None and proc.returncode == 0:
                 try:
                     self._check_interruption()
-                    self.s3.upload_file(str(outdir / "result"), output_bucket, result_key,
-                                        Callback=self._check_interruption)
-                    status = TASK_SUCCEEDED
+                    try:
+                        result = open_result_file(outdir / "result")
+                    except (OSError, ValueError) as exc:
+                        error = str(exc)[:1000]
+                    else:
+                        # Không mở lại theo đường dẫn sau kiểm tra: tránh symlink/race.
+                        with result:
+                            self.s3.upload_fileobj(result, output_bucket, result_key,
+                                                   Callback=self._check_interruption)
+                        status = TASK_SUCCEEDED
                 except SpotInterrupted as exc:
                     status, error = OUTCOME_INTERRUPTED, str(exc)
             else:

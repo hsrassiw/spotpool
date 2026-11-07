@@ -34,6 +34,8 @@ Trước khi apply, đóng gói Lambda dispatcher: `python3 services/dispatcher/
 
 Mỗi gói một ASG: `spotpool-worker-ondemand` (On-Demand `c7i-flex.large`) và `spotpool-worker-spot` (Spot `c7i-flex.large`, `m7i-flex.large`, 3 AZ). Máy chỉ nhận việc từ hàng đợi của gói mình (`SPOTPOOL_QUEUE`).
 
+Code worker (`worker/`, `spotpool_core/`) được apply đẩy lên bucket `worker-<suffix>`, máy tải về khi khởi động. Sửa code rồi apply thì ASG tự thay máy mới.
+
 ```bash
 terraform apply -var enable_worker=true    # bật 2 ASG
 terraform apply -var enable_worker=false   # tắt sau khi test cho đỡ tốn tiền
@@ -45,6 +47,18 @@ Co giãn (hạng mục 11):
 - Đang 0 máy mà hàng đợi có việc thì alarm `spotpool-worker-<gói>-from-zero` bật máy đầu tiên.
 - Gói Tiết kiệm hết việc thì về 0 máy. Gói Ổn định giữ sẵn 1 máy từ 8h đến 23h giờ Việt Nam, ngoài giờ cũng về 0. Đổi giờ hôm demo: `terraform apply -var enable_worker=true -var ondemand_hours_end=23 -var ondemand_hours_start=6`.
 - Hết việc thì giảm máy sau khoảng 15 phút (target tracking chờ đủ 15 điểm dữ liệu mới giảm).
+
+## Giả lập thu hồi Spot (hạng mục 17)
+
+Tài khoản Free không dùng được AWS FIS nên thay bằng IMDS giả trên máy Spot (`worker/imds_mock.py`). IMDS giả chuyển tiếp mọi request tới IMDS thật, chỉ trả cảnh báo thu hồi khi có file `/run/spotpool-interrupt`.
+
+```bash
+terraform apply -var enable_worker=true -var spot_interrupt_test=true
+# nộp job gói Tiết kiệm, đợi task RUNNING rồi chạy ở thư mục gốc repo:
+bash experiments/spot_interrupt.sh
+```
+
+Script bật cảnh báo qua SSM, đợi 2 phút như AWS rồi tắt máy. Test xong apply lại không có `spot_interrupt_test`.
 
 ## Giám sát và chi phí
 

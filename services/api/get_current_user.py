@@ -49,9 +49,10 @@ def lambda_handler(event, context):
             return response(404, {"error": "User not found"})
 
         # Allowlist lần nữa: tuyệt đối không serialize nguyên Item chứa apiKeyHash.
-        profile = {field: item[field] for field in PUBLIC_FIELDS}
+        profile = {field: item.get(field) for field in PUBLIC_FIELDS}
         for field in NUMBER_FIELDS:
-            profile[field] = int(profile[field])
+            if profile[field] is not None:
+                profile[field] = int(profile[field])
         return response(200, profile)
     except Exception:
         logger.exception("Unable to read current user profile")
