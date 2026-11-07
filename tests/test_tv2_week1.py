@@ -2,6 +2,7 @@ import io
 import json
 import types
 import unittest
+from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import Mock
 
@@ -88,6 +89,24 @@ JOB_FIELDS = {"kind": "video", "vcpu": 1, "image": "spotpool-video", "params": {
 
 
 class DispatcherTests(unittest.TestCase):
+    def test_fractional_params_match_database_and_survive_sqs(self):
+        from boto3.dynamodb.types import TypeSerializer
+
+        params = {"threshold": Decimal("0.1"), "nested": [Decimal("1.25")]}
+        data = manifest()
+        data["params"] = {"threshold": 0.1, "nested": [1.25]}
+        db = FakeDB({**JOB_FIELDS, "jobId": JOB, "userId": USER, "status": "QUEUED",
+                     "tier": "spot", "taskCount": 2, "params": params})
+        sqs = FakeSQS()
+        self.assertEqual(2, dispatch_record(RECORD, s3=FakeS3(data), dynamodb=db,
+                                           sqs=sqs, config=CONFIG, now=100))
+        for task in db.tables["Tasks"].rows.values():
+            TypeSerializer().serialize(task)
+            self.assertEqual(params, task["params"])
+        message = json.loads(sqs.messages[0]["MessageBody"])
+        self.assertEqual(data["params"], message["params"])
+        self.assertEqual(fingerprint(message), db.tables["Tasks"].rows[(JOB, "task-0001")]["fingerprint"])
+
     def test_dispatch_and_replay_are_idempotent_at_task_level(self):
         data = manifest()
         db = FakeDB({**JOB_FIELDS, "jobId": JOB, "userId": USER, "status": "QUEUED",

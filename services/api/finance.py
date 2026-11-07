@@ -127,7 +127,7 @@ def _resume(job, request_id):
             continue
         message = {field: task[field] for field in MESSAGE_FIELDS}
         sqs.send_message(QueueUrl=os.environ['SQS_ONDEMAND_URL' if task['queue'] == 'ondemand' else 'SQS_SPOT_URL'],
-                         MessageBody=json.dumps(message, default=int))
+                         MessageBody=json.dumps(message, default=lambda value: int(value) if value % 1 == 0 else float(value)))
     jobs = dynamodb.Table(os.environ['JOBS_TABLE'])
     try:
         jobs.update_item(

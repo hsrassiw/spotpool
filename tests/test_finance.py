@@ -3,6 +3,7 @@ import os
 import unittest
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from unittest.mock import Mock, patch
 
 os.environ.setdefault('AWS_EC2_METADATA_DISABLED', 'true')
@@ -16,6 +17,16 @@ from services.api import finance, admin_overview
 
 
 class FinanceTests(unittest.TestCase):
+    def test_resume_preserves_fractional_params(self):
+        self.db.Table('Tasks').update_item(
+            Key={'jobId': 'j1', 'taskId': 'task-0001'},
+            UpdateExpression='SET params = :params',
+            ExpressionAttributeValues={':params': {'threshold': Decimal('0.1'), 'nested': [Decimal('1.25')]}},
+        )
+        finance._resume({'jobId': 'j1'}, 'request')
+        message = self.sqs.receive_message(QueueUrl=os.environ['SQS_ONDEMAND_URL'])['Messages'][0]
+        self.assertEqual({'threshold': 0.1, 'nested': [1.25]}, json.loads(message['Body'])['params'])
+
     def setUp(self):
         self.aws = mock_aws()
         self.aws.start()

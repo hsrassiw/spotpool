@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+from decimal import Decimal
 from urllib.parse import unquote_plus
 
 from spotpool_core.contracts import (
@@ -72,7 +73,7 @@ def dispatch_record(record, *, s3, dynamodb, sqs, config, now=None):
         return 0
     if (job.get("tier") != manifest["tier"] or job.get("kind") != manifest["kind"]
             or job.get("vcpu") != manifest["vcpu"] or job.get("image") != manifest["image"]
-            or job.get("params") != manifest["params"]
+            or job.get("params") != json.loads(json.dumps(manifest["params"]), parse_float=Decimal)
             or job.get("files") != [file_name for _, file_name in entries]
             or job.get("taskCount") != len(entries)):
         raise ValueError("Manifest differs from job")
@@ -84,6 +85,7 @@ def dispatch_record(record, *, s3, dynamodb, sqs, config, now=None):
         item = {**message, "fileName": file_name, "fingerprint": digest,
                 "status": TASK_QUEUED, "queue": manifest["tier"],
                 "interruptCount": 0, "attempt": 0, "queuedAt": timestamp}
+        item = json.loads(json.dumps(item), parse_float=Decimal)
         try:
             tasks.put_item(Item=item, ConditionExpression="attribute_not_exists(jobId) AND attribute_not_exists(taskId)")
         except Exception as error:
