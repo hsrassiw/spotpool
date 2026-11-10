@@ -98,7 +98,7 @@ export function CreateJobView({ state, actions, profile }) {
                 </select><FieldError>{state.errors.tier}</FieldError>
                 <p className="form-help">{state.draft.tier === 'spot' ? 'Giá tiết kiệm hơn; task có thể bị gián đoạn.' : 'Phù hợp khi cần hạn chế gián đoạn do thu hồi Spot.'}</p>
                 {state.draft.kind === 'script' && state.draft.tier === 'spot' && <div className="notice notice--warning" role="note"><p>Script chạy lâu ở gói Tiết kiệm: nếu máy bị thu hồi thì script phải chạy lại từ đầu.</p></div>}
-                {state.draft.kind === 'video' && state.draft.tier === 'spot' && <div className="notice notice--warning" role="note"><p>Video bị gián đoạn sẽ làm tiếp phần đang dở.</p></div>}
+                {state.draft.kind === 'video' && state.draft.tier === 'spot' && <div className="notice notice--warning" role="note"><p>Video đang nén dở khi máy bị thu hồi sẽ được nén lại từ đầu; các video đã xong được giữ nguyên.</p></div>}
               </div>
               <div className="form-field"><label htmlFor="job-cap">Trần chi phí (credit)</label>
                 <input id="job-cap" type="text" inputMode="numeric" autoComplete="off" value={state.draft.costCap} required
