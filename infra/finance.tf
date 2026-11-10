@@ -105,5 +105,7 @@ resource "aws_iam_role_policy" "admin_overview" {
     { Effect = "Allow", Action = ["dynamodb:GetItem"], Resource = aws_dynamodb_table.users.arn },
     { Effect = "Allow", Action = ["dynamodb:Scan"], Resource = aws_dynamodb_table.jobs.arn },
     { Effect = "Allow", Action = ["s3:GetObject", "s3:PutObject"], Resource = "${aws_s3_bucket.output_bucket.arn}/cache/aws-cost.json" },
+    # Thiếu ListBucket thì S3 trả AccessDenied thay vì NoSuchKey khi cache chưa có, lần gọi đầu bị lỗi 500
+    { Effect = "Allow", Action = ["s3:ListBucket"], Resource = aws_s3_bucket.output_bucket.arn },
   ] })
 }
