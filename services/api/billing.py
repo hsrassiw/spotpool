@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 TERMINAL_STATUSES = frozenset({"SUCCEEDED", "FAILED", "CANCELLED"})
-BILLABLE_OUTCOMES = frozenset({"SUCCEEDED", "PAUSED", "FAILED"})
+BILLABLE_OUTCOMES = frozenset({"SUCCEEDED", "PAUSED", "FAILED", "CANCELLED"})
 logger = logging.getLogger(__name__)
 
 
@@ -50,14 +50,14 @@ def _charge_for_job(job, usage, free_failed):
         int(item.get("vcpuSeconds", 0))
         for item in usage
         if item.get("outcome") in BILLABLE_OUTCOMES
-        and not (free_failed and item.get("outcome") == "FAILED")
+        and not (free_failed and item.get("outcome") in {"FAILED", "CANCELLED"})
     )
     measured_charge = (billable_seconds * unit_price + 3599) // 3600
     # Credit là số nguyên; phí không vượt trần, phần vượt do các task chạy song song sẽ do nền tảng chịu.
     return min(cost_cap, measured_charge)
 
 
-def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, free_failed):
+def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, free_failed, billable_seconds=0, platform_credit=0):
     cost_cap = int(job["costCap"])
     values = {
         ":cap": cost_cap,
@@ -95,7 +95,7 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
             quota_condition = "(attribute_not_exists(errorsDay) OR errorsDay <> :today) AND freeErrorQuotaPerDay > :zero"
         user_condition += f" AND ({quota_condition})"
 
-    return [
+    actions = [
         {
             "Update": {
                 "TableName": users_table,
@@ -109,7 +109,7 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
             "Update": {
                 "TableName": jobs_table,
                 "Key": {"jobId": job["jobId"]},
-                "UpdateExpression": "SET chargedCredit = :charge, settledAt = :settled",
+                "UpdateExpression": "SET chargedCredit = :charge, settledAt = :settled, billableVcpuSeconds = :seconds, platformCredit = :platform",
                 "ConditionExpression": (
                     "attribute_not_exists(settledAt) AND attribute_exists(queuedAt) "
                     "AND #status IN (:succeeded, :failed, :cancelled)"
@@ -118,6 +118,8 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
                 "ExpressionAttributeValues": {
                     ":charge": charge,
                     ":settled": settled_at,
+                    ":seconds": billable_seconds,
+                    ":platform": platform_credit,
                     ":succeeded": "SUCCEEDED",
                     ":failed": "FAILED",
                     ":cancelled": "CANCELLED",
@@ -125,6 +127,11 @@ def _transaction(job, user, users_table, jobs_table, charge, today, settled_at, 
             }
         },
     ]
+    if 'usedVcpuSeconds' in job:
+        update = actions[1]['Update']
+        update['ConditionExpression'] += ' AND usedVcpuSeconds = :observed'
+        update['ExpressionAttributeValues'][':observed'] = job['usedVcpuSeconds']
+    return actions
 
 
 def settle_job(job_id, dynamodb, table_names, *, today=None, settled_at=None):
@@ -147,6 +154,19 @@ def settle_job(job_id, dynamodb, table_names, *, today=None, settled_at=None):
         ):
             return False
 
+        if job.get('status') == 'CANCELLED':
+            # Cancellation is visible immediately, but billing waits for running attempts to stop.
+            from boto3.dynamodb.conditions import Key
+            tasks = dynamodb.Table(table_names['TASKS_TABLE'])
+            query = {'KeyConditionExpression': Key('jobId').eq(job_id), 'ConsistentRead': True}
+            while True:
+                page = tasks.query(**query)
+                if any(task.get('status') == 'RUNNING' for task in page.get('Items', [])):
+                    return False
+                if not page.get('LastEvaluatedKey'):
+                    break
+                query['ExclusiveStartKey'] = page['LastEvaluatedKey']
+
         user = users.get_item(
             Key={"userId": job["userId"]}, ConsistentRead=True,
         ).get("Item")
@@ -160,9 +180,14 @@ def settle_job(job_id, dynamodb, table_names, *, today=None, settled_at=None):
         # Chỉ miễn phí phần chạy lỗi; thời gian chạy thành công hoặc tạm dừng vẫn được tính.
         free_failed = has_failed_work and errors_today < quota
         charge = _charge_for_job(job, usage, free_failed)
+        billable_seconds = sum(int(item.get('vcpuSeconds', 0)) for item in usage
+                               if item.get('outcome') in BILLABLE_OUTCOMES
+                               and not (free_failed and item.get('outcome') in {'FAILED', 'CANCELLED'}))
+        total_seconds = sum(int(item.get('vcpuSeconds', 0)) for item in usage)
+        platform_credit = max(0, (total_seconds * int(job['unitPrice']) + 3599) // 3600 - charge)
         transaction = _transaction(
             job, user, table_names["USERS_TABLE"], table_names["JOBS_TABLE"],
-            charge, date, now, free_failed,
+            charge, date, now, free_failed, billable_seconds, platform_credit,
         )
 
         try:
@@ -189,6 +214,7 @@ def lambda_handler(event, context):
         "JOBS_TABLE": os.environ["JOBS_TABLE"],
         "USERS_TABLE": os.environ["USERS_TABLE"],
         "USAGE_TABLE": os.environ["USAGE_TABLE"],
+        "TASKS_TABLE": os.environ["TASKS_TABLE"],
     }
     failures = []
     for record in event.get("Records", []):

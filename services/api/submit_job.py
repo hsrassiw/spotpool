@@ -3,6 +3,8 @@ import logging
 import os
 import time
 import uuid
+from decimal import Decimal
+import math
 
 import boto3
 from helper import generate_presigned_upload_url
@@ -32,7 +34,9 @@ def _response(status_code, payload):
 def _dynamodb_value(value):
     """Validate nested params before storing them or publishing a manifest."""
     if isinstance(value, float):
-        raise ValueError('params numbers must be integers')
+        if not math.isfinite(value):
+            raise ValueError('params numbers must be finite')
+        return Decimal(str(value))
     if isinstance(value, list):
         return [_dynamodb_value(item) for item in value]
     if isinstance(value, dict):

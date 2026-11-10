@@ -35,6 +35,10 @@ class JobPaused(Exception):
     pass
 
 
+class JobCancelled(Exception):
+    pass
+
+
 def open_result_file(path):
     """Chỉ mở file thường và giữ nguyên descriptor đã kiểm tra để upload."""
     before = path.lstat()  # Không đi theo symlink, kể cả link trỏ tới file tồn tại.
@@ -239,6 +243,14 @@ class Worker:
             self._delete(received)
             return
         if job.get("status") == JOB_CANCELLED:
+            if task.get('status') == TASK_RUNNING:
+                if int(task.get('leaseUntil', 0)) >= int(time.time()):
+                    return
+                # Worker bị lỗi không thể báo thời gian đã chạy. Kết thúc lượt thử còn bỏ dở với chi phí bằng 0.
+                self._finish(message, received, task['owner'], int(task['attempt']),
+                             int(task.get('startedAt', time.time())), 0, TASK_CANCELLED, None,
+                             task.get('logKey', ''), 'Cancelled after worker lease expired')
+                return
             self._set_task_state(message, TASK_CANCELLED)
             self._delete(received)
             return
@@ -296,6 +308,10 @@ class Worker:
                     self._delete(received)
                 return
             if current and current.get("status") in (JOB_CANCELLED, JOB_SUCCEEDED, JOB_FAILED):
+                if current['status'] == JOB_CANCELLED:
+                    self._finish(message, received, owner, int(claimed['attempt']), now, 0,
+                                 TASK_CANCELLED, None, '', 'Cancelled before container started')
+                    return
                 target = TASK_CANCELLED if current["status"] == JOB_CANCELLED else TASK_PAUSED
                 try:
                     tasks.update_item(
@@ -373,7 +389,9 @@ class Worker:
     def _heartbeat(self, message, received, owner):
         now = int(time.time())
         job = self._job(message)
-        if not job or job.get("status") in (JOB_CANCELLED, JOB_SUCCEEDED, JOB_FAILED):
+        if job and job.get('status') == JOB_CANCELLED:
+            raise JobCancelled('Job cancelled by user')
+        if not job or job.get("status") in (JOB_SUCCEEDED, JOB_FAILED):
             return False
         try:
             self.db.Table(self.config["TASKS_TABLE"]).update_item(
@@ -481,6 +499,8 @@ class Worker:
                 status, error = OUTCOME_INTERRUPTED, str(exc)
             except JobPaused as exc:
                 status, error = TASK_PAUSED, str(exc)
+            except JobCancelled as exc:
+                status, error = TASK_CANCELLED, str(exc)
             except LeaseLost:
                 return
             except Exception as exc:
@@ -505,7 +525,7 @@ class Worker:
                         proc.stdout.close()
                 if start_monotonic is not None:
                     elapsed = max(0, math.ceil(time.monotonic() - start_monotonic))
-            if status in (TASK_PAUSED, OUTCOME_INTERRUPTED):
+            if status in (TASK_PAUSED, TASK_CANCELLED, OUTCOME_INTERRUPTED):
                 pass
             elif not error and proc is not None and proc.returncode == 0:
                 try:
@@ -532,6 +552,11 @@ class Worker:
 
     def _finish(self, message, received, owner, attempt, started_at, elapsed, status,
                 result_key, log_key, error):
+        current_job = self._job(message)
+        cancelled_interruption = bool(current_job and current_job.get('status') == JOB_CANCELLED
+                                      and status == OUTCOME_INTERRUPTED)
+        if current_job and current_job.get('status') == JOB_CANCELLED:
+            status, result_key = TASK_CANCELLED, None
         interrupted = status == OUTCOME_INTERRUPTED
         target_status = TASK_QUEUED if interrupted else status
         interrupt_count, target_queue = None, None
@@ -561,7 +586,7 @@ class Worker:
             "usageId": f'{message["jobId"]}#{message["taskId"]}#{attempt}',
             "jobId": message["jobId"], "taskId": message["taskId"],
             "attempt": attempt, "tier": message["tier"], "vcpu": message["vcpu"],
-            "outcome": status, "vcpuSeconds": vcpu_seconds,
+            "outcome": OUTCOME_INTERRUPTED if cancelled_interruption else status, "vcpuSeconds": vcpu_seconds,
             "startedAt": started_at, "finishedAt": finished_at,
             "day": time.strftime("%Y-%m-%d", time.gmtime(finished_at + 7 * 3600)),
         }
@@ -592,6 +617,10 @@ class Worker:
             job_update += ", tasksRemaining :minusOne, "
             job_update += "tasksSucceeded :one" if status == TASK_SUCCEEDED else "tasksFailed :one"
             job_values[":minusOne"] = -1
+        job_condition = "#s IN (:queued,:running,:paused) AND tasksRemaining > :zero"
+        if status == TASK_CANCELLED:
+            job_values = {':used': 0 if cancelled_interruption else vcpu_seconds, ':one': 1, ':minusOne': -1, ':cancelled': JOB_CANCELLED}
+            job_condition = '#s = :cancelled AND tasksRemaining > :zero'
         token = str(uuid.uuid5(uuid.NAMESPACE_URL, usage["usageId"] + owner))
         try:
             self.db.meta.client.transact_write_items(
@@ -606,7 +635,7 @@ class Worker:
                     {"Update": {"TableName": self.config["JOBS_TABLE"],
                                 "Key": {"jobId": message["jobId"]},
                                 "UpdateExpression": job_update,
-                                "ConditionExpression": "#s IN (:queued,:running,:paused) AND tasksRemaining > :zero",
+                                "ConditionExpression": job_condition,
                                 "ExpressionAttributeNames": {"#s": "status"},
                                 "ExpressionAttributeValues": {**job_values, ":zero": 0}}},
                     {"Put": {"TableName": self.config["USAGE_TABLE"], "Item": usage,
@@ -615,6 +644,12 @@ class Worker:
             )
         except Exception:
             latest = self._task(message)
+            latest_job = self._job(message)
+            if (status != TASK_CANCELLED and latest_job and latest_job.get('status') == JOB_CANCELLED
+                    and latest and latest.get('status') == TASK_RUNNING and latest.get('owner') == owner):
+                return self._finish(message, received, owner, attempt, started_at, elapsed,
+                                    OUTCOME_INTERRUPTED if interrupted else TASK_CANCELLED,
+                                    None, log_key, 'Job cancelled by user')
             if (not latest or latest.get("owner") != owner or latest.get("status") != target_status
                     or interrupted and (latest.get("interruptCount") != interrupt_count
                                         or latest.get("queue") != target_queue)):

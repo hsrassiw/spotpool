@@ -51,18 +51,25 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={':jid': job_id}
         )
         tasks = tasks_resp.get('Items', [])
+        while tasks_resp.get('LastEvaluatedKey'):
+            tasks_resp = tasks_table.query(
+                KeyConditionExpression='jobId = :jid',
+                ExpressionAttributeValues={':jid': job_id},
+                ExclusiveStartKey=tasks_resp['LastEvaluatedKey'],
+            )
+            tasks.extend(tasks_resp.get('Items', []))
         
         for task in tasks:
             try:
                 tasks_table.update_item(
                     Key={'jobId': job_id, 'taskId': task['taskId']},
                     UpdateExpression="SET #st = :c",
-                    ConditionExpression="#st IN (:q, :r, :p)",
+                    # Running workers must retain ownership until they stop and record usage/logs.
+                    ConditionExpression="#st IN (:q, :p)",
                     ExpressionAttributeNames={'#st': 'status'},
                     ExpressionAttributeValues={
                         ':c': 'CANCELLED',
                         ':q': 'QUEUED',
-                        ':r': 'RUNNING',
                         ':p': 'PAUSED'
                     }
                 )

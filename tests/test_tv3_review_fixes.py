@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import unittest
+from decimal import Decimal
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -35,7 +36,7 @@ class SubmitJobValidationTests(unittest.TestCase):
         }
 
     def test_requires_integer_cost_cap_and_vcpu(self):
-        for field, value in (("costCap", True), ("costCap", 5000.0), ("vcpu", True), ("vcpu", None)):
+        for field, value in (("costCap", True), ("costCap", None), ("costCap", 5000.0), ("vcpu", 1.0), ("vcpu", True), ("vcpu", None)):
             with self.subTest(field=field, value=value):
                 request = {**self.valid, field: value}
                 with self.assertRaises(ValueError):
@@ -47,15 +48,17 @@ class SubmitJobValidationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     submit_job._validated_request({**self.valid, "files": files})
 
-    def test_rejects_nested_params_floats(self):
+    def test_converts_nested_params_floats(self):
         for params in ({"value": 0.75}, {"options": [1, {"value": 1.5}]}, {"value": 1.0}):
             with self.subTest(params=params):
-                with self.assertRaisesRegex(ValueError, "integers"):
-                    submit_job._validated_request({**self.valid, "params": params})
+                converted = submit_job._validated_request({**self.valid, "params": params})[-1]
+                expected = json.loads(json.dumps(params), parse_float=Decimal)
+                self.assertEqual(expected, converted)
 
     def test_rejects_non_finite_param_numbers(self):
-        with self.assertRaisesRegex(ValueError, "integers"):
-            submit_job._validated_request({**self.valid, "params": {"value": float("nan")}})
+        for value in (float("nan"), float("inf"), float("-inf")):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "finite"):
+                submit_job._validated_request({**self.valid, "params": {"value": value}})
 
     def test_invalid_request_returns_cors_headers(self):
         response = submit_job.lambda_handler({"body": json.dumps({**self.valid, "vcpu": True})}, None)
@@ -78,13 +81,19 @@ class SubmitJobValidationTests(unittest.TestCase):
         item = table.put_item.call_args.kwargs["Item"]
         self.assertEqual(self.valid["params"], item["params"])
 
-    def test_float_params_return_400_without_creating_job(self):
-        with patch.object(submit_job.dynamodb, "Table") as table:
+    def test_float_params_are_persisted_as_decimal(self):
+        with (
+            patch.object(submit_job.dynamodb, "Table") as table,
+            patch.object(submit_job, "generate_presigned_upload_url", return_value="https://upload"),
+        ):
             response = submit_job.lambda_handler({
+                "requestContext": {"authorizer": {"userId": USER_ID}},
                 "body": json.dumps({**self.valid, "params": {"nested": [0.1]}}),
             }, None)
-        self.assertEqual(400, response["statusCode"])
-        table.assert_not_called()
+        self.assertEqual(200, response["statusCode"])
+        params = table.return_value.put_item.call_args.kwargs["Item"]["params"]
+        self.assertIsInstance(params["nested"][0], Decimal)
+        self.assertEqual(Decimal("0.1"), params["nested"][0])
 
 
 class CorsAndAuthorizerTests(unittest.TestCase):

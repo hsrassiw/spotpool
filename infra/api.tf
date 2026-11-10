@@ -203,6 +203,7 @@ resource "aws_lambda_function" "billing" {
       JOBS_TABLE  = aws_dynamodb_table.jobs.name
       USERS_TABLE = aws_dynamodb_table.users.name
       USAGE_TABLE = aws_dynamodb_table.usage.name
+      TASKS_TABLE = aws_dynamodb_table.tasks.name
     }
   }
 }
@@ -411,13 +412,17 @@ resource "aws_api_gateway_integration" "integration_post_job_cancel" {
 
 locals {
   cors_resources = {
-    users      = aws_api_gateway_resource.users.id
-    users_me   = aws_api_gateway_resource.users_me.id
-    rotate_key = aws_api_gateway_resource.users_rotate_key.id
-    jobs       = aws_api_gateway_resource.jobs.id
-    job_item   = aws_api_gateway_resource.job_item.id
-    job_start  = aws_api_gateway_resource.job_start.id
-    job_cancel = aws_api_gateway_resource.job_cancel.id
+    users          = aws_api_gateway_resource.users.id
+    users_me       = aws_api_gateway_resource.users_me.id
+    rotate_key     = aws_api_gateway_resource.users_rotate_key.id
+    jobs           = aws_api_gateway_resource.jobs.id
+    job_item       = aws_api_gateway_resource.job_item.id
+    job_start      = aws_api_gateway_resource.job_start.id
+    job_cancel     = aws_api_gateway_resource.job_cancel.id
+    credits        = aws_api_gateway_resource.credits.id
+    topup          = aws_api_gateway_resource.job_topup.id
+    invoices       = aws_api_gateway_resource.invoices.id
+    admin_overview = aws_api_gateway_resource.admin_overview.id
   }
 }
 
@@ -485,6 +490,7 @@ resource "aws_api_gateway_gateway_response" "cors" {
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [
     aws_api_gateway_integration.integration_post_users,
+    aws_api_gateway_integration.finance,
     aws_api_gateway_integration.integration_get_current_user,
     aws_api_gateway_integration.integration_rotate_key,
     aws_api_gateway_integration.integration_post_jobs,
@@ -501,6 +507,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.users.id,
+      [for k, v in aws_api_gateway_integration.finance : { id = v.id, uri = v.uri, method = v.http_method }],
+      [for k, v in aws_api_gateway_method.finance : { id = v.id, authorization = v.authorization, authorizer = v.authorizer_id }],
       aws_api_gateway_method.post_users.id,
       aws_api_gateway_integration.integration_post_users.id,
       aws_api_gateway_resource.users_me.id,
