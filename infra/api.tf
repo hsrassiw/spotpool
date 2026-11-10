@@ -18,6 +18,8 @@ data "archive_file" "api_lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../services/api"
   output_path = "${path.module}/build/api_lambda.zip"
+  # Chạy test sinh __pycache__, không loại ra thì plan nào cũng báo đổi 14 Lambda
+  excludes = ["__pycache__", "README.md"]
 }
 
 # --- 3. KHAI BÁO CÁC HÀM LAMBDA ---
