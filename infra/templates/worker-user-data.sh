@@ -9,6 +9,9 @@ systemctl enable --now docker
 # docker pull từ ECR dùng quyền của IAM role, không cần docker login
 mkdir -p /root/.docker
 echo '{"credHelpers": {"${registry}": "ecr-login"}}' > /root/.docker/config.json
+# Kéo image trước khi nhận task, nếu không thì task đầu tiên trên máy mới bị tính tiền cả thời gian pull
+docker pull -q "${script_image}" || true
+docker pull -q "${video_image}" || true
 
 # Code worker tải từ S3 (qua S3 Gateway Endpoint), mỗi lần sửa code là một thư mục mới
 %{ for f in worker_files ~}

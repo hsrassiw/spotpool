@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os
+import random
 import stat
 import subprocess
 import tempfile
@@ -37,6 +38,19 @@ class JobPaused(Exception):
 
 class JobCancelled(Exception):
     pass
+
+
+def retry_conflict(call, attempts=5):
+    """Hai task cùng job xong cùng lúc thì cùng ghi item Job, DynamoDB hủy một bên
+    với TransactionConflict. Giao dịch bị hủy chưa ghi gì nên thử lại là an toàn."""
+    for attempt in range(attempts):
+        try:
+            return call()
+        except Exception as error:
+            text = str(error)
+            if attempt == attempts - 1 or "TransactionConflict" not in text:
+                raise
+            time.sleep(random.uniform(0.05, 0.25) * (attempt + 1))
 
 
 def open_result_file(path):
@@ -292,13 +306,13 @@ class Worker:
                 self._delete(received)
             return
         try:
-            self.db.Table(self.config["JOBS_TABLE"]).update_item(
+            retry_conflict(lambda: self.db.Table(self.config["JOBS_TABLE"]).update_item(
                 Key={"jobId": message["jobId"]},
                 UpdateExpression="SET #s=:running, startedAt=if_not_exists(startedAt,:now)",
                 ConditionExpression="#s=:queued",
                 ExpressionAttributeNames={"#s": "status"},
                 ExpressionAttributeValues={":running": JOB_RUNNING, ":queued": JOB_QUEUED, ":now": now},
-            )
+            ))
         except Exception as error:
             if "ConditionalCheckFailedException" not in str(error):
                 raise
@@ -361,7 +375,7 @@ class Worker:
             task_names["#owner"] = "owner"
             task_values[":owner"] = owner
         try:
-            self.db.meta.client.transact_write_items(TransactItems=[
+            retry_conflict(lambda: self.db.meta.client.transact_write_items(TransactItems=[
                 {"Update": {
                     "TableName": self.config["JOBS_TABLE"],
                     "Key": {"jobId": message["jobId"]},
@@ -378,7 +392,7 @@ class Worker:
                     "ExpressionAttributeNames": task_names,
                     "ExpressionAttributeValues": task_values,
                 }},
-            ])
+            ]))
         except Exception as error:
             if "TransactionCanceledException" in str(error):
                 # Job/task đã đổi hoặc giao dịch chưa ghi được: giữ message để retry.
@@ -623,7 +637,7 @@ class Worker:
             job_condition = '#s = :cancelled AND tasksRemaining > :zero'
         token = str(uuid.uuid5(uuid.NAMESPACE_URL, usage["usageId"] + owner))
         try:
-            self.db.meta.client.transact_write_items(
+            retry_conflict(lambda: self.db.meta.client.transact_write_items(
                 ClientRequestToken=token,
                 TransactItems=[
                     {"Update": {"TableName": self.config["TASKS_TABLE"],
@@ -641,7 +655,7 @@ class Worker:
                     {"Put": {"TableName": self.config["USAGE_TABLE"], "Item": usage,
                              "ConditionExpression": "attribute_not_exists(userId) AND attribute_not_exists(usageId)"}},
                 ],
-            )
+            ))
         except Exception:
             latest = self._task(message)
             latest_job = self._job(message)
@@ -674,7 +688,7 @@ class Worker:
         for target, failed_condition in ((JOB_SUCCEEDED, "tasksFailed=:zero"),
                                          (JOB_FAILED, "tasksFailed>:zero")):
             try:
-                jobs.update_item(
+                retry_conflict(lambda: jobs.update_item(
                     Key={"jobId": message["jobId"]},
                     UpdateExpression="SET #s=:target, finishedAt=:now",
                     ConditionExpression=f"#s IN (:queued,:running) AND tasksRemaining=:zero AND {failed_condition}",
@@ -682,7 +696,7 @@ class Worker:
                     ExpressionAttributeValues={":target": target, ":queued": JOB_QUEUED,
                                                ":running": JOB_RUNNING, ":zero": 0,
                                                ":now": int(time.time())},
-                )
+                ))
                 return
             except Exception as error:
                 if "ConditionalCheckFailedException" not in str(error):

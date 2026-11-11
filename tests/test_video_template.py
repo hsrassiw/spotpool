@@ -45,7 +45,7 @@ class VideoTemplateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             source, output = Path(folder) / 'payload', Path(folder) / 'result'
             subprocess.run([FFMPEG, '-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i',
-                'testsrc=size=160x120:rate=10', '-t', '0.4', '-pix_fmt', 'yuv420p', '-f', 'mp4', str(source)],
+                'testsrc=size=160x120:rate=10', '-t', '0.4', '-pix_fmt', 'yuv444p', '-f', 'mp4', str(source)],
                 check=True, capture_output=True)
             result = subprocess.run([SHELL, str(ENTRYPOINT), str(source), str(output)],
                                     env=self.env('0080'), capture_output=True, text=True)
@@ -55,3 +55,5 @@ class VideoTemplateTests(unittest.TestCase):
             probe = subprocess.run([FFMPEG, '-hide_banner', '-i', str(output)], capture_output=True, text=True)
             self.assertIn('h264', probe.stderr)
             self.assertIn('106x80', probe.stderr)
+            # Đầu vào yuv444p vẫn phải ra yuv420p, nhiều trình duyệt và điện thoại không phát được 4:4:4
+            self.assertIn('yuv420p', probe.stderr)
