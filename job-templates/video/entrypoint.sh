@@ -18,5 +18,5 @@ if [ "${#height}" -gt 4 ] || [ "$height" -lt 2 ] || [ "$height" -gt 4320 ] || [ 
     exit 2
 fi
 exec ffmpeg -nostdin -hide_banner -y -i "$1" \
-    -vf "scale=-2:$height" -c:v libx264 -preset medium -crf 23 \
+    -vf "scale=-2:$height" -c:v libx264 -preset medium -crf 23 -pix_fmt yuv420p \
     -c:a aac -b:a 128k -movflags +faststart -f mp4 "$2"
