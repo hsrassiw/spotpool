@@ -5,8 +5,8 @@ Nền tảng cho thuê tài nguyên tính toán theo job, đa người dùng, t�
 | | Thành viên | MSSV |
 |---|---|---|
 | TV1 | Phạm Minh Nghĩa (nhóm trưởng) | 24021584 |
-| TV2 | Nguyễn Minh Khuê | 24021363 |
-| TV3 | Đoàn Ngọc Anh | 24021536 |
+| TV2 | Nguyễn Minh Khuê | 24021536 |
+| TV3 | Đoàn Ngọc Anh | 24021363 |
 
 Hợp đồng giữa các phần (API, bảng, hàng đợi, luồng trạng thái): [docs/contracts.md](docs/contracts.md). Báo cáo: [Báo cáo 1](docs/Project%20Progress%201.pdf), [Báo cáo 2](docs/Project%20Progress%202.pdf).
 
