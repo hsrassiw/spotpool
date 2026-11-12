@@ -164,12 +164,14 @@ Query `Tasks` theo `jobId`. Link tải tạo mới mỗi lần gọi, hạn 15 p
   "finishedAt": null,
   "tasks": [
     {"taskId": "task-0001", "fileName": "bai1.mp4", "status": "SUCCEEDED",
-     "interruptCount": 0, "resultUrl": "https://…", "logUrl": "https://…"}
+     "interruptCount": 0, "checkpointAt": null, "resultUrl": "https://…", "logUrl": "https://…"}
   ]
 }
 ```
 
 `interrupted = true` khi có task đang `QUEUED` hoặc `RUNNING` mà `interruptCount > 0`. Khi đó web hiện "bị gián đoạn, đang chạy tiếp".
+
+`checkpointAt` là lần gần nhất worker lưu checkpoint của task (chỉ job script, mục 8.1), `null` nếu chưa lưu.
 
 ### POST /jobs/{id}/cancel
 
@@ -368,6 +370,9 @@ Khóa: PK `jobId`, SK `taskId`.
 | `owner`, `leaseUntil`, `heartbeatAt` | S, N, N | worker đang giữ task |
 | `queuedAt`, `startedAt`, `finishedAt` | N | đo thời gian chờ (SLA) |
 | `resultKey`, `logKey` | S | key trên bucket output của lần chạy gần nhất |
+| `checkpointAttempt`, `checkpointAt` | N, N | lượt chạy có checkpoint mới nhất và lúc lưu (mục 8.1). Chỉ worker đang giữ task được ghi |
+| `checkpointSha256` | S | SHA-256 (hex) của `checkpoint.tgz` đó, ghi cùng lệnh với `checkpointAttempt`; worker kiểm tra trước khi giải nén |
+| `checkpointBytes`, `checkpointFiles` | N, N | kích thước và số file của checkpoint đó |
 | `error` | S | lý do lỗi, tối đa 1000 ký tự |
 
 ### 6.4. Usage
@@ -455,11 +460,25 @@ Sau giao dịch:
 - Hết trần: job chuyển `PAUSED`, xóa message.
 - Spot bị thu hồi: ngừng nhận việc mới, dừng container, task chuyển `QUEUED`, `interruptCount + 1`. Nếu `interruptCount > 2` thì `Tasks.queue = ondemand`, gửi nguyên văn message sang `sqs-ondemand` rồi xóa message ở `sqs-spot`. Ngược lại đặt visibility về 0 để máy khác lấy.
 
-Quy tắc khi job `PAUSED`: mọi task chưa kết thúc của job phải ở `PAUSED`, không còn task `QUEUED` hay `RUNNING`. Vì vậy worker nhận message của job đã `PAUSED` thì chuyển task `QUEUED` sang `PAUSED` rồi mới xóa message (bước 1 ở trên), và nạp thêm (mục 4) chỉ cần gửi lại các task `PAUSED`. Task bị dừng vì hết trần chạy lại từ đầu sau khi nạp thêm; không lưu trạng thái giữa chừng (checkpoint là hướng mở rộng như báo cáo).
+Quy tắc khi job `PAUSED`: mọi task chưa kết thúc của job phải ở `PAUSED`, không còn task `QUEUED` hay `RUNNING`. Vì vậy worker nhận message của job đã `PAUSED` thì chuyển task `QUEUED` sang `PAUSED` rồi mới xóa message (bước 1 ở trên), và nạp thêm (mục 4) chỉ cần gửi lại các task `PAUSED`. Task bị dừng vì hết trần chạy lại sau khi nạp thêm: job script có checkpoint thì chạy tiếp từ checkpoint (mục 8.1), job video chạy lại từ đầu.
 
 Kết quả và log của mỗi lần chạy nằm trong một thư mục riêng, nên lần chạy cũ không ghi đè được kết quả của lần chạy mới:
 - `results/{userId}/{jobId}/{taskId}/{attempt}/result`
 - `results/{userId}/{jobId}/{taskId}/{attempt}/log.txt`: stdout và stderr của container, cắt ở 10 MB. Luôn tải log lên, kể cả khi lỗi.
+- `results/{userId}/{jobId}/{taskId}/{attempt}/checkpoint.tgz`: checkpoint của lượt chạy đó (mục 8.1).
+
+### 8.1. Checkpoint của job script
+
+Kiểu hợp tác: script tự ghi trạng thái, nền tảng lo lưu và khôi phục. Job video không có, vì ffmpeg không chạy tiếp được từ giữa một video.
+
+- Worker mount thư mục rỗng vào `/checkpoint` (đọc ghi) và đặt `SPOTPOOL_CHECKPOINT_DIR=/checkpoint`. Script ghi file trạng thái vào đây, ghi ra `*.tmp` rồi đổi tên để không bị lưu file ghi dở.
+- Lưu file thường trong cả cây thư mục, tối đa 8 cấp thư mục con; bỏ qua `*.tmp` (cả thư mục tên `*.tmp`), symlink, file đặc biệt và thư mục rỗng. Tối đa 1000 file, 64 MB và 5000 mục phải duyệt; vượt thì không lưu và ghi một dòng vào log.
+- Không đi theo symlink kể cả khi script tráo đúng lúc worker đang đọc: worker chạy bằng root, máy chạy task của nhiều người, nên trên Linux mỗi thư mục con và mỗi file được mở bằng tên một cấp, tương đối với descriptor của thư mục cha (`dir_fd`), có `O_NOFOLLOW` (`O_DIRECTORY` với thư mục). Đi theo đường dẫn đầy đủ thì script tráo một cấp thư mục thành symlink là worker đọc được file của máy chủ hoặc của task khác.
+- Khi nào lưu: sau mỗi nhịp tim thành công nếu file đổi (máy chết đột ngột vẫn còn bản gần nhất), và một lần cuối sau khi dừng container vì Spot bị thu hồi hoặc hết trần. Lưu lần cuối không bị ngắt bởi thông báo thu hồi.
+- Bản lưu phải nhất quán: worker ghi lại tên, inode, kích thước, thời điểm sửa của các file trước khi đóng gói và so lại sau khi đóng gói. Khác nhau nghĩa là script vừa ghi file giữa chừng, bản đó bị bỏ và nhịp tim sau lưu lại.
+- Cách lưu: tải `checkpoint.tgz` lên key của lượt chạy hiện tại, rồi `UpdateItem` `Tasks` với `checkpointAttempt = attempt`, `checkpointSha256` (SHA-256 của file `checkpoint.tgz`), `checkpointAt`, `checkpointBytes`, `checkpointFiles`, điều kiện `owner` là mình và `status = RUNNING`. Worker cũ mất quyền giữ task không ghi được `checkpointAttempt`, nên lượt sau không đọc nhầm bản của nó. Lỗi khi lưu không làm hỏng task.
+- Khôi phục: lúc giành task, `UpdateItem` trả về `checkpointAttempt` và `checkpointSha256` (nếu có). Sau khi tải file đầu vào, worker tải checkpoint của lượt đó, so SHA-256 với `checkpointSha256`, giải nén vào thư mục rỗng rồi mới chạy container. Chỉ nhận file thường; mỗi cấp tên phải hợp lệ (không rỗng, không `.`, `..`, `\`), không quá 8 cấp, không trùng, không vừa là file vừa là thư mục. Không tải được, sai mã băm hoặc archive sai thì xóa phần đã giải nén, ghi một dòng vào log và chạy lại từ đầu.
+- Tính tiền không đổi: lượt bị thu hồi vẫn không tính; lượt chạy tiếp chỉ tính thời gian của chính nó, nên người dùng không trả lại phần đã làm. Worker ghi dòng `[SpotPool] …` vào log khi khôi phục hoặc lưu lần cuối.
 
 Lambda DLQ nhận message từ `sqs-dlq`:
 - Task đang `QUEUED`, hoặc `RUNNING` mà đã mất nhịp tim: chuyển `FAILED` (`tasksRemaining − 1`, `tasksFailed + 1` trong cùng giao dịch), rồi thử kết thúc job.
@@ -476,8 +495,11 @@ docker run --rm --network none --read-only --cap-drop ALL \
   --tmpfs /tmp:rw,noexec,nosuid,size=64m \
   --mount type=bind,source=<file đầu vào>,target=/input/payload,readonly \
   --mount type=bind,source=<thư mục ra>,target=/output \
+  [--mount type=bind,source=<thư mục checkpoint>,target=/checkpoint --env SPOTPOOL_CHECKPOINT_DIR=/checkpoint] \
   <image> /input/payload /output/result
 ```
+
+Phần trong ngoặc vuông chỉ có ở job script (mục 8.1).
 
 Image phải:
 - nhận đúng 2 tham số: đường dẫn file vào và đường dẫn file ra;
@@ -497,7 +519,7 @@ Worker chỉ ghi sự kiện (`Usage`, `Jobs.usedVcpuSeconds`). Lambda billing q
 | `outcome` của lần chạy | Tính vào ngân sách job | Tính tiền |
 |---|---|---|
 | `SUCCEEDED` | có | có |
-| `PAUSED` (bị cắt vì hết trần, kể cả bị dừng vì task khác đã làm job hết trần) | có | có. Sau khi nạp thêm, task chạy lại từ đầu và lần chạy mới tính tiền riêng |
+| `PAUSED` (bị cắt vì hết trần, kể cả bị dừng vì task khác đã làm job hết trần) | có | có. Sau khi nạp thêm, task chạy lại (job script có checkpoint thì chạy tiếp từ checkpoint) và lần chạy mới tính tiền riêng |
 | `FAILED` (lỗi của job) | có | miễn phí nếu còn lượt lỗi miễn phí trong ngày, hết lượt thì tính |
 | `INTERRUPTED` (Spot bị thu hồi) | không | không, nền tảng chịu |
 | `CANCELLED` (người dùng hủy khi task đang chạy, worker dừng ở nhịp tim kế tiếp) | có | như `FAILED`: miễn phí nếu còn lượt lỗi miễn phí trong ngày, hết lượt thì tính |
@@ -540,6 +562,7 @@ Code:
 - Thêm Lambda xử lý `sqs-dlq` và Lambda billing chạy theo DynamoDB Stream của `Jobs`.
 - Cổng web đặt sau CloudFront thay vì mở thẳng từ S3, vì static website hosting của S3 chỉ có HTTP.
 - Máy worker cài Docker và nạp worker agent bằng user data khi khởi động, thay cho Custom AMI.
+- Thêm checkpoint cho job script (mục 8.1): Báo cáo 1 và 2 để checkpoint là hướng mở rộng, nhóm làm thêm sau khi xong 24 hạng mục.
 - Backlog-per-instance tính cả task đang chạy: (`ApproximateNumberOfMessagesVisible` + `ApproximateNumberOfMessagesNotVisible`) / `GroupInServiceInstances`, mục tiêu 2 (Bảng 2.2, giao diện 15 chỉ ghi số task chờ). Chỉ tính task chờ thì lúc hàng đợi vừa hết mà máy còn đang chạy, ASG thấy backlog bằng 0 và giảm máy quá sớm.
 
 ## 13. Chưa chốt
