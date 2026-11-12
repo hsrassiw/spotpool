@@ -51,6 +51,7 @@ locals {
   worker_files = {
     "worker/agent.py"            = "${path.module}/../worker/agent.py"
     "worker/spot.py"             = "${path.module}/../worker/spot.py"
+    "worker/checkpoint.py"       = "${path.module}/../worker/checkpoint.py"
     "worker/imds_mock.py"        = "${path.module}/../worker/imds_mock.py"
     "spotpool_core/__init__.py"  = "${path.module}/../spotpool_core/__init__.py"
     "spotpool_core/contracts.py" = "${path.module}/../spotpool_core/contracts.py"
