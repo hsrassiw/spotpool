@@ -29,9 +29,10 @@ export function parseJobDetail(value, jobId) {
   const tasks = value.tasks.map((task) => {
     if (!task || typeof task.taskId !== 'string' || !/^task-\d{4}$/.test(task.taskId) || ids.has(task.taskId)
       || typeof task.fileName !== 'string' || !task.fileName || !taskStatuses.includes(task.status)
-      || !isCount(task.interruptCount)) throw invalid();
+      || !isCount(task.interruptCount) || !(task.checkpointAt == null || isDate(task.checkpointAt))) throw invalid();
     ids.add(task.taskId);
     return Object.freeze({ taskId: task.taskId, fileName: task.fileName, status: task.status, interruptCount: task.interruptCount,
+      checkpointAt: task.checkpointAt ?? null,
       resultUrl: task.resultUrl == null || task.status !== 'SUCCEEDED' ? null : validateReadUrl(task.resultUrl),
       logUrl: task.logUrl == null ? null : validateReadUrl(task.logUrl) });
   }).sort((a, b) => a.taskId.localeCompare(b.taskId));

@@ -96,7 +96,7 @@ test('create route renders actual file/config form inside the data router and st
 
 test('restart warning is shown only for Python scripts on the savings plan', () => {
   const model = createJobStore({ api: {}, uploadFile: async () => {} });
-  const warning = 'Script chạy lâu ở gói Tiết kiệm: nếu máy bị thu hồi thì script phải chạy lại từ đầu.';
+  const warning = 'Script chạy lâu ở gói Tiết kiệm: nếu máy bị thu hồi thì script chạy lại từ đầu, trừ khi script lưu trạng thái vào thư mục <code>SPOTPOOL_CHECKPOINT_DIR</code> để chạy tiếp từ đó.';
   for (const [kind, tier] of [['script', 'spot'], ['script', 'ondemand'], ['video', 'spot'], ['video', 'ondemand'], ['script', 'spot']]) {
     model.configure({ kind, tier });
     const router = createMemoryRouter([{ path: '/', element: createElement(CreateJobView, { state: model.getSnapshot(), actions: model, profile }) }]);
@@ -135,6 +135,19 @@ test('detail view shows actual progress, gates file actions and escapes filename
   assert.equal(detailView({ ...detailJob(), status: 'PAUSED' }).includes('Bị gián đoạn, đang chạy tiếp'), false);
   assert.match(detailView({ ...detailJob(), tasks: [] }), /Đang chuẩn bị các task/);
   assert.match(detailView({ ...detailJob(), status: 'CANCELLED', queuedAt: null, startedAt: null, interrupted: false }), /Chưa chạy/);
+});
+
+test('script jobs show when the latest checkpoint was saved; video jobs have no checkpoint column', () => {
+  const job = detailJob();
+  const saved = { ...job, tasks: [{ ...job.tasks[0], checkpointAt: 1793491300 }, { ...job.tasks[1], checkpointAt: null }] };
+  const html = detailView(saved);
+  assert.match(html, /<th scope="col">Checkpoint<\/th>/);
+  assert.match(html, /Lưu lúc/);
+  assert.match(html, /Chưa lưu/);
+  assert.match(html, /chạy tiếp từ checkpoint gần nhất/);
+  const video = detailView({ ...saved, kind: 'video' });
+  assert.equal(video.includes('Checkpoint</th>'), false);
+  assert.match(video, /Task bị gián đoạn sẽ chạy lại từ đầu/);
 });
 
 test('log content renders as escaped text with an explicit truncation notice and full-log link', () => {
