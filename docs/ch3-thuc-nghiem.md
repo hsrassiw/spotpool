@@ -83,7 +83,7 @@ Số job đo còn ít, chưa đủ để kết luận chắc chắn cho mức 95
 Theo Cost Explorer, từ 20/10 đến trước ngày 11/11 nhóm dùng 1,81 giờ máy c7i-flex.large On-Demand và 2,57 giờ máy c7i-flex.large Spot.
 
 - Đơn giá thực tế của On-Demand là 0,09778 USD/giờ.
-- Đơn giá thực tế của Spot là 0,0492–0,0515 USD/giờ, tức khoảng một nửa On-Demand.
+- Đơn giá thực tế của Spot là 0,0492–0,0515 USD/giờ với c7i-flex.large, và 0,0542–0,0589 USD/giờ với m7i-flex.large (ngày 11/11 chạy 2,72 giờ, hết 0,16 USD). Tức là bằng khoảng 50–60% On-Demand.
 - Mỗi máy còn tốn 0,005 USD/giờ cho địa chỉ IPv4 công khai.
 
 Tất cả các khoản còn lại (Lambda, API Gateway, DynamoDB, S3, SQS, ổ đĩa EBS) cộng lại khoảng 0,04 USD.
@@ -128,14 +128,14 @@ Bảng 3.6. Điểm hòa vốn theo hệ số sử dụng của cụm
 | | Ổn định | Tiết kiệm |
 | --- | --- | --- |
 | Doanh thu một máy đầy 2 suất trong 1 giờ | 2 × 6000 = 12.000 credit = 0,4615 USD | 2 × 3000 = 6000 credit = 0,2308 USD |
-| Chi phí một máy trong 1 giờ (kể cả IPv4) | 0,1028 USD | khoảng 0,0542 USD |
-| Hệ số sử dụng để hòa vốn | 22% | khoảng 23% |
+| Chi phí một máy trong 1 giờ (kể cả IPv4) | 0,1028 USD | 0,0639 USD (m7i-flex.large ngày 11/11) |
+| Hệ số sử dụng để hòa vốn | 22% | 28% |
 
-Nghĩa là cụm chỉ cần bán được khoảng một phần tư số suất là đủ trả tiền máy. Phần còn lại bù cho máy chạy rảnh lúc co giãn, các lần chạy lại và lợi nhuận.
+Gói Tiết kiệm phụ thuộc vào loại máy mà Auto Scaling chọn theo giá Spot lúc đó. Nếu được cấp c7i-flex.large (khoảng 0,054 USD/giờ, kể cả IPv4) thì hệ số hòa vốn giảm còn khoảng 23%. Nghĩa là cụm chỉ cần bán được khoảng một phần tư số suất là đủ trả tiền máy. Phần còn lại bù cho máy chạy rảnh lúc co giãn, các lần chạy lại và lợi nhuận.
 
 Gói Ổn định có thêm chi phí cố định cho máy chờ sẵn trong giờ hoạt động (8h–23h): 15 giờ × 0,1028 USD = 1,54 USD mỗi ngày, tương đương 40.084 credit. Để bù riêng khoản này, mỗi ngày cần bán khoảng 6,7 vCPU-giờ ở gói Ổn định.
 
-Với cùng hệ số sử dụng, hai gói có tỷ lệ hòa vốn gần nhau. Vì vậy nhóm giữ nguyên đơn giá 6000 và 3000 credit/vCPU-giờ đã nêu ở Báo cáo 2.
+Hai gói có hệ số hòa vốn gần nhau (22% và 23–28%). Vì vậy nhóm giữ nguyên đơn giá 6000 và 3000 credit/vCPU-giờ đã nêu ở Báo cáo 2.
 
 ## 3.2.5. Lỗi phát hiện qua thực nghiệm
 
