@@ -5,6 +5,22 @@ Image mẫu đẩy lên ECR, mỗi file đầu vào là một task:
 - `script/`: chạy script Python của người dùng (`spotpool-script`). Phụ trách: TV2, đã xong.
 - `video/`: nén video bằng FFmpeg (`spotpool-video`). Phụ trách: TV3, đã xong.
 
+## Script có checkpoint
+
+Job script được mount thêm thư mục `/checkpoint` (biến `SPOTPOOL_CHECKPOINT_DIR`). Script ghi
+trạng thái vào đây thì khi máy Spot bị thu hồi hoặc job hết trần, lần chạy sau tiếp tục từ
+trạng thái đó thay vì chạy lại từ đầu. Quy tắc:
+
+- Ghi ra `ten.tmp` rồi `os.replace` sang tên thật, để không bị lưu file ghi dở.
+- Được dùng thư mục con (tối đa 8 cấp). Chỉ file thường được lưu, không lưu symlink và thư mục rỗng; tối đa 1000 file, 64 MB.
+- Nền tảng lưu sau mỗi nhịp tim 30 giây nếu file đổi, và một lần cuối khi bị thu hồi hoặc hết trần.
+  Nếu script ghi file đúng lúc nền tảng đang đóng gói, bản đó bị bỏ và lưu lại ở nhịp sau.
+  Khi khôi phục, bản lưu phải khớp mã SHA-256 đã ghi nhận, nếu không script chạy lại từ đầu.
+- stdout của lần chạy cuối là kết quả, nên phần kết quả cần giữ qua các lần chạy cũng phải nằm trong checkpoint.
+
+Ví dụ: `script/examples/checkpoint_primes.py` đếm số nguyên tố nhỏ hơn 3.000.000 theo 300 khối,
+mỗi khối 1 giây; chạy tiếp từ khối kế tiếp sau khi bị thu hồi. Hợp đồng chi tiết ở `docs/contracts.md` mục 8.1.
+
 ## Video (HM8)
 
 ```sh
