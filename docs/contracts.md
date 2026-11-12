@@ -500,7 +500,8 @@ Worker chỉ ghi sự kiện (`Usage`, `Jobs.usedVcpuSeconds`). Lambda billing q
 | `PAUSED` (bị cắt vì hết trần, kể cả bị dừng vì task khác đã làm job hết trần) | có | có. Sau khi nạp thêm, task chạy lại từ đầu và lần chạy mới tính tiền riêng |
 | `FAILED` (lỗi của job) | có | miễn phí nếu còn lượt lỗi miễn phí trong ngày, hết lượt thì tính |
 | `INTERRUPTED` (Spot bị thu hồi) | không | không, nền tảng chịu |
-| Mất nhịp tim, bị hủy giữa chừng | không có dòng `Usage` | không |
+| `CANCELLED` (người dùng hủy khi task đang chạy, worker dừng ở nhịp tim kế tiếp) | có | như `FAILED`: miễn phí nếu còn lượt lỗi miễn phí trong ngày, hết lượt thì tính |
+| Mất nhịp tim (worker chết, task được giao lại) | không có dòng `Usage`. Nếu job đã bị hủy thì lượt chạy dở được đóng với `CANCELLED`, 0 vCPU-giây | không |
 
 Quyết toán: Lambda billing đọc DynamoDB Stream của `Jobs`, chạy khi job chuyển sang `SUCCEEDED`, `FAILED` hoặc `CANCELLED` mà chưa có `settledAt`. Job chưa từng bấm Chạy (không có `queuedAt`) thì bỏ qua vì chưa giữ credit.
 - `charge = ceil(tổng vCPU-giây tính tiền × unitPrice / 3600)`, **không bao giờ vượt `costCap`**. Khi nhiều task chạy song song có thể lố trần một chút, phần lố nền tảng chịu.
