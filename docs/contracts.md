@@ -171,7 +171,7 @@ Query `Tasks` theo `jobId`. Link tải tạo mới mỗi lần gọi, hạn 15 p
 
 `interrupted = true` khi có task đang `QUEUED` hoặc `RUNNING` mà `interruptCount > 0`. Khi đó web hiện "bị gián đoạn, đang chạy tiếp".
 
-`checkpointAt` là lần gần nhất worker lưu checkpoint của task (chỉ job script, mục 8.1), `null` nếu chưa lưu.
+`checkpointAt` là lần gần nhất worker lưu checkpoint của task (job script và job video, mục 8.1), `null` nếu chưa lưu.
 
 ### POST /jobs/{id}/cancel
 
@@ -478,7 +478,7 @@ Kiểu hợp tác: chương trình trong container tự ghi trạng thái, nền
 
 Quy tắc chung cho cả hai loại:
 
-- Worker mount thư mục rỗng vào `/checkpoint` (đọc ghi) và đặt `SPOTPOOL_CHECKPOINT_DIR=/checkpoint`. Script ghi file trạng thái vào đây, ghi ra `*.tmp` rồi đổi tên để không bị lưu file ghi dở.
+- Worker mount thư mục rỗng vào `/checkpoint` (đọc ghi) và đặt `SPOTPOOL_CHECKPOINT_DIR=/checkpoint`. Script hoặc mẫu video ghi file trạng thái vào đây, ghi ra `*.tmp` rồi đổi tên để không bị lưu file ghi dở.
 - Lưu file thường trong cả cây thư mục, tối đa 8 cấp thư mục con; bỏ qua `*.tmp` (cả thư mục tên `*.tmp`), symlink, file đặc biệt và thư mục rỗng. Tối đa 1000 file, 64 MB và 5000 mục phải duyệt; vượt thì không lưu và ghi một dòng vào log.
 - Không đi theo symlink kể cả khi script tráo đúng lúc worker đang đọc: worker chạy bằng root, máy chạy task của nhiều người, nên trên Linux mỗi thư mục con và mỗi file được mở bằng tên một cấp, tương đối với descriptor của thư mục cha (`dir_fd`), có `O_NOFOLLOW` (`O_DIRECTORY` với thư mục). Đi theo đường dẫn đầy đủ thì script tráo một cấp thư mục thành symlink là worker đọc được file của máy chủ hoặc của task khác.
 - Khi nào lưu: sau mỗi nhịp tim thành công nếu file đổi (máy chết đột ngột vẫn còn bản gần nhất), và một lần cuối sau khi dừng container vì Spot bị thu hồi hoặc hết trần. Lưu lần cuối không bị ngắt bởi thông báo thu hồi.
@@ -506,7 +506,7 @@ docker run --rm --network none --read-only --cap-drop ALL \
   <image> /input/payload /output/result
 ```
 
-Phần trong ngoặc vuông chỉ có ở job script (mục 8.1).
+Phần trong ngoặc vuông là thư mục checkpoint, có ở cả job script và job video (mục 8.1).
 
 Image phải:
 - nhận đúng 2 tham số: đường dẫn file vào và đường dẫn file ra;
@@ -569,7 +569,7 @@ Code:
 - Thêm Lambda xử lý `sqs-dlq` và Lambda billing chạy theo DynamoDB Stream của `Jobs`.
 - Cổng web đặt sau CloudFront thay vì mở thẳng từ S3, vì static website hosting của S3 chỉ có HTTP.
 - Máy worker cài Docker và nạp worker agent bằng user data khi khởi động, thay cho Custom AMI.
-- Thêm checkpoint cho job script (mục 8.1): Báo cáo 1 và 2 để checkpoint là hướng mở rộng, nhóm làm thêm sau khi xong 24 hạng mục.
+- Thêm checkpoint cho job script và job video (mục 8.1): Báo cáo 1 và 2 để checkpoint là hướng mở rộng, nhóm làm thêm sau khi xong 24 hạng mục.
 - Backlog-per-instance tính cả task đang chạy: (`ApproximateNumberOfMessagesVisible` + `ApproximateNumberOfMessagesNotVisible`) / `GroupInServiceInstances`, mục tiêu 2 (Bảng 2.2, giao diện 15 chỉ ghi số task chờ). Chỉ tính task chờ thì lúc hàng đợi vừa hết mà máy còn đang chạy, ASG thấy backlog bằng 0 và giảm máy quá sớm.
 
 ## 13. Chưa chốt

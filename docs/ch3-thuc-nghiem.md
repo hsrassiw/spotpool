@@ -1,6 +1,6 @@
 # 3.2. Thực nghiệm và đánh giá
 
-Các thực nghiệm chạy ngày 11/11/2026 trên hệ thống đã triển khai (region ap-southeast-1; gói Ổn định chạy trên c7i-flex.large, gói Tiết kiệm được Auto Scaling cấp m7i-flex.large ở mọi lần chạy trong ngày; cả hai loại đều 2 vCPU nên số vCPU-giây và hóa đơn không phụ thuộc loại máy), gọi qua API công khai như người dùng thật. Mỗi kịch bản dùng một tài khoản người dùng mới với 50.000 credit. Thời gian lấy từ bảng Jobs và Tasks (queuedAt, startedAt, finishedAt), chi phí lấy từ hóa đơn từng job (`GET /billing`) và từ AWS Cost Explorer.
+Các thực nghiệm chạy ngày 11/11/2026 (riêng thử checkpoint ở mục 3.2.2 chạy ngày 13/11/2026) trên hệ thống đã triển khai (region ap-southeast-1; gói Ổn định chạy trên c7i-flex.large, gói Tiết kiệm được Auto Scaling cấp m7i-flex.large ở mọi lần chạy trong ngày; cả hai loại đều 2 vCPU nên số vCPU-giây và hóa đơn không phụ thuộc loại máy), gọi qua API công khai như người dùng thật. Mỗi kịch bản dùng một tài khoản người dùng mới với 50.000 credit. Thời gian lấy từ bảng Jobs và Tasks (queuedAt, startedAt, finishedAt), chi phí lấy từ hóa đơn từng job (`GET /billing`) và từ AWS Cost Explorer.
 
 Đơn giá dùng trong toàn bộ thực nghiệm là đơn giá đã nêu ở Báo cáo 2: 6000 credit/vCPU-giờ cho gói Ổn định và 3000 credit/vCPU-giờ cho gói Tiết kiệm. Khi quy đổi, nhóm dùng tỷ giá 1 USD = 26.000 credit, cũng là tỷ giá trang quản trị đang dùng.
 
@@ -13,11 +13,13 @@ Bảng 3.1. Kết quả các kịch bản chức năng
 | Job script, gói Ổn định | 3 file: 2 script tính toán, 1 script cố ý thoát với lỗi | 2 task SUCCEEDED, 1 task FAILED, job FAILED. Log của task lỗi ghi đúng thông báo lỗi. Chờ 5 s |
 | Nén video, gói Ổn định | 2 video: 1920×1080 dài 20 s (có audio) và 1280×960 dài 15 s; `height = 720` | Đầu ra 1280×720 và 960×720, giữ tỷ lệ khung hình, H.264 yuv420p, AAC. Cả job xong sau 29 s |
 | Job gói Tiết kiệm khi cụm đang 0 máy | 1 script dài 6 phút và 1 script ngắn | Alarm bật máy đầu tiên sau 2 phút 37 giây, task bắt đầu chạy sau 3 phút 38 giây |
-| Hết trần chi phí | Gói Ổn định, trần 50 credit (đủ 30 giây), script chạy 90 giây | Job chuyển PAUSED sau 31 vCPU-giây, giữ 50 credit. Nạp thêm 300 credit thì job chạy lại sau 2 giây và hoàn thành |
+| Hết trần chi phí | Gói Ổn định, trần 50 credit (đủ 30 giây), script chạy 90 giây (script không dùng checkpoint) | Job chuyển PAUSED sau 31 vCPU-giây, giữ 50 credit. Nạp thêm 300 credit thì job chạy lại sau 2 giây và hoàn thành |
 | Hủy job đang chạy | 2 script dài, hủy sau 15 giây | Job CANCELLED ngay. Các task dừng ở nhịp tim kế tiếp (tối đa 30 s); 62 vCPU-giây đã chạy nằm trong hạn mức lỗi miễn phí trong ngày nên tính 0 credit |
 | Spot bị thu hồi | Mục 3.2.2 | Đạt |
+| Chạy tiếp từ checkpoint, gói Tiết kiệm | Script đếm số nguyên tố nhỏ hơn 3.000.000, chia 300 khối, ghi checkpoint sau mỗi khối; bật thông báo thu hồi giữa chừng | Lượt 2 chạy tiếp từ khối 122/300 trên máy khác, kết quả đúng 216816; lượt bị thu hồi không tính tiền (mục 3.2.2) |
+| Chạy tiếp job video từ checkpoint, gói Tiết kiệm | 1 video 150 giây, nén về 720p; mẫu video chia 7 đoạn 20 giây, lưu checkpoint sau mỗi đoạn; bật thông báo thu hồi giữa chừng | Lượt 2 chạy tiếp từ đoạn 4/7 trên máy khác; video ra đủ 4500/4500 khung hình, dài 150 giây, có âm thanh; lượt bị thu hồi không tính tiền (mục 3.2.2) |
 
-Trường hợp hết trần cho thấy cách tính tiền đúng với thiết kế. Script bị dừng lúc hết trần sẽ chạy lại từ đầu sau khi nạp thêm, nên job dùng tổng cộng 122 vCPU-giây. Hóa đơn là ⌈122 × 6000 / 3600⌉ = 204 credit, số dư khả dụng giảm đúng 204 (từ 50.000 còn 49.796) và creditHeld về 0 sau khi quyết toán.
+Trường hợp hết trần cho thấy cách tính tiền đúng với thiết kế. Script (không dùng checkpoint) bị dừng lúc hết trần sẽ chạy lại từ đầu sau khi nạp thêm, nên job dùng tổng cộng 122 vCPU-giây. Hóa đơn là ⌈122 × 6000 / 3600⌉ = 204 credit, số dư khả dụng giảm đúng 204 (từ 50.000 còn 49.796) và creditHeld về 0 sau khi quyết toán.
 
 ## 3.2.2. Thu hồi máy Spot
 
@@ -25,7 +27,7 @@ Tài khoản ở gói Free của AWS không dùng được AWS FIS (lỗi `Subsc
 
 Đường xử lý của worker (đọc thông báo, ngừng nhận việc, trả việc về hàng đợi) giống hệt khi AWS thu hồi thật. Phần khác duy nhất là nguồn của thông báo. Trường hợp bị thu hồi lần thứ 3 thì chuyển sang hàng đợi On-Demand; trường hợp này chưa chạy trên AWS, mới kiểm tra bằng unit test (`tests/test_worker_spot.py`).
 
-Bảng 3.2. Diễn biến khi thu hồi máy đang chạy task (job 410aaec5)
+Bảng 3.2. Diễn biến khi thu hồi máy đang chạy task (job 410aaec5, script không dùng checkpoint)
 
 | Thời điểm | Sự kiện |
 | --- | --- |
@@ -45,9 +47,17 @@ Kết quả:
 - Người dùng không trả tiền cho lần chạy bị gián đoạn. Job được tính 368 vCPU-giây: 364 của lần chạy lại của task dài và 4 của task ngắn, nên hóa đơn là ⌈368 × 3000 / 3600⌉ = 307 credit. Lần chạy bị gián đoạn dài 26 vCPU-giây, được ghi trong bảng Usage với kết quả INTERRUPTED và không được cộng vào.
 - Từ lúc có thông báo tới lúc task chạy lại mất 4 phút 47 giây. Máy đã nhận thông báo vẫn tính là InService cho tới khi bị tắt, nên Auto Scaling chỉ bật máy thay thế sau thời điểm đó.
 
+**Chạy tiếp từ checkpoint.** Ngày 13/11/2026, nhóm thử checkpoint (mục 2.3) trên AWS với job acf4c724 ở gói Tiết kiệm. Script đếm số nguyên tố nhỏ hơn 3.000.000, chia thành 300 khối; sau mỗi khối ghi `progress/state.json`, cứ 30 khối ghi thêm một file vào `progress/history/`. Lúc 03:49:43, nhóm bật thông báo thu hồi bằng `experiments/spot_interrupt.sh`. 3 giây sau, checkpoint lần cuối (5 file) đã lên S3; lượt 1 dừng sau khối 121. Lúc 03:54:51, tức 5 phút 8 giây sau thông báo, task chạy lại trên máy khác và tiếp tục từ khối 122/300. Task xong lúc 03:57:53, kết quả đúng 216816.
+
+Lượt 1 chạy 122 vCPU-giây và không bị tính tiền. Lượt 2 chạy 183 vCPU-giây, tính 153 credit. Nếu chạy lại từ đầu, ước tính mất khoảng 305 vCPU-giây, tức 255 credit. Hai lần chạy khác cũng cho kết quả đúng: job e9986dd6 chạy tiếp từ khối 119, job 11245632 chạy tiếp từ khối 128.
+
+**Chạy tiếp job video từ checkpoint.** Cùng ngày, nhóm thử checkpoint của job video với job 473f1510 ở gói Tiết kiệm: một video dài 150 giây, nén về 720p. Mẫu `spotpool-video` chia phần hình thành 7 đoạn 20 giây. Lúc 17:14:08, nhóm bật thông báo thu hồi; 4 giây sau, checkpoint lần cuối (`video.meta` và 3 đoạn đã nén, 16 MB) đã lên S3. Lúc 17:19:02, tức 4 phút 54 giây sau thông báo, task chạy lại trên máy khác, khôi phục checkpoint và tiếp tục từ đoạn 4/7. Task xong lúc 17:20:22; video ra đủ 4500/4500 khung hình, dài 150,00 giây, 1280×720, hình H.264 và âm thanh AAC. Lượt 1 chạy 81 vCPU-giây và không bị tính tiền. Lượt 2 chạy 81 vCPU-giây, tính 68 credit. Nếu nén lại từ đầu, ước tính mất khoảng 145 vCPU-giây, tức 121 credit.
+
+Trước khi triển khai, khi thử mẫu video trong Docker trên một máy 16 lõi, FFmpeg tự tạo số luồng theo số lõi nên vượt giới hạn 64 tiến trình của container (`--pids-limit 64`) và báo lỗi; mẫu video đã được sửa để FFmpeg chỉ dùng 2 luồng.
+
 ## 3.2.3. Thời gian chờ và khả năng co giãn
 
-Để đo thời gian chờ khi có nhiều việc cùng lúc, nhóm gửi đồng thời hai job, mỗi gói một job. Mỗi job gồm 12 task, mỗi task chiếm trọn 1 vCPU trong 60 giây. Thực nghiệm chạy hai lần: lần 1 mỗi cụm có sẵn 1 máy (2 suất), lần 2 mỗi cụm có sẵn 4 máy (8 suất).
+Để đo thời gian chờ khi có nhiều việc cùng lúc, nhóm gửi đồng thời hai job, mỗi gói một job. Mỗi job gồm 12 task (script không dùng checkpoint), mỗi task chiếm trọn 1 vCPU trong 60 giây. Thực nghiệm chạy hai lần: lần 1 mỗi cụm có sẵn 1 máy (2 suất), lần 2 mỗi cụm có sẵn 4 máy (8 suất).
 
 Bảng 3.3. Thời gian chờ của từng task (từ queuedAt tới startedAt) và tổng thời gian job
 
@@ -156,3 +166,6 @@ Thực nghiệm trên AWS phát hiện ba lỗi mà unit test chưa bắt đư�
 - Sau khi nhận thông báo thu hồi, máy thay thế chỉ được bật khi máy cũ đã tắt, nên task phải chờ khoảng 5 phút mới chạy lại (mục 3.2.2).
 - Thu hồi Spot được giả lập bằng IMDS giả thay cho AWS FIS. Đường xử lý của worker giống hệt, nhưng chưa quan sát được lần thu hồi thật nào từ AWS.
 - Số lần đo còn ít và chỉ trong một ngày. Kết quả về thời gian chờ mới mang tính minh họa, chưa đủ để kết luận cho mức 95% số job.
+- Checkpoint giới hạn 64 MB cho mỗi task. Với video thử ở mục 3.2.2, mỗi đoạn 20 giây sau khi nén khoảng 5,6 MB, nên 64 MB chứa được khoảng 11 đoạn (gần 4 phút video); video dài hơn thì từ đó không lưu thêm, lượt sau chạy tiếp từ bản cuối đã lưu được. Video ngắn hơn 40 giây không chia đoạn nên vẫn nén lại từ đầu.
+- Checkpoint chỉ có tác dụng khi script tự ghi trạng thái vào `/checkpoint` và tự đọc lại khi khởi động; script không làm việc này vẫn chạy lại từ đầu.
+- Ca hết trần rồi chạy tiếp từ checkpoint mới được kiểm tra bằng unit test, chưa chạy trên AWS.
