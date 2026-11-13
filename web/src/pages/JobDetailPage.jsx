@@ -13,7 +13,7 @@ import { formatCredit, formatDateTime, kindLabel, tierLabel } from '../utils/for
 function resumeNote(kind, subject) {
   return kind === 'script'
     ? `${subject} chạy tiếp từ checkpoint gần nhất nếu script có lưu vào thư mục checkpoint, nếu không thì chạy lại từ đầu.`
-    : `${subject} sẽ chạy lại từ đầu.`;
+    : `${subject} chạy tiếp từ đoạn video đã nén xong gần nhất; video ngắn hơn 40 giây thì nén lại từ đầu.`;
 }
 
 function LogDialog({ log, files }) {
@@ -87,11 +87,11 @@ export function JobDetailView({ jobId, state, fileState, cancelState = {}, cance
         <div className="detail-panel task-heading"><h2>File và kết quả</h2><p className="form-help">Kết quả Python dạng văn bản; video dạng MP4. File được lưu tối đa 7 ngày.</p></div>
         {job.tasks.length === 0 ? <EmptyState title={['UPLOADING', 'QUEUED', 'RUNNING'].includes(job.status) ? 'Đang chuẩn bị các task' : 'Chưa có task để hiển thị'} description="Làm mới để kiểm tra lại danh sách task." /> : <div className="table-scroll" role="region" tabIndex={0} aria-label="Bảng task, có thể cuộn ngang">
           <table className="jobs-table tasks-table"><caption className="sr-only">Trạng thái, log và kết quả của từng task</caption>
-            <thead><tr><th scope="col">File</th><th scope="col">Trạng thái</th><th scope="col">Gián đoạn</th>{job.kind === 'script' && <th scope="col">Checkpoint</th>}<th scope="col">Log</th><th scope="col">Kết quả</th></tr></thead>
+            <thead><tr><th scope="col">File</th><th scope="col">Trạng thái</th><th scope="col">Gián đoạn</th><th scope="col">Checkpoint</th><th scope="col">Log</th><th scope="col">Kết quả</th></tr></thead>
             <tbody>{job.tasks.map((task) => <tr key={task.taskId}>
               <td className="task-file"><strong title={task.fileName}>{task.fileName}</strong><span className="file-count mono">{task.taskId}</span></td>
               <td><StatusBadge status={task.status} /></td><td>{task.interruptCount} lần</td>
-              {job.kind === 'script' && <td>{task.checkpointAt ? <span title="Lần gần nhất nền tảng lưu thư mục checkpoint của script">Lưu lúc {formatDateTime(task.checkpointAt)}</span> : <span className="form-help">Chưa lưu</span>}</td>}
+              <td>{task.checkpointAt ? <span title="Lần gần nhất nền tảng lưu checkpoint của task">Lưu lúc {formatDateTime(task.checkpointAt)}</span> : <span className="form-help">Chưa lưu</span>}</td>
               <td>{task.logUrl ? <Button variant="secondary" onClick={() => files.showLog(task.taskId)}>Xem log</Button> : <span className="form-help">Chưa có log</span>}</td>
               <td>{task.status === 'SUCCEEDED' && task.resultUrl ? <Button variant="secondary" icon="arrow" disabled={fileState.download?.loading} onClick={() => files.downloadResult(task.taskId)}>{fileState.download?.loading && fileState.download.taskId === task.taskId ? 'Đang lấy link…' : 'Tải kết quả'}</Button> : <span className="form-help">{task.status === 'SUCCEEDED' ? 'Chưa có file kết quả' : 'Chưa có kết quả'}</span>}</td>
             </tr>)}</tbody>

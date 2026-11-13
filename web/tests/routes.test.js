@@ -137,7 +137,7 @@ test('detail view shows actual progress, gates file actions and escapes filename
   assert.match(detailView({ ...detailJob(), status: 'CANCELLED', queuedAt: null, startedAt: null, interrupted: false }), /Chưa chạy/);
 });
 
-test('script jobs show when the latest checkpoint was saved; video jobs have no checkpoint column', () => {
+test('script and video jobs show when the latest checkpoint was saved', () => {
   const job = detailJob();
   const saved = { ...job, tasks: [{ ...job.tasks[0], checkpointAt: 1793491300 }, { ...job.tasks[1], checkpointAt: null }] };
   const html = detailView(saved);
@@ -146,8 +146,9 @@ test('script jobs show when the latest checkpoint was saved; video jobs have no 
   assert.match(html, /Chưa lưu/);
   assert.match(html, /chạy tiếp từ checkpoint gần nhất/);
   const video = detailView({ ...saved, kind: 'video' });
-  assert.equal(video.includes('Checkpoint</th>'), false);
-  assert.match(video, /Task bị gián đoạn sẽ chạy lại từ đầu/);
+  assert.match(video, /<th scope="col">Checkpoint<\/th>/);
+  assert.match(video, /Lưu lúc/);
+  assert.match(video, /Task bị gián đoạn chạy tiếp từ đoạn video đã nén xong gần nhất/);
 });
 
 test('log content renders as escaped text with an explicit truncation notice and full-log link', () => {
