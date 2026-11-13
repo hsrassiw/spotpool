@@ -64,7 +64,7 @@ def lambda_handler(event, context):
                 'fileName': t.get('fileName'),
                 'status': t.get('status'),
                 'interruptCount': interrupt_count,
-                # Lần gần nhất worker lưu checkpoint của job script; không có thì null.
+                # Lần gần nhất worker lưu checkpoint của task (job script hoặc job video); không có thì null.
                 'checkpointAt': int(t['checkpointAt']) if 'checkpointAt' in t else None,
                 'resultUrl': result_url,
                 'logUrl': log_url

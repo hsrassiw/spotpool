@@ -1,7 +1,8 @@
-"""Đóng gói và khôi phục thư mục checkpoint của job script.
+"""Đóng gói và khôi phục thư mục checkpoint của job script và job video.
 
-Script tự ghi file trạng thái vào /checkpoint (ghi ra file .tmp rồi đổi tên để
-không bị đọc dở), được dùng thư mục con. Worker chạy bằng root ngoài container,
+Script (hoặc mẫu video, với các đoạn đã nén) tự ghi file trạng thái vào
+/checkpoint (ghi ra file .tmp rồi đổi tên để không bị đọc dở), được dùng thư
+mục con. Worker chạy bằng root ngoài container,
 còn container có thể tạo symlink trỏ tới file của máy chủ hoặc của task khác,
 nên worker không bao giờ đi theo symlink: trên Linux, mỗi cấp thư mục và mỗi
 file được mở bằng tên một cấp, tương đối với descriptor của thư mục cha, có
