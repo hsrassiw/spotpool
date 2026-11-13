@@ -82,10 +82,11 @@ data "aws_iam_policy_document" "worker" {
     resources = local.worker_ddb_arns
   }
 
-  # Máy đang chạy task tự bật bảo vệ để ASG không chọn tắt khi giảm máy
+  # Máy đang chạy task tự bật bảo vệ để ASG không chọn tắt khi giảm máy.
+  # Máy Spot nhận thông báo thu hồi thì tự tách khỏi ASG (giữ DesiredCapacity) để ASG bật máy thay ngay.
   statement {
     sid       = "ScaleInProtection"
-    actions   = ["autoscaling:SetInstanceProtection"]
+    actions   = ["autoscaling:SetInstanceProtection", "autoscaling:DetachInstances"]
     resources = ["arn:aws:autoscaling:${var.region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${var.name_prefix}-worker-*"]
   }
 

@@ -147,6 +147,8 @@ class Worker:
         self._protection_lock = threading.Lock()
         self._used_slots = 0
         self._draining = threading.Event()
+        self._detached = False
+        self._detach_lock = threading.Lock()
         self.spot_monitor = None
 
     def request_interruption(self, notice):
@@ -155,6 +157,30 @@ class Worker:
             self._capacity.notify_all()
         logger.warning("Spot interruption: action=%s time=%s; stop accepting tasks",
                        notice["action"], notice["time"])
+        self._request_replacement()
+
+    def _request_replacement(self):
+        """Tách máy sắp bị thu hồi khỏi ASG nhưng giữ nguyên DesiredCapacity, để ASG bật máy thay ngay.
+
+        Không tách thì ASG vẫn tính máy này là InService cho tới khi AWS tắt nó (khoảng 2 phút),
+        rồi mới bật máy thay. Máy đã tách vẫn chạy nốt phần trả task và lưu checkpoint, sau đó AWS tắt.
+        Best effort: lỗi AWS thì quay về cách cũ (ASG thay máy sau khi máy cũ tắt)."""
+        if self.autoscaling is None or not self.instance_id or not self.asg_name:
+            return
+        # Khóa riêng: không chờ _protection_lock, vì lời gọi bảo vệ đang chậm không được làm trễ thông báo thu hồi.
+        with self._detach_lock:
+            if self._detached:
+                return
+            self._detached = True
+        try:
+            self.autoscaling.detach_instances(
+                InstanceIds=[self.instance_id], AutoScalingGroupName=self.asg_name,
+                ShouldDecrementDesiredCapacity=False,
+            )
+            logger.warning("Detached %s from %s so a replacement launches now", self.instance_id, self.asg_name)
+        except Exception:
+            logger.exception("Cannot detach %s from %s; replacement waits for termination",
+                             self.instance_id, self.asg_name)
 
     def _check_interruption(self, transferred_bytes=None):
         if self._draining.is_set():
@@ -192,6 +218,8 @@ class Worker:
         if not self.instance_id or not self.asg_name:
             logger.warning("Cannot set scale-in protection: missing SPOTPOOL_INSTANCE_ID or SPOTPOOL_ASG")
             return
+        if self._detached:
+            return  # Máy đã rời ASG khi nhận thông báo thu hồi; ASG không còn quản lý bảo vệ của nó.
         try:
             self.autoscaling.set_instance_protection(
                 InstanceIds=[self.instance_id], AutoScalingGroupName=self.asg_name,

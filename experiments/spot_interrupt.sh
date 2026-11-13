@@ -6,7 +6,7 @@
 #
 # 1. Bật cảnh báo thu hồi trên máy (IMDS giả trả spot/instance-action).
 # 2. Đợi 2 phút như AWS thật, trong lúc đó worker phải trả task về hàng đợi.
-# 3. Tắt máy. ASG bật máy mới và task chạy lại.
+# 3. Tắt máy. Máy thay đã được ASG bật ngay khi worker tự tách khỏi ASG lúc nhận cảnh báo; task chạy lại trên đó.
 set -euo pipefail
 export MSYS_NO_PATHCONV=1
 
