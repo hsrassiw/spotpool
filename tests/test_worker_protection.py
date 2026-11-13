@@ -27,6 +27,40 @@ class WorkerProtectionTests(unittest.TestCase):
                     AutoScalingGroupName=f"spotpool-worker-{queue}",
                     ProtectedFromScaleIn=protected)
 
+    NOTICE = {"action": "terminate", "time": "2026-11-14T00:02:00Z"}
+
+    def test_spot_notice_detaches_instance_without_lowering_desired_capacity(self):
+        worker, client = self.make_worker()
+        worker.request_interruption(self.NOTICE)
+        worker.request_interruption(self.NOTICE)  # thông báo lặp lại không tách lần hai
+        client.detach_instances.assert_called_once_with(
+            InstanceIds=["i-0123456789abcdef0"], AutoScalingGroupName="spotpool-worker-spot",
+            ShouldDecrementDesiredCapacity=False)
+        self.assertTrue(worker._draining.is_set())
+
+    def test_detached_instance_no_longer_changes_protection(self):
+        worker, client = self.make_worker()
+        self.assertTrue(worker._reserve(1))
+        worker.request_interruption(self.NOTICE)
+        worker._release(1)
+        self.assertEqual([self.protection_call(True)], client.set_instance_protection.call_args_list)
+
+    def test_detach_failure_keeps_draining_and_old_replacement_path(self):
+        worker, client = self.make_worker()
+        client.detach_instances.side_effect = RuntimeError("AccessDenied")
+        with self.assertLogs("worker.agent", level="ERROR"):
+            worker.request_interruption(self.NOTICE)
+        self.assertTrue(worker._draining.is_set())
+
+    def test_no_detach_without_instance_identity(self):
+        worker = Worker(dynamodb=Mock(), s3=Mock(), sqs=Mock(), autoscaling=Mock(),
+                        config={"SQS_SPOT_URL": "spot-url", "SQS_ONDEMAND_URL": "ondemand-url"}, queue="spot")
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("SPOTPOOL_INSTANCE_ID", None); os.environ.pop("SPOTPOOL_ASG", None)
+            worker.instance_id = worker.asg_name = None
+            worker.request_interruption(self.NOTICE)
+        worker.autoscaling.detach_instances.assert_not_called()
+
     def test_main_supplies_autoscaling_client_using_existing_aws_config(self):
         boto3 = types.ModuleType("boto3")
         clients = {name: Mock() for name in ("s3", "sqs", "autoscaling")}
