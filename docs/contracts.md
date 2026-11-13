@@ -85,7 +85,7 @@ Lambda authorizer:
 - Băm SHA-256 khóa, query GSI `apiKeyHash-index` của `Users` (không `scan`).
 - Trả `context` gồm `userId`, `role` (chuỗi).
 - Policy cho phép `arn:aws:execute-api:<region>:<account>:<apiId>/<stage>/*/*`, không dùng `methodArn`, vì kết quả được cache và dùng lại cho endpoint khác.
-- Cache 300 giây: khóa cũ còn dùng được tối đa 5 phút sau khi đổi khóa.
+- Cache 60 giây: khóa cũ còn dùng được tối đa 1 phút sau khi đổi khóa.
 
 Mọi response có header CORS vì web chạy khác domain với API.
 

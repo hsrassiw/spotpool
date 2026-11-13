@@ -9,7 +9,10 @@ import math
 import boto3
 from helper import generate_presigned_upload_url
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+# Lambda luôn có AWS_REGION; giá trị mặc định chỉ dùng khi chạy test trên máy.
+REGION = os.environ.get('AWS_REGION') or 'ap-southeast-1'
+
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
 JOBS_TABLE = os.environ['JOBS_TABLE']
 INPUT_BUCKET = os.environ['INPUT_BUCKET']
 PRICE_ONDEMAND = int(os.environ['PRICE_ONDEMAND'])
