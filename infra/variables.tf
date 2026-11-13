@@ -88,3 +88,15 @@ variable "ondemand_hours_end" {
     error_message = "Cần 0 <= ondemand_hours_start < ondemand_hours_end <= 23."
   }
 }
+
+variable "api_rate_limit" {
+  description = "Số request/giây trung bình tối đa cho mỗi method của stage prod. Giữ dưới hạn mức 10 Lambda chạy cùng lúc của tài khoản."
+  type        = number
+  default     = 10
+}
+
+variable "api_burst_limit" {
+  description = "Số request dồn cùng lúc tối đa cho mỗi method của stage prod."
+  type        = number
+  default     = 10
+}

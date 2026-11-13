@@ -551,6 +551,21 @@ resource "aws_api_gateway_stage" "api_stage" {
   stage_name    = "prod"
 }
 
+# Giới hạn tần suất cho cả stage (mặc định của tài khoản là 10.000 request/giây).
+# Tài khoản chỉ cho 10 Lambda chạy cùng lúc: đặt cao hơn thì phần thừa thành lỗi 500 do Lambda bị chặn.
+# Web hỏi trạng thái job 5 giây một lần, nên 10 request/giây đủ cho khoảng 50 trang mở cùng lúc.
+# Quá mức thì API Gateway trả 429 trước khi gọi Lambda; header CORS đã có ở DEFAULT_4XX.
+resource "aws_api_gateway_method_settings" "throttle" {
+  rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
+  stage_name  = aws_api_gateway_stage.api_stage.stage_name
+  method_path = "*/*"
+
+  settings {
+    throttling_rate_limit  = var.api_rate_limit
+    throttling_burst_limit = var.api_burst_limit
+  }
+}
+
 locals {
   lambda_functions = {
     create_user      = aws_lambda_function.create_user.arn
