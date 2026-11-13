@@ -459,7 +459,7 @@ class Worker:
             logger.exception("Cannot restore checkpoint: jobId=%s taskId=%s attempt=%s",
                              message["jobId"], message["taskId"], attempt)
             checkpoint.clear(folder)
-            self._log_note(logfile, "Checkpoint đã lưu bị hỏng hoặc sai mã SHA-256, script chạy lại từ đầu.")
+            self._log_note(logfile, "Checkpoint đã lưu bị hỏng hoặc sai mã SHA-256, task chạy lại từ đầu.")
         else:
             self._log_note(logfile, f"Khôi phục checkpoint của lượt chạy {attempt}: "
                                     f"{count} file, {math.ceil(size / 1024)} KB.")
@@ -535,8 +535,8 @@ class Worker:
             logfile.touch()
             checkpoint_dir, log_prefix = None, 0
             saved = {"signature": None, "too_large": False, "ignored": False}
-            if message["image"] == IMAGES["script"]:
-                # Chỉ job script: ffmpeg không chạy tiếp được từ giữa một video.
+            if message["image"] in (IMAGES["script"], IMAGES["video"]):
+                # Job script tự ghi trạng thái; mẫu video lưu các đoạn đã nén xong.
                 checkpoint_dir = root / "checkpoint"
                 checkpoint_dir.mkdir(mode=0o777)
                 checkpoint_dir.chmod(0o777)
