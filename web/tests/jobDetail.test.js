@@ -30,9 +30,13 @@ test('detail parser sorts unique task ids, preserves null/zero and drops private
   assert.equal('privateKey' in parsed, false);
   assert.equal('workerId' in parsed.tasks[0], false);
   assert.equal(parseJobDetail({ ...job(), tasks: [] }, 'job-1').tasks.length, 0);
+  // API cũ chưa có checkpointAt vẫn đọc được.
+  assert.equal(parsed.tasks[0].checkpointAt, null);
+  assert.equal(parseJobDetail({ ...job(), tasks: [{ ...task(), checkpointAt: 1793491300 }] }, 'job-1').tasks[0].checkpointAt, 1793491300);
   for (const fields of [{ chargedCredit: -1 }, { createdAt: 8640000000001 }, { status: 'INTERRUPTED' },
     { progress: { total: 2, succeeded: 2, failed: 1 } }, { tasks: [task(), task()] },
-    { tasks: [{ ...task(), interruptCount: -1 }] }, { tasks: [{ ...task(), status: 'UPLOADING' }] }]) {
+    { tasks: [{ ...task(), interruptCount: -1 }] }, { tasks: [{ ...task(), status: 'UPLOADING' }] },
+    { tasks: [{ ...task(), checkpointAt: -1 }] }, { tasks: [{ ...task(), checkpointAt: '2026-11-13' }] }]) {
     assert.throws(() => parseJobDetail({ ...job(), ...fields }, 'job-1'), { code: 'INVALID_RESPONSE' });
   }
 });

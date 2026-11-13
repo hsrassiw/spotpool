@@ -5,7 +5,6 @@ import logging
 import math
 import os
 import random
-import stat
 import subprocess
 import tempfile
 import threading
@@ -20,9 +19,12 @@ from spotpool_core.contracts import (
     TASK_QUEUED, TASK_RUNNING, TASK_SUCCEEDED, IMAGES, fingerprint,
     OUTCOME_INTERRUPTED, validate_message,
 )
+from worker import checkpoint
+from worker.checkpoint import open_regular_file as open_result_file
 from worker.spot import SpotInterrupted, SpotMonitor
 
 LOG_LIMIT = 10 * 1024 * 1024
+CHECKPOINT_TARGET = "/checkpoint"
 VISIBILITY_SECONDS = 120
 HEARTBEAT_SECONDS = 30
 logger = logging.getLogger(__name__)
@@ -53,23 +55,6 @@ def retry_conflict(call, attempts=5):
             time.sleep(random.uniform(0.05, 0.25) * (attempt + 1))
 
 
-def open_result_file(path):
-    """Chỉ mở file thường và giữ nguyên descriptor đã kiểm tra để upload."""
-    before = path.lstat()  # Không đi theo symlink, kể cả link trỏ tới file tồn tại.
-    if not stat.S_ISREG(before.st_mode):
-        raise ValueError("Result must be a regular file, not a symlink or special file")
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
-    descriptor = os.open(path, flags)
-    try:
-        opened = os.fstat(descriptor)
-        if not stat.S_ISREG(opened.st_mode) or not os.path.samestat(before, opened):
-            raise ValueError("Result file changed before upload")
-        return os.fdopen(descriptor, "rb")
-    except BaseException:
-        os.close(descriptor)
-        raise
-
-
 def remaining_seconds(job, vcpu):
     price = int(job["unitPrice"])
     if price <= 0:
@@ -78,7 +63,15 @@ def remaining_seconds(job, vcpu):
     return max(0, budget // vcpu)
 
 
-def docker_command(image_uri, vcpu, source, output, name, video_height=None):
+def checkpoint_key(message, attempt):
+    """Mỗi lượt chạy ghi checkpoint vào key riêng, giống result và log.
+
+    Worker cũ mất quyền giữ task vẫn có thể ghi nốt vào key của lượt mình, nhưng
+    không ghi được Tasks.checkpointAttempt nên lượt sau không đọc nhầm."""
+    return f'{message["output"]["key"]}/{attempt}/checkpoint.tgz'
+
+
+def docker_command(image_uri, vcpu, source, output, name, video_height=None, checkpoint_dir=None):
     memory = f"{vcpu * 1536}m"
     command = [
         "docker", "run", "--rm", "--name", name, "--network", "none",
@@ -89,6 +82,9 @@ def docker_command(image_uri, vcpu, source, output, name, video_height=None):
         "--mount", f"type=bind,source={source},target=/input/payload,readonly",
         "--mount", f"type=bind,source={output},target=/output",
     ]
+    if checkpoint_dir is not None:
+        command.extend(["--mount", f"type=bind,source={checkpoint_dir},target={CHECKPOINT_TARGET}",
+                        "--env", f"SPOTPOOL_CHECKPOINT_DIR={CHECKPOINT_TARGET}"])
     if video_height is not None:
         command.extend(["--env", f"SPOTPOOL_VIDEO_HEIGHT={video_height}"])
     command.extend([image_uri, "/input/payload", "/output/result"])
@@ -341,7 +337,10 @@ class Worker:
                         raise
                 self._delete(received)
                 return
-        self._execute(received, message, job, owner, int(claimed["attempt"]), allowance)
+        restore_from = claimed.get("checkpointAttempt")
+        self._execute(received, message, job, owner, int(claimed["attempt"]), allowance,
+                      int(restore_from) if restore_from is not None else None,
+                      claimed.get("checkpointSha256"))
 
     def _set_task_state(self, message, state):
         try:
@@ -429,7 +428,99 @@ class Worker:
         self._check_interruption()
         return True
 
-    def _execute(self, received, message, job, owner, attempt, allowance):
+    @staticmethod
+    def _log_note(logfile, text):
+        """Ghi một dòng của nền tảng vào log người dùng xem được trên web.
+
+        Luồng chép log của container có thể đang ghi cùng lúc, nên chỉ ghi nối đuôi
+        (O_APPEND) trong một lần write, không seek rồi ghi đè."""
+        needs_newline = False
+        with logfile.open("rb") as log:
+            if log.seek(0, os.SEEK_END) > 0:
+                log.seek(-1, os.SEEK_END)
+                needs_newline = log.read(1) != b"\n"
+        line = ("\n" if needs_newline else "") + f"[SpotPool] {text}\n"
+        with logfile.open("ab") as log:
+            log.write(line.encode("utf-8"))
+
+    def _restore_checkpoint(self, message, attempt, expected_sha256, root, folder, logfile):
+        archive = root / "restore.tgz"
+        try:
+            self.s3.download_file(message["output"]["bucket"], checkpoint_key(message, attempt),
+                                  str(archive), Callback=self._check_interruption)
+            # Mã băm được ghi cùng lệnh có điều kiện với checkpointAttempt, nên file hỏng hay
+            # không phải bản đã ghi nhận thì không được giải nén.
+            if checkpoint.file_sha256(archive) != expected_sha256:
+                raise ValueError("Checkpoint SHA-256 does not match Tasks.checkpointSha256")
+            count, size = checkpoint.unpack(archive, folder)
+        except SpotInterrupted:
+            raise
+        except Exception:
+            logger.exception("Cannot restore checkpoint: jobId=%s taskId=%s attempt=%s",
+                             message["jobId"], message["taskId"], attempt)
+            checkpoint.clear(folder)
+            self._log_note(logfile, "Checkpoint đã lưu bị hỏng hoặc sai mã SHA-256, script chạy lại từ đầu.")
+        else:
+            self._log_note(logfile, f"Khôi phục checkpoint của lượt chạy {attempt}: "
+                                    f"{count} file, {math.ceil(size / 1024)} KB.")
+        finally:
+            archive.unlink(missing_ok=True)
+
+    def _save_checkpoint(self, message, owner, attempt, root, folder, logfile, state, final=False):
+        """Lưu thư mục checkpoint lên S3 rồi ghi Tasks.checkpointAttempt.
+
+        Lỗi khi lưu không làm hỏng task: lần sau lưu lại, hoặc lượt sau chạy từ checkpoint cũ."""
+        archive = root / "save.tgz"
+        try:
+            # Trong try: cây quá lớn thì signature cũng báo CheckpointTooLarge.
+            current = checkpoint.signature(folder)
+            if not current or (not final and current == state["signature"]):
+                return
+            count, size, ignored = checkpoint.pack(folder, archive)
+            if ignored and not state["ignored"]:
+                state["ignored"] = True
+                self._log_note(logfile, "Checkpoint không lưu symlink, file đặc biệt, tên lạ hoặc thư mục sâu quá "
+                                        f"{checkpoint.MAX_DEPTH} cấp; bỏ qua: " + ", ".join(ignored[:5]))
+            if count == 0:
+                return
+            if checkpoint.signature(folder) != current:
+                # Script đổi file trong lúc đóng gói nên bản này có thể lẫn trạng thái cũ và mới.
+                # Bỏ đi; state["signature"] không đổi nên nhịp tim sau lưu lại.
+                return
+            digest = checkpoint.file_sha256(archive)
+            # Không truyền _check_interruption: lúc có thông báo thu hồi vẫn phải lưu cho xong.
+            self.s3.upload_file(str(archive), message["output"]["bucket"], checkpoint_key(message, attempt))
+            self.db.Table(self.config["TASKS_TABLE"]).update_item(
+                Key={"jobId": message["jobId"], "taskId": message["taskId"]},
+                UpdateExpression="SET checkpointAt=:now, checkpointAttempt=:attempt, checkpointSha256=:sha, "
+                                 "checkpointBytes=:size, checkpointFiles=:count",
+                ConditionExpression="#s=:running AND #owner=:owner",
+                ExpressionAttributeNames={"#s": "status", "#owner": "owner"},
+                ExpressionAttributeValues={":now": int(time.time()), ":attempt": attempt,
+                                           ":sha": digest, ":size": size, ":count": count,
+                                           ":running": TASK_RUNNING, ":owner": owner},
+            )
+        except checkpoint.CheckpointTooLarge:
+            if not state["too_large"]:
+                state["too_large"] = True
+                self._log_note(logfile, f"Checkpoint vượt giới hạn {checkpoint.MAX_FILES} file hoặc "
+                                        f"{checkpoint.MAX_BYTES // (1024 * 1024)} MB nên không được lưu.")
+            return
+        except Exception as error:
+            if "ConditionalCheckFailedException" not in str(error):
+                logger.exception("Cannot save checkpoint: jobId=%s taskId=%s",
+                                 message["jobId"], message["taskId"])
+                if final:
+                    self._log_note(logfile, "Không lưu được checkpoint lần cuối.")
+            return
+        finally:
+            archive.unlink(missing_ok=True)
+        state["signature"] = current
+        if final:
+            self._log_note(logfile, f"Đã lưu checkpoint: {count} file, {math.ceil(size / 1024)} KB.")
+
+    def _execute(self, received, message, job, owner, attempt, allowance, restore_from=None,
+                 restore_sha256=None):
         start = int(time.time())
         result_key = f'{message["output"]["key"]}/{attempt}/result'
         log_key = f'{message["output"]["key"]}/{attempt}/log.txt'
@@ -442,6 +533,13 @@ class Worker:
             outdir.mkdir(mode=0o777)
             outdir.chmod(0o777)
             logfile.touch()
+            checkpoint_dir, log_prefix = None, 0
+            saved = {"signature": None, "too_large": False, "ignored": False}
+            if message["image"] == IMAGES["script"]:
+                # Chỉ job script: ffmpeg không chạy tiếp được từ giữa một video.
+                checkpoint_dir = root / "checkpoint"
+                checkpoint_dir.mkdir(mode=0o777)
+                checkpoint_dir.chmod(0o777)
             proc, reader, start_monotonic = None, None, None
             try:
                 self._check_interruption()
@@ -465,6 +563,10 @@ class Worker:
                 if not self._heartbeat(message, received, owner):
                     raise LeaseLost
                 source.chmod(0o644)
+                if checkpoint_dir is not None and restore_from is not None:
+                    self._restore_checkpoint(message, restore_from, restore_sha256, root,
+                                             checkpoint_dir, logfile)
+                log_prefix = logfile.stat().st_size
                 image_uri = self.config["VIDEO_JOB_IMAGE"] if message["image"] == IMAGES["video"] else self.config["SCRIPT_JOB_IMAGE"]
                 name = f"spotpool-{uuid.uuid4().hex}"
                 video_height = None
@@ -474,13 +576,13 @@ class Worker:
                         raise ValueError("Video height must be an even integer between 2 and 4320")
                 # Chỉ truyền chiều cao vào container video; container chạy script vẫn giữ nguyên tham số.
                 command = docker_command(
-                    image_uri, message["vcpu"], source, outdir, name, video_height,
+                    image_uri, message["vcpu"], source, outdir, name, video_height, checkpoint_dir,
                 )
                 start = int(time.time())
                 start_monotonic = time.monotonic()
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 def copy_log():
-                    with logfile.open("wb") as log:
+                    with logfile.open("ab") as log:
                         while chunk := proc.stdout.read(65536):
                             remaining = LOG_LIMIT - log.tell()
                             if remaining > 0:
@@ -509,6 +611,10 @@ class Worker:
                         if not self._heartbeat(message, received, owner):
                             raise LeaseLost
                         next_heartbeat = time.monotonic() + HEARTBEAT_SECONDS
+                        if checkpoint_dir is not None:
+                            # Lưu định kỳ để máy chết đột ngột, không kịp báo, vẫn còn checkpoint.
+                            self._save_checkpoint(message, owner, attempt, root, checkpoint_dir,
+                                                  logfile, saved)
             except SpotInterrupted as exc:
                 status, error = OUTCOME_INTERRUPTED, str(exc)
             except JobPaused as exc:
@@ -558,8 +664,14 @@ class Worker:
                     status, error = OUTCOME_INTERRUPTED, str(exc)
             else:
                 error = error or f"Container exit code {proc.returncode if proc else 'unknown'}; result file missing or invalid"
-            if error and logfile.stat().st_size == 0:
-                logfile.write_text(error, encoding="utf-8")
+            if error and logfile.stat().st_size == log_prefix:
+                with logfile.open("a", encoding="utf-8") as log:
+                    log.write(error)
+            if (checkpoint_dir is not None and start_monotonic is not None
+                    and status in (OUTCOME_INTERRUPTED, TASK_PAUSED)):
+                # Container đã dừng: lưu bản cuối để lượt sau (máy khác, hoặc sau khi nạp thêm) chạy tiếp.
+                self._save_checkpoint(message, owner, attempt, root, checkpoint_dir, logfile,
+                                      saved, final=True)
             self.s3.upload_file(str(logfile), output_bucket, log_key)
         self._finish(message, received, owner, attempt, start, elapsed, status,
                      result_key if status == TASK_SUCCEEDED else None, log_key, error[:1000])
