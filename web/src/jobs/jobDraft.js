@@ -11,7 +11,7 @@ export function validateJobDraft(draft, files) {
   if (!Array.isArray(files) || files.length < 1 || files.length > MAX_FILES) errors.files = 'Chọn từ 1 đến 100 file.';
   else if (files.some((file) => typeof file.name !== 'string' || !file.name.trim() || !Number.isSafeInteger(file.size) || file.size < 0)) errors.files = 'Có file không hợp lệ. Hãy chọn lại từ máy.';
   else if (files.some((file) => file.size > MAX_FILE_BYTES)) errors.files = `Mỗi file tối đa 500 MB. File quá lớn: ${files.filter((file) => file.size > MAX_FILE_BYTES).map((file) => file.name).join(', ')}.`;
-  else if (draft.kind === 'script' && files.some((file) => !/\.py$/i.test(file.name))) errors.files = 'Job Python chỉ nhận file .py, chưa hỗ trợ .zip hoặc cài thư viện qua mạng.';
+  else if (draft.kind === 'script' && files.some((file) => !/\.(py|zip)$/i.test(file.name))) errors.files = 'Job Python nhận file .py hoặc .zip (có __main__.py ở gốc); chưa hỗ trợ cài thư viện qua mạng.';
   else if (draft.kind === 'video' && files.some((file) => !/^video\//i.test(file.type || '') && !/\.(mp4|mov|mkv|avi|webm|m4v|mpeg|mpg|ogg)$/i.test(file.name))) errors.files = 'Hãy chọn file video cho loại tác vụ này.';
   return {
     errors,

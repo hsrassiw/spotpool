@@ -90,7 +90,7 @@ export function CreateJobView({ state, actions, profile }) {
                 <select id="job-kind" value={state.draft.kind} aria-invalid={Boolean(state.errors.kind)} onChange={(event) => actions.configure({ kind: event.target.value })}>
                   <option value="script">Chạy Python</option><option value="video">Nén video</option>
                 </select><FieldError>{state.errors.kind}</FieldError>
-                <p className="form-help">{state.draft.kind === 'script' ? 'Nhận file .py, trả về kết quả dạng văn bản. Không hỗ trợ cài thêm thư viện.' : 'Chọn video cần nén.'}</p>
+                <p className="form-help">{state.draft.kind === 'script' ? 'Mỗi file .py là một task. Code nhiều file thì nén thành .zip có __main__.py ở gốc (cả zip là một task). Trả về kết quả dạng văn bản; không hỗ trợ cài thêm thư viện.' : 'Chọn video cần nén.'}</p>
               </div>
               <div className="form-field"><label htmlFor="job-tier">Gói xử lý</label>
                 <select id="job-tier" value={state.draft.tier} aria-invalid={Boolean(state.errors.tier)} onChange={(event) => actions.configure({ tier: event.target.value })}>
@@ -109,7 +109,7 @@ export function CreateJobView({ state, actions, profile }) {
               </div>
               <p className="form-help">Mỗi task: 1 vCPU và 1,5 GB RAM.</p>
               <div className="form-field"><label htmlFor="job-files">File đầu vào (1–100 file)</label>
-                <input key={state.draft.kind} id="job-files" type="file" multiple accept={state.draft.kind === 'script' ? '.py' : 'video/*,.mkv'}
+                <input key={state.draft.kind} id="job-files" type="file" multiple accept={state.draft.kind === 'script' ? '.py,.zip' : 'video/*,.mkv'}
                   aria-invalid={Boolean(state.errors.files)} aria-describedby={state.errors.files ? 'job-files-help job-files-error' : 'job-files-help'} onChange={(event) => {
                     if (event.target.files.length) actions.setFiles(event.target.files);
                     event.target.value = '';
