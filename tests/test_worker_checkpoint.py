@@ -360,7 +360,7 @@ class WorkerCheckpointTests(unittest.TestCase):
                                                restore_sha256=recorded)
                 self.assertEqual([], state["seen"])
                 self.assertIn("SHA-256 does not match", "\n".join(logs.output))
-                self.assertIn("sai mã SHA-256, script chạy lại từ đầu", self.log_text(message))
+                self.assertIn("sai mã SHA-256, task chạy lại từ đầu", self.log_text(message))
                 self.assertEqual("SUCCEEDED", worker._finish.call_args.args[6])
 
     def test_saves_periodically_only_when_files_change(self):
@@ -448,14 +448,23 @@ class WorkerCheckpointTests(unittest.TestCase):
         self.assertNotIn(checkpoint_key(message, 2), self.uploads)
         self.assertEqual(1, self.log_text(message).count("vượt giới hạn"))
 
-    def test_video_job_gets_no_checkpoint_folder(self):
+    def test_video_job_restores_and_saves_encoded_segments(self):
         message, worker = self.make_worker(kind="video")
+        digest = self.store_checkpoint(message, 1, tar_bytes([regular("video.meta", b"meta"),
+                                                              regular("seg_0000.mp4", b"segment 0")]))
         worker._heartbeat.side_effect = [True, JobPaused("paused")]
-        state = self.run_container(worker, message, [lambda mounts: None], restore_from=1)
-        self.assertNotIn("/checkpoint", state["mounts"])
-        self.assertIsNone(state["seen"])
-        worker.s3.download_file.assert_called_once()  # Chỉ tải file đầu vào.
-        self.assertNotIn(checkpoint_key(message, 2), self.uploads)
+
+        def encode_next(mounts):
+            (mounts["/checkpoint"] / "seg_0001.mp4.tmp").write_bytes(b"half")  # Đoạn đang nén dở.
+            (mounts["/checkpoint"] / "seg_0001.mp4").write_bytes(b"segment 1")
+
+        state = self.run_container(worker, message, [encode_next], restore_from=1, restore_sha256=digest)
+        self.assertEqual(["seg_0000.mp4", "video.meta"], state["seen"])
+        self.assertIn("SPOTPOOL_CHECKPOINT_DIR=/checkpoint", state["command"])
+        self.assertIn("SPOTPOOL_VIDEO_HEIGHT=720", state["command"])
+        self.assertEqual("PAUSED", worker._finish.call_args.args[6])
+        with tarfile.open(fileobj=io.BytesIO(self.uploads[checkpoint_key(message, 2)][-1])) as tar:
+            self.assertEqual(["seg_0000.mp4", "seg_0001.mp4", "video.meta"], sorted(tar.getnames()))
 
     def test_process_passes_saved_attempt_from_claim(self):
         message, worker = self.make_worker()

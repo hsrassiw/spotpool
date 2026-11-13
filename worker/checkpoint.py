@@ -233,7 +233,7 @@ def unpack(archive, root):
 
 
 def clear(root):
-    """Xóa phần đã giải nén dở khi archive hỏng, để script chạy lại từ đầu."""
+    """Xóa phần đã giải nén dở khi archive hỏng, để task chạy lại từ đầu."""
     with os.scandir(root) as listing:
         for entry in listing:
             if entry.is_dir(follow_symlinks=False):

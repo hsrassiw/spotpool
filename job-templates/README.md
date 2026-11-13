@@ -21,6 +21,14 @@ trạng thái đó thay vì chạy lại từ đầu. Quy tắc:
 Ví dụ: `script/examples/checkpoint_primes.py` đếm số nguyên tố nhỏ hơn 3.000.000 theo 300 khối,
 mỗi khối 1 giây; chạy tiếp từ khối kế tiếp sau khi bị thu hồi. Hợp đồng chi tiết ở `docs/contracts.md` mục 8.1.
 
+## Video có checkpoint
+
+Người dùng không phải làm gì: `spotpool-video` thấy `SPOTPOOL_CHECKPOINT_DIR` thì chia phần hình
+thành các đoạn 20 giây (`SPOTPOOL_VIDEO_SEGMENT_SECONDS`), nén xong đoạn nào lưu `seg_NNNN.mp4`
+vào thư mục checkpoint. Bị thu hồi hoặc hết trần thì lượt sau chỉ nén các đoạn còn thiếu, rồi
+ghép lại (copy hình) và nén âm thanh một lần. Video ngắn hơn 40 giây nén một lượt như cũ.
+Log có dòng "Chia video … thành N đoạn", "Xong đoạn i/N" và "Tiếp tục từ đoạn …".
+
 ## Video (HM8)
 
 ```sh

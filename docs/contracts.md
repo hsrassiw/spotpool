@@ -460,16 +460,23 @@ Sau giao dịch:
 - Hết trần: job chuyển `PAUSED`, xóa message.
 - Spot bị thu hồi: ngừng nhận việc mới, dừng container, task chuyển `QUEUED`, `interruptCount + 1`. Nếu `interruptCount > 2` thì `Tasks.queue = ondemand`, gửi nguyên văn message sang `sqs-ondemand` rồi xóa message ở `sqs-spot`. Ngược lại đặt visibility về 0 để máy khác lấy.
 
-Quy tắc khi job `PAUSED`: mọi task chưa kết thúc của job phải ở `PAUSED`, không còn task `QUEUED` hay `RUNNING`. Vì vậy worker nhận message của job đã `PAUSED` thì chuyển task `QUEUED` sang `PAUSED` rồi mới xóa message (bước 1 ở trên), và nạp thêm (mục 4) chỉ cần gửi lại các task `PAUSED`. Task bị dừng vì hết trần chạy lại sau khi nạp thêm: job script có checkpoint thì chạy tiếp từ checkpoint (mục 8.1), job video chạy lại từ đầu.
+Quy tắc khi job `PAUSED`: mọi task chưa kết thúc của job phải ở `PAUSED`, không còn task `QUEUED` hay `RUNNING`. Vì vậy worker nhận message của job đã `PAUSED` thì chuyển task `QUEUED` sang `PAUSED` rồi mới xóa message (bước 1 ở trên), và nạp thêm (mục 4) chỉ cần gửi lại các task `PAUSED`. Task bị dừng vì hết trần chạy lại sau khi nạp thêm: job script có checkpoint và job video từ 40 giây trở lên thì chạy tiếp từ checkpoint (mục 8.1), còn lại chạy lại từ đầu.
 
 Kết quả và log của mỗi lần chạy nằm trong một thư mục riêng, nên lần chạy cũ không ghi đè được kết quả của lần chạy mới:
 - `results/{userId}/{jobId}/{taskId}/{attempt}/result`
 - `results/{userId}/{jobId}/{taskId}/{attempt}/log.txt`: stdout và stderr của container, cắt ở 10 MB. Luôn tải log lên, kể cả khi lỗi.
 - `results/{userId}/{jobId}/{taskId}/{attempt}/checkpoint.tgz`: checkpoint của lượt chạy đó (mục 8.1).
 
-### 8.1. Checkpoint của job script
+### 8.1. Checkpoint của job script và job video
 
-Kiểu hợp tác: script tự ghi trạng thái, nền tảng lo lưu và khôi phục. Job video không có, vì ffmpeg không chạy tiếp được từ giữa một video.
+Kiểu hợp tác: chương trình trong container tự ghi trạng thái, nền tảng lo lưu và khôi phục. Job script: script của người dùng tự ghi. Job video: image `spotpool-video` tự ghi (bổ sung ngày 13/11/2026), như sau:
+
+- Chia phần hình thành các đoạn `SPOTPOOL_VIDEO_SEGMENT_SECONDS` giây (mặc định 20; đoạn cuối gộp phần lẻ). Nén xong đoạn nào thì ghi `seg_NNNN.mp4` vào thư mục checkpoint (ghi ra `*.tmp` rồi đổi tên). Lượt sau bỏ qua các đoạn đã có, rồi ghép các đoạn bằng concat (copy hình, không nén lại) và nén âm thanh AAC một lần từ file gốc.
+- `video.meta` ghi chiều cao, độ dài đoạn, thời lượng và kích thước file đầu vào. Khác với lần trước thì xóa các đoạn cũ và nén từ đầu.
+- Video ngắn hơn hai đoạn (40 giây với mặc định), không đọc được thời lượng hoặc không có hình thì nén một lượt như trước, không dùng checkpoint.
+- Các đoạn đã nén tính vào giới hạn 64 MB bên dưới. Video dài vượt giới hạn thì từ đó không lưu thêm (log ghi một dòng), lượt sau chạy tiếp từ bản cuối đã lưu được.
+
+Quy tắc chung cho cả hai loại:
 
 - Worker mount thư mục rỗng vào `/checkpoint` (đọc ghi) và đặt `SPOTPOOL_CHECKPOINT_DIR=/checkpoint`. Script ghi file trạng thái vào đây, ghi ra `*.tmp` rồi đổi tên để không bị lưu file ghi dở.
 - Lưu file thường trong cả cây thư mục, tối đa 8 cấp thư mục con; bỏ qua `*.tmp` (cả thư mục tên `*.tmp`), symlink, file đặc biệt và thư mục rỗng. Tối đa 1000 file, 64 MB và 5000 mục phải duyệt; vượt thì không lưu và ghi một dòng vào log.
