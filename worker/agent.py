@@ -27,11 +27,54 @@ LOG_LIMIT = 10 * 1024 * 1024
 CHECKPOINT_TARGET = "/checkpoint"
 VISIBILITY_SECONDS = 120
 HEARTBEAT_SECONDS = 30
+# Mỗi máy chạy 2 suất trên cùng ổ đĩa (8 GB, còn khoảng 5 GB trống). Giới hạn mỗi task để
+# một task không làm đầy ổ và làm hỏng task của người khác: 2 × (500 MB + 1,5 GB) = 4 GB.
+MAX_INPUT_BYTES = 500 * 1024 * 1024  # khớp services/api/start_job.py
+MAX_WRITE_BYTES = 1536 * 1024 * 1024  # tổng /output và /checkpoint của một task
+MAX_WRITE_ENTRIES = 20000
 logger = logging.getLogger(__name__)
 
 
 class LeaseLost(Exception):
     pass
+
+
+class DiskQuotaExceeded(Exception):
+    pass
+
+
+def written_bytes(*folders):
+    """Tổng dung lượng file trong các thư mục task ghi được, không đi theo symlink."""
+    total, entries = 0, 0
+    for folder in folders:
+        if folder is None:
+            continue
+        stack = [str(folder)]
+        while stack:
+            try:
+                items = os.scandir(stack.pop())
+            except FileNotFoundError:
+                continue  # Container vừa xóa thư mục này.
+            with items:
+                for item in items:
+                    entries += 1
+                    if entries > MAX_WRITE_ENTRIES:
+                        raise DiskQuotaExceeded(
+                            f"Task tạo quá {MAX_WRITE_ENTRIES} file và thư mục trong /output và /checkpoint")
+                    try:
+                        if item.is_dir(follow_symlinks=False):
+                            stack.append(item.path)
+                        elif item.is_file(follow_symlinks=False):
+                            total += item.stat(follow_symlinks=False).st_size
+                    except FileNotFoundError:
+                        continue
+    return total
+
+
+def check_written(*folders):
+    if written_bytes(*folders) > MAX_WRITE_BYTES:
+        raise DiskQuotaExceeded(
+            f"Task ghi quá {MAX_WRITE_BYTES // (1024 * 1024)} MB vào /output và /checkpoint")
 
 
 class JobPaused(Exception):
@@ -526,7 +569,11 @@ class Worker:
         log_key = f'{message["output"]["key"]}/{attempt}/log.txt'
         output_bucket = message["output"]["bucket"]
         status, error, elapsed = TASK_FAILED, "", 0
-        with tempfile.TemporaryDirectory(prefix="spotpool-") as folder:
+        # Trên EC2 là /var/lib/spotpool/work (ổ đĩa). /tmp của AL2023 là tmpfs, nằm trong RAM.
+        work_dir = os.environ.get("SPOTPOOL_WORK_DIR") or None
+        if work_dir:
+            os.makedirs(work_dir, mode=0o711, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="spotpool-", dir=work_dir) as folder:
             root = Path(folder)
             root.chmod(0o755)
             source, outdir, logfile = root / "payload", root / "output", root / "log.txt"
@@ -543,10 +590,24 @@ class Worker:
             proc, reader, start_monotonic = None, None, None
             try:
                 self._check_interruption()
+                downloaded = [0]
+                downloaded_lock = threading.Lock()
+
+                def on_download(chunk):
+                    # Người dùng có thể ghi đè file bằng link PUT cũ sau khi API đã kiểm tra,
+                    # nên dừng tải ngay khi vượt giới hạn thay vì tin kích thước lúc start.
+                    with downloaded_lock:
+                        downloaded[0] += chunk
+                        too_large = downloaded[0] > MAX_INPUT_BYTES
+                    if too_large:
+                        raise DiskQuotaExceeded(
+                            f"File đầu vào lớn hơn {MAX_INPUT_BYTES // (1024 * 1024)} MB")
+                    self._check_interruption()
+
                 with ThreadPoolExecutor(max_workers=1) as downloader:
                     download = downloader.submit(
                         self.s3.download_file, message["input"]["bucket"],
-                        message["input"]["key"], str(source), Callback=self._check_interruption,
+                        message["input"]["key"], str(source), Callback=on_download,
                     )
                     next_heartbeat = time.monotonic() + HEARTBEAT_SECONDS
                     while True:
@@ -562,6 +623,8 @@ class Worker:
                 self._check_interruption()
                 if not self._heartbeat(message, received, owner):
                     raise LeaseLost
+                if source.stat().st_size > MAX_INPUT_BYTES:
+                    raise DiskQuotaExceeded(f"File đầu vào lớn hơn {MAX_INPUT_BYTES // (1024 * 1024)} MB")
                 source.chmod(0o644)
                 if checkpoint_dir is not None and restore_from is not None:
                     self._restore_checkpoint(message, restore_from, restore_sha256, root,
@@ -607,6 +670,8 @@ class Worker:
                         proc.wait(timeout=min(1, max(0.1, deadline - time.monotonic())))
                     except subprocess.TimeoutExpired:
                         pass
+                    # Mỗi giây một lần: ổ EBS ghi khoảng 125 MB/s, nên không vượt giới hạn nhiều.
+                    check_written(outdir, checkpoint_dir)
                     if time.monotonic() >= next_heartbeat:
                         if not self._heartbeat(message, received, owner):
                             raise LeaseLost
@@ -615,6 +680,7 @@ class Worker:
                             # Lưu định kỳ để máy chết đột ngột, không kịp báo, vẫn còn checkpoint.
                             self._save_checkpoint(message, owner, attempt, root, checkpoint_dir,
                                                   logfile, saved)
+                check_written(outdir, checkpoint_dir)
             except SpotInterrupted as exc:
                 status, error = OUTCOME_INTERRUPTED, str(exc)
             except JobPaused as exc:
@@ -623,6 +689,8 @@ class Worker:
                 status, error = TASK_CANCELLED, str(exc)
             except LeaseLost:
                 return
+            except DiskQuotaExceeded as exc:
+                status, error = TASK_FAILED, str(exc)
             except Exception as exc:
                 error = str(exc)[:1000]
             finally:

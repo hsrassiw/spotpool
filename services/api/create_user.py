@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 import hashlib
@@ -8,6 +9,7 @@ import boto3
 from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+logger = logging.getLogger(__name__)
 USERS_TABLE = os.environ['USERS_TABLE']
 
 def decimal_default(obj):
@@ -74,12 +76,13 @@ def lambda_handler(event, context):
                 'apiKey': raw_api_key
             }, default=decimal_default)
         }
-    except Exception as e:
+    except Exception:
+        logger.exception('Could not create user')
         return {
             'statusCode': 500,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Authorization,Content-Type'
             },
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': 'Could not create user'})
         }

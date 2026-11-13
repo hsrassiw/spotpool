@@ -22,6 +22,9 @@ test('draft validates integer cap, 1-100 files, kinds and file type without reje
   assert.ok(validateJobDraft(draft, []).errors.files);
   assert.ok(validateJobDraft(draft, Array.from({ length: 101 }, () => file())).errors.files);
   assert.ok(validateJobDraft(draft, [file('archive.zip')]).errors.files);
+  const big = { name: 'big.mp4', type: 'video/mp4', size: 500 * 1024 * 1024 + 1 };
+  assert.match(validateJobDraft({ ...draft, kind: 'video' }, [file('ok.mp4'), big]).errors.files, /500 MB.*big\.mp4/);
+  assert.ok(validateJobDraft({ ...draft, kind: 'video' }, [{ ...big, size: 500 * 1024 * 1024 }]).payload);
   assert.ok(validateJobDraft({ ...draft, tier: 'unknown' }, [file()]).errors.tier);
   assert.ok(validateJobDraft({ ...draft, kind: 'unknown' }, [file()]).errors.kind);
   assert.ok(validateJobDraft({ ...draft, kind: 'video' }, [file()]).errors.files);

@@ -1,10 +1,12 @@
 import json
+import logging
 import os
 import hashlib
 import secrets
 import boto3
 
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+logger = logging.getLogger(__name__)
 USERS_TABLE = os.environ['USERS_TABLE']
 
 CORS_HEADERS = {
@@ -40,9 +42,10 @@ def lambda_handler(event, context):
                 'apiKey': new_api_key
             })
         }
-    except Exception as e:
+    except Exception:
+        logger.exception('Could not rotate API key')
         return {
             'statusCode': 500,
             'headers': CORS_HEADERS,
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': 'Could not rotate API key'})
         }

@@ -9,6 +9,8 @@ locals {
       aws_lambda_function.list_jobs, aws_lambda_function.get_job_status, aws_lambda_function.cancel_job,
       aws_lambda_function.billing,
     ] : fn.function_name],
+    # credits, topup, invoices, admin_overview. Lỗi của chúng trả 500 nên đã có alarm api_5xx báo.
+    [for fn in aws_lambda_function.finance : fn.function_name],
     var.enable_dispatcher ? [aws_lambda_function.dispatcher[0].function_name, aws_lambda_function.dlq[0].function_name] : [],
   )
   alarm_actions = var.alert_email == "" ? [] : [aws_sns_topic.alerts.arn]

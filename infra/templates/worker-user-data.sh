@@ -18,6 +18,9 @@ docker pull -q "${video_image}" || true
 aws s3 cp --region ${region} --only-show-errors "${code_url}/${f}" "/opt/spotpool/${f}"
 %{ endfor ~}
 
+# File của task để trên ổ đĩa: /tmp của AL2023 là tmpfs nằm trong RAM (1,9 GB trên máy 4 GB)
+install -d -m 0711 /var/lib/spotpool/work
+
 TOKEN=$(curl -s -X PUT http://169.254.169.254/latest/api/token -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
 md() { curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"; }
 
@@ -31,6 +34,7 @@ SQS_SPOT_URL=${sqs_spot_url}
 VIDEO_JOB_IMAGE=${video_image}
 SCRIPT_JOB_IMAGE=${script_image}
 TASK_MAX_SECONDS=7200
+SPOTPOOL_WORK_DIR=/var/lib/spotpool/work
 SPOTPOOL_QUEUE=${worker_queue}
 SPOTPOOL_ASG=${worker_asg}
 SPOTPOOL_INSTANCE_ID=$(md instance-id)
