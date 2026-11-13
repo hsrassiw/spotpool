@@ -212,6 +212,20 @@ class ResultFileNameTests(unittest.TestCase):
         self.assertEqual("video_150s-ketqua.mp4", args["filename"])
         self.assertEqual("video/mp4", args["content_type"])
 
+    def test_log_opens_as_utf8_text_named_after_the_task_file(self):
+        jobs = Mock()
+        jobs.get_item.return_value = {"Item": {"jobId": JOB_ID, "userId": USER_ID, "status": "FAILED",
+                                               "kind": "script", "createdAt": 1}}
+        tasks = Mock()
+        tasks.query.return_value = {"Items": [{"taskId": "task-0001", "status": "FAILED", "fileName": "bài_1.py",
+                                               "logKey": "results/u/j/task-0001/1/log.txt"}]}
+        with patch.object(get_job_status.dynamodb, "Table", side_effect=lambda name: jobs if name == "Jobs" else tasks),              patch.object(get_job_status, "generate_presigned_download_url", return_value="https://signed") as sign:
+            get_job_status.lambda_handler({"requestContext": {"authorizer": {"userId": USER_ID}},
+                                           "pathParameters": {"id": JOB_ID}}, None)
+        args = sign.call_args.kwargs
+        self.assertEqual("bài_1-log.txt", args["filename"])
+        self.assertEqual("text/plain; charset=utf-8", args["content_type"])
+
     def test_disposition_keeps_vietnamese_name_and_escapes_quotes(self):
         from services.api import helper
         value = helper.content_disposition('bài "1".txt')

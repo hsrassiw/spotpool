@@ -28,6 +28,14 @@ def result_file(kind, file_name):
     return {'filename': f'{stem}-ketqua.txt', 'content_type': 'text/plain; charset=utf-8'}
 
 
+def log_file(file_name):
+    """Log luôn là văn bản UTF-8. Không khai báo charset thì S3 trả binary/octet-stream:
+    trình duyệt tải file về và mở bằng bảng mã mặc định của máy, làm hỏng tiếng Việt."""
+    stem = (file_name or 'task').rsplit('/', 1)[-1]
+    stem = stem.rsplit('.', 1)[0] if '.' in stem.strip('.') else stem
+    return {'filename': f'{stem}-log.txt', 'content_type': 'text/plain; charset=utf-8'}
+
+
 def lambda_handler(event, context):
     try:
         user_id = event['requestContext']['authorizer']['userId']
@@ -73,7 +81,8 @@ def lambda_handler(event, context):
                 
             log_url = None
             if 'logKey' in t:
-                log_url = generate_presigned_download_url(OUTPUT_BUCKET, t['logKey'], expiration=900)
+                log_url = generate_presigned_download_url(OUTPUT_BUCKET, t['logKey'], expiration=900,
+                                                          **log_file(t.get('fileName')))
                 
             tasks_output.append({
                 'taskId': t.get('taskId'),
