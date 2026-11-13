@@ -16,6 +16,15 @@ def decimal_default(obj):
         return int(obj) if obj % 1 == 0 else float(obj)
     raise TypeError
 
+def result_file(kind, file_name):
+    """Tên và kiểu file kết quả: job Python ra văn bản UTF-8, job video ra MP4."""
+    stem = (file_name or 'task').rsplit('/', 1)[-1]
+    stem = stem.rsplit('.', 1)[0] if '.' in stem.strip('.') else stem
+    if kind == 'video':
+        return {'filename': f'{stem}-ketqua.mp4', 'content_type': 'video/mp4'}
+    return {'filename': f'{stem}-ketqua.txt', 'content_type': 'text/plain; charset=utf-8'}
+
+
 def lambda_handler(event, context):
     try:
         user_id = event['requestContext']['authorizer']['userId']
@@ -55,7 +64,9 @@ def lambda_handler(event, context):
 
             result_url = None
             if t.get('status') == 'SUCCEEDED' and 'resultKey' in t:
-                result_url = generate_presigned_download_url(OUTPUT_BUCKET, t['resultKey'], expiration=900)
+                # Worker lưu kết quả với key không đuôi; đặt tên và kiểu file khi cấp link để trình duyệt mở đúng.
+                result_url = generate_presigned_download_url(OUTPUT_BUCKET, t['resultKey'], expiration=900,
+                                                             **result_file(job.get('kind'), t.get('fileName')))
                 
             log_url = None
             if 'logKey' in t:
