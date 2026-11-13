@@ -136,7 +136,7 @@ Response:
 ### POST /jobs/{id}/start
 
 1. Job phải đang `UPLOADING`. Nếu đã `QUEUED` thì chỉ ghi lại manifest rồi trả 200, nên gọi lại nhiều lần vẫn an toàn.
-2. Kiểm tra đủ file trên S3 bằng `HeadObject`. Thiếu thì trả 400 kèm danh sách file thiếu.
+2. Kiểm tra đủ file trên S3 bằng `HeadObject`. Thiếu thì trả 400 kèm danh sách file thiếu (`missingFiles`). File lớn hơn 500 MB thì trả 400 kèm `maxBytes` và `tooLargeFiles`, vì link PUT không giới hạn được dung lượng (mục 9).
 3. Một `TransactWriteItems`:
    - `Users`: `creditAvailable -= costCap`, `creditHeld += costCap`, `runningJobs += 1`, điều kiện `creditAvailable >= costCap AND runningJobs < maxConcurrentJobs`.
    - `Jobs`: `status = QUEUED`, `queuedAt = now`, điều kiện `status = UPLOADING`.
@@ -489,6 +489,7 @@ Quy tắc chung cho cả hai loại:
 
 Lambda DLQ nhận message từ `sqs-dlq`:
 - Task đang `QUEUED`, hoặc `RUNNING` mà đã mất nhịp tim: chuyển `FAILED` (`tasksRemaining − 1`, `tasksFailed + 1` trong cùng giao dịch), rồi thử kết thúc job.
+- Job đã `CANCELLED` (kể cả bị hủy đúng lúc DLQ đang ghi): task chuyển `CANCELLED` với cùng bộ đếm, giống worker đóng task của máy đã chết. Billing chỉ quyết toán job bị hủy khi không còn task `RUNNING`; giao dịch đổi bản ghi job nên Jobs stream gọi lại billing.
 - Các trường hợp khác bỏ qua: dispatcher cố ý gửi trùng message, nên message trùng có thể rơi vào DLQ trong khi task vẫn đang chạy tốt.
 
 ## 9. Image và container
@@ -507,6 +508,12 @@ docker run --rm --network none --read-only --cap-drop ALL \
 ```
 
 Phần trong ngoặc vuông là thư mục checkpoint, có ở cả job script và job video (mục 8.1).
+
+Giới hạn dung lượng (bổ sung ngày 13/11/2026). Mỗi máy chạy 2 suất trên cùng một ổ đĩa, nên một task không được làm đầy ổ và làm hỏng task của người khác:
+- File của task (đầu vào, `/output`, `/checkpoint`, log) nằm trong `/var/lib/spotpool/work` trên ổ đĩa (biến `SPOTPOOL_WORK_DIR`), không ở `/tmp`: `/tmp` của Amazon Linux 2023 là tmpfs nằm trong RAM, chỉ 1,9 GB trên máy 4 GB.
+- File đầu vào tối đa 500 MB. API kiểm tra lúc start; worker vẫn đếm byte trong lúc tải và dừng ngay khi vượt, vì người dùng có thể ghi đè file bằng link PUT cũ sau khi start.
+- `/output` và `/checkpoint` cộng lại tối đa 1,5 GB và 20.000 file hoặc thư mục. Worker kiểm tra mỗi giây (không đi theo symlink) và một lần sau khi container dừng; vượt thì xóa container, task `FAILED`, không tải kết quả lên.
+- Hai suất dùng nhiều nhất 2 × (500 MB + 1,5 GB) = 4 GB, trong khi ổ còn khoảng 5 GB trống sau khi cài hệ điều hành và image.
 
 Image phải:
 - nhận đúng 2 tham số: đường dẫn file vào và đường dẫn file ra;

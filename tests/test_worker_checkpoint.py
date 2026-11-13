@@ -307,7 +307,7 @@ class WorkerCheckpointTests(unittest.TestCase):
 
         proc.wait.side_effect = wait
         with patch("worker.agent.subprocess.Popen", side_effect=start), \
-             patch("worker.agent.subprocess.run"), \
+             patch("worker.agent.subprocess.run") as state["docker_run"], \
              patch("worker.agent.time.monotonic", side_effect=lambda: clock[0]):
             worker._execute({"ReceiptHandle": "r"}, message, {}, "owner", attempt, 1000, restore_from,
                             restore_sha256)
@@ -476,6 +476,97 @@ class WorkerCheckpointTests(unittest.TestCase):
         worker._execute = Mock()
         worker.process({"ReceiptHandle": "r", "Body": "{}"}, message)
         self.assertEqual((3, 100, 2, "ab" * 32), worker._execute.call_args.args[4:8])
+
+    # ---------- Giới hạn dung lượng của mỗi task ----------
+
+    def test_task_writing_too_much_is_failed_and_container_removed(self):
+        message, worker = self.make_worker()
+
+        def flood(mounts):
+            (mounts["/output"] / "junk").write_bytes(b"x" * 80)
+            (mounts["/checkpoint"] / "more").write_bytes(b"x" * 80)
+
+        with patch("worker.agent.MAX_WRITE_BYTES", 100):
+            state = self.run_container(worker, message, [flood, flood])
+        self.assertEqual("FAILED", worker._finish.call_args.args[6])
+        self.assertIn("/output và /checkpoint", worker._finish.call_args.args[9])
+        # Container đang chạy bị xóa ngay, kết quả không được tải lên.
+        self.assertEqual(["docker", "rm", "-f", state["command"][4]], state["docker_run"].call_args.args[0])
+        worker.s3.upload_fileobj.assert_not_called()
+
+    def test_oversized_input_fails_before_container_starts(self):
+        message, worker = self.make_worker()
+        with patch("worker.agent.MAX_INPUT_BYTES", 5), \
+                patch("worker.agent.subprocess.Popen") as popen:
+            worker._execute({"ReceiptHandle": "r"}, message, {}, "owner", 2, 1000)
+        popen.assert_not_called()
+        self.assertEqual("FAILED", worker._finish.call_args.args[6])
+        self.assertIn("File đầu vào lớn hơn", worker._finish.call_args.args[9])
+
+    def test_download_stops_as_soon_as_input_grows_past_limit(self):
+        message, worker = self.make_worker()
+        chunks = []
+
+        def download(bucket, key, path, Callback=None):
+            for _ in range(10):
+                Callback(4)
+                chunks.append(4)
+            Path(path).write_bytes(b"x" * 40)
+
+        worker.s3.download_file.side_effect = download
+        with patch("worker.agent.MAX_INPUT_BYTES", 10), \
+                patch("worker.agent.subprocess.Popen") as popen:
+            worker._execute({"ReceiptHandle": "r"}, message, {}, "owner", 2, 1000)
+        popen.assert_not_called()
+        self.assertEqual(2, len(chunks))  # lần gọi thứ 3 (12 byte) bị chặn
+        self.assertEqual("FAILED", worker._finish.call_args.args[6])
+
+    def test_work_directory_comes_from_environment(self):
+        message, worker = self.make_worker()
+        with tempfile.TemporaryDirectory() as base:
+            work = Path(base) / "work"
+            with patch.dict(os.environ, {"SPOTPOOL_WORK_DIR": str(work)}):
+                state = self.run_container(worker, message, [])
+            self.assertTrue(work.is_dir())
+            self.assertEqual(work.resolve(), state["mounts"]["/output"].parent.parent.resolve())
+            self.assertEqual([], os.listdir(work))  # thư mục của task đã được xóa
+        self.assertEqual("SUCCEEDED", worker._finish.call_args.args[6])
+
+
+class WrittenBytesTests(unittest.TestCase):
+    def test_counts_nested_files(self):
+        from worker.agent import written_bytes
+        with tempfile.TemporaryDirectory() as base:
+            out, cp = Path(base) / "out", Path(base) / "cp"
+            (out / "a" / "b").mkdir(parents=True)
+            cp.mkdir()
+            (out / "a" / "b" / "f").write_bytes(b"x" * 7)
+            (out / "g").write_bytes(b"x" * 3)
+            (cp / "h").write_bytes(b"x" * 5)
+            self.assertEqual(15, written_bytes(out, cp, None))
+
+    def test_does_not_follow_symlinks(self):
+        from worker.agent import written_bytes
+        with tempfile.TemporaryDirectory() as base:
+            out, outside = Path(base) / "out", Path(base) / "outside"
+            out.mkdir()
+            outside.mkdir()
+            (outside / "big").write_bytes(b"x" * 1000)
+            try:
+                (out / "link").symlink_to(outside, target_is_directory=True)
+                (out / "file-link").symlink_to(outside / "big")
+            except OSError:
+                self.skipTest("Không tạo được symlink trên máy này")
+            self.assertEqual(0, written_bytes(out))
+
+    def test_too_many_entries_is_a_quota_error(self):
+        from worker.agent import DiskQuotaExceeded, written_bytes
+        with tempfile.TemporaryDirectory() as base:
+            for index in range(6):
+                (Path(base) / str(index)).write_bytes(b"")
+            with patch("worker.agent.MAX_WRITE_ENTRIES", 5):
+                with self.assertRaises(DiskQuotaExceeded):
+                    written_bytes(base)
 
 
 if __name__ == "__main__":
