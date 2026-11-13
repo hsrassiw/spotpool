@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createTaskFilesStore } from '../src/jobs/taskFilesStore.js';
+import { createJobDetailStore } from '../src/jobs/jobDetailStore.js';
 import { ApiError } from '../src/api/client.js';
 
 const url = (version) => `https://output.s3.ap-southeast-1.amazonaws.com/result?Signature=${version}`;
@@ -56,6 +57,19 @@ test('blocked popup offers the freshly signed link and missing files never navig
     openWindow: () => ({ location: { replace: () => { navigated = true; } }, close: () => { closed = true; } }) });
   await missing.downloadResult('task-0001'); assert.equal(closed, true); assert.equal(navigated, false);
   assert.ok(missing.getSnapshot().download.error); store.stop(); missing.stop();
+});
+
+test('download still gets a fresh link when opening the new tab hides the job page', async () => {
+  const response = deferred(); const navigated = [];
+  const page = createJobDetailStore({ loadJob: () => response.promise, setTimer: () => 0, clearTimer: () => {} });
+  page.stop(); page.start(true);
+  const target = { closed: false, location: { replace: (address) => navigated.push(address) }, close() { this.closed = true; } };
+  const store = createTaskFilesStore({ getCurrentJob: () => job(), refreshJob: page.load, openWindow: () => target });
+  const pending = store.downloadResult('task-0001');
+  page.setVisible(false); // Tab mới được mở làm trang job bị ẩn trong lúc chờ API.
+  response.resolve(job('fresh')); await pending;
+  assert.deepEqual(navigated, [url('fresh')]); assert.equal(store.getSnapshot().download.error, null);
+  assert.equal(target.closed, false); store.stop(); page.stop();
 });
 
 test('logout or route cleanup closes pending windows and cannot navigate after a late reply', async () => {

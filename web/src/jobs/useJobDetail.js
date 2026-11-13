@@ -12,7 +12,7 @@ export function useJobDetail(jobId) {
   const sessionSignal = getSessionSignal();
   const store = useMemo(() => createJobDetailStore({ loadJob: (options) => createJobDetailApi({ request }).getJob(jobId, options) }),
     [jobId, profile.userId, request, sessionSignal]);
-  const files = useMemo(() => createTaskFilesStore({ getCurrentJob: () => store.getSnapshot().job, refreshJob: store.refresh,
+  const files = useMemo(() => createTaskFilesStore({ getCurrentJob: () => store.getSnapshot().job, refreshJob: store.load,
     readLog, openWindow: () => window.open('about:blank', '_blank') }), [store]);
   const cancelAction = useMemo(() => createCancelJobStore({ getJob: () => store.getSnapshot().job, refreshJob: store.refresh,
     cancelJob: (options) => createJobSubmissionApi({ request }).cancelJob(jobId, options), refreshProfile }), [store, request, jobId, refreshProfile]);

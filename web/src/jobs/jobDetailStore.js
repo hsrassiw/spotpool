@@ -60,6 +60,16 @@ export function createJobDetailStore({ loadJob, now = Date.now, setTimer = setTi
     return pending;
   }
 
+  // Cho thao tác người dùng bấm (xem log, tải kết quả): không phụ thuộc trang đang hiện hay ẩn,
+  // vì mở tab tải file làm trang job bị ẩn giữa chừng. Lỗi được ném ra để báo đúng nguyên nhân.
+  async function load() {
+    if (!active) return null;
+    const current = epoch;
+    const job = await loadJob({});
+    if (active && current === epoch && !pending) update({ job, updatedAt: now(), error: null });
+    return active ? job : null;
+  }
+
   function suspend() {
     epoch += 1;
     clearSchedule();
@@ -72,6 +82,7 @@ export function createJobDetailStore({ loadJob, now = Date.now, setTimer = setTi
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     getSnapshot: () => state,
     refresh,
+    load,
     start(isVisible = true) { active = true; visible = isVisible; return refresh(); },
     stop() { active = false; suspend(); },
     setVisible(isVisible) {
