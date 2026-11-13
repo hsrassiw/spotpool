@@ -12,9 +12,12 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
+# Lambda luôn có AWS_REGION; giá trị mặc định chỉ dùng khi chạy test trên máy.
+REGION = os.environ.get('AWS_REGION') or 'ap-southeast-1'
+
 logger = logging.getLogger(__name__)
-dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
-sqs = boto3.client('sqs', region_name='ap-southeast-1')
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
+sqs = boto3.client('sqs', region_name=REGION)
 VN = timezone(timedelta(hours=7))
 MESSAGE_FIELDS = ('schemaVersion', 'jobId', 'taskId', 'userId', 'tier', 'kind',
                   'vcpu', 'image', 'params', 'input', 'output')

@@ -6,9 +6,12 @@ import boto3
 from decimal import Decimal
 from botocore.exceptions import ClientError
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
-dynamodb_client = boto3.client('dynamodb', region_name='ap-southeast-1')
-s3_client = boto3.client('s3', region_name='ap-southeast-1')
+# Lambda luôn có AWS_REGION; giá trị mặc định chỉ dùng khi chạy test trên máy.
+REGION = os.environ.get('AWS_REGION') or 'ap-southeast-1'
+
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
+dynamodb_client = boto3.client('dynamodb', region_name=REGION)
+s3_client = boto3.client('s3', region_name=REGION)
 
 logger = logging.getLogger(__name__)
 JOBS_TABLE = os.environ['JOBS_TABLE']

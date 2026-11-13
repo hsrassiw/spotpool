@@ -1,9 +1,10 @@
+import os
 from urllib.parse import quote
 
 import boto3
 from botocore.config import Config
 
-S3_REGION = 'ap-southeast-1'
+S3_REGION = os.environ.get('AWS_REGION') or 'ap-southeast-1'
 S3_ENDPOINT = f'https://s3.{S3_REGION}.amazonaws.com'
 # Dùng endpoint theo region và SigV4 để S3 chấp nhận link PUT/GET từ trình duyệt.
 s3_client = boto3.client(

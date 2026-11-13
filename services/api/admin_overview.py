@@ -11,6 +11,9 @@ from decimal import Decimal, ROUND_HALF_UP
 import boto3
 from botocore.exceptions import ClientError
 
+# Lambda luôn có AWS_REGION; giá trị mặc định chỉ dùng khi chạy test trên máy.
+REGION = os.environ.get('AWS_REGION') or 'ap-southeast-1'
+
 try:
     from .finance import response
 except ImportError:
@@ -62,11 +65,11 @@ def lambda_handler(event, context):
         return response(403, {'error': 'Admin role required'})
     try:
         # Kiểm tra lại vai trò đã lưu để quản trị viên bị thu hồi quyền không tiếp tục truy cập qua cache authorizer.
-        db = boto3.resource('dynamodb', region_name='ap-southeast-1')
+        db = boto3.resource('dynamodb', region_name=REGION)
         user = db.Table(os.environ['USERS_TABLE']).get_item(Key={'userId': auth['userId']}, ConsistentRead=True).get('Item')
         if not user or user.get('role') != 'admin':
             return response(403, {'error': 'Admin role required'})
-        ec2 = boto3.client('ec2', region_name='ap-southeast-1')
+        ec2 = boto3.client('ec2', region_name=REGION)
         counts = Counter()
         for page in ec2.get_paginator('describe_instances').paginate(Filters=[
                 {'Name': 'tag:Project', 'Values': ['spotpool']},
@@ -78,7 +81,7 @@ def lambda_handler(event, context):
                         counts[(tier, instance['InstanceType'], instance['Placement']['AvailabilityZone'])] += 1
         machines = [{'tier': tier, 'instanceType': kind, 'az': az, 'count': count}
                     for (tier, kind, az), count in sorted(counts.items())]
-        sqs = boto3.client('sqs', region_name='ap-southeast-1')
+        sqs = boto3.client('sqs', region_name=REGION)
         queues = {}
         for tier in ('ondemand', 'spot'):
             attributes = sqs.get_queue_attributes(QueueUrl=os.environ[f'SQS_{tier.upper()}_URL'],
@@ -103,7 +106,7 @@ def lambda_handler(event, context):
                 break
             scan['ExclusiveStartKey'] = page['LastEvaluatedKey']
         # Cost Explorer dùng ngày UTC; doanh thu dùng ngày làm việc theo giờ Việt Nam của dự án.
-        cache, warning = aws_cost(boto3.client('s3', region_name='ap-southeast-1'),
+        cache, warning = aws_cost(boto3.client('s3', region_name=REGION),
             boto3.client('ce', region_name='us-east-1'), os.environ['OUTPUT_BUCKET'],
             days[0], today.isoformat(), now)
         return response(200, {'machines': machines, 'queues': queues,

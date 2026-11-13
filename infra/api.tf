@@ -9,7 +9,7 @@ resource "aws_api_gateway_authorizer" "lambda_auth" {
   name                             = "${var.name_prefix}-lambda-authorizer"
   rest_api_id                      = aws_api_gateway_rest_api.spotpool_api.id
   authorizer_uri                   = aws_lambda_function.authorizer.invoke_arn
-  authorizer_result_ttl_in_seconds = 300
+  authorizer_result_ttl_in_seconds = 60
   type                             = "TOKEN"
 }
 
@@ -537,6 +537,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       [for k, v in aws_api_gateway_integration.options : v.id],
       [for k, v in aws_api_gateway_integration_response.options : v.response_parameters],
       [for k, v in aws_api_gateway_gateway_response.cors : v.response_parameters],
+      # Đổi thời gian cache của authorizer chỉ có hiệu lực sau khi deploy lại stage.
+      aws_api_gateway_authorizer.lambda_auth.authorizer_result_ttl_in_seconds,
     ]))
   }
 

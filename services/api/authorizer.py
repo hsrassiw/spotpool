@@ -2,7 +2,10 @@ import hashlib
 import os
 import boto3
 
-dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+# Lambda luôn có AWS_REGION; giá trị mặc định chỉ dùng khi chạy test trên máy.
+REGION = os.environ.get('AWS_REGION') or 'ap-southeast-1'
+
+dynamodb = boto3.resource('dynamodb', region_name=REGION)
 USERS_TABLE = os.environ['USERS_TABLE'] # Không dùng giá trị mặc định theo hợp đồng
 
 def lambda_handler(event, context):
