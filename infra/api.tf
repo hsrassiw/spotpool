@@ -486,6 +486,49 @@ resource "aws_api_gateway_gateway_response" "cors" {
   }
 }
 
+# GET / (gốc stage): giới thiệu API thay cho lỗi "Missing Authentication Token" mà API Gateway trả cho đường dẫn
+# không có endpoint. Tích hợp MOCK nên không gọi Lambda và không cần khóa.
+resource "aws_api_gateway_method" "root" {
+  rest_api_id   = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id   = aws_api_gateway_rest_api.spotpool_api.root_resource_id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "root" {
+  rest_api_id       = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id       = aws_api_gateway_rest_api.spotpool_api.root_resource_id
+  http_method       = aws_api_gateway_method.root.http_method
+  type              = "MOCK"
+  request_templates = { "application/json" = jsonencode({ statusCode = 200 }) }
+}
+
+resource "aws_api_gateway_method_response" "root" {
+  rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id = aws_api_gateway_rest_api.spotpool_api.root_resource_id
+  http_method = aws_api_gateway_method.root.http_method
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "root" {
+  rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
+  resource_id = aws_api_gateway_rest_api.spotpool_api.root_resource_id
+  http_method = aws_api_gateway_method.root.http_method
+  status_code = aws_api_gateway_method_response.root.status_code
+  response_templates = {
+    "application/json" = jsonencode({
+      service = "SpotPool REST API"
+      web     = "https://${aws_cloudfront_distribution.web.domain_name}"
+      auth    = "Mọi endpoint trừ POST /users cần header Authorization: Bearer <apiKey>; apiKey nhận khi đăng ký bằng POST /users."
+      endpoints = [
+        "POST /users", "GET /users/me", "POST /users/me/rotate-key",
+        "POST /jobs", "GET /jobs", "GET /jobs/{id}", "POST /jobs/{id}/start", "POST /jobs/{id}/cancel",
+        "POST /jobs/{id}/topup", "POST /credits", "GET /billing", "GET /admin/overview",
+      ]
+    })
+  }
+  depends_on = [aws_api_gateway_integration.root]
+}
 
 # --- 6. DEPLOYMENT & PERMISSIONS (CÓ ĐỦ OPTIONS TRONG TRIGGERS) ---
 
@@ -502,7 +545,8 @@ resource "aws_api_gateway_deployment" "api_deployment" {
     aws_api_gateway_integration.integration_post_job_cancel,
     aws_api_gateway_integration.options,
     aws_api_gateway_integration_response.options,
-    aws_api_gateway_gateway_response.cors
+    aws_api_gateway_gateway_response.cors,
+    aws_api_gateway_integration_response.root
   ]
   rest_api_id = aws_api_gateway_rest_api.spotpool_api.id
 
@@ -539,6 +583,9 @@ resource "aws_api_gateway_deployment" "api_deployment" {
       [for k, v in aws_api_gateway_gateway_response.cors : v.response_parameters],
       # Đổi thời gian cache của authorizer chỉ có hiệu lực sau khi deploy lại stage.
       aws_api_gateway_authorizer.lambda_auth.authorizer_result_ttl_in_seconds,
+      aws_api_gateway_method.root.id,
+      aws_api_gateway_integration.root.id,
+      aws_api_gateway_integration_response.root.response_templates,
     ]))
   }
 
