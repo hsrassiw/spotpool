@@ -188,5 +188,45 @@ class InterruptedStatusTests(unittest.TestCase):
                 self.assertTrue(self._response_for_task(status)["interrupted"])
 
 
+class ResultFileNameTests(unittest.TestCase):
+    def _result_link_args(self, kind, file_name):
+        jobs = Mock()
+        jobs.get_item.return_value = {"Item": {"jobId": JOB_ID, "userId": USER_ID, "status": "SUCCEEDED",
+                                               "kind": kind, "createdAt": 1}}
+        tasks = Mock()
+        tasks.query.return_value = {"Items": [{"taskId": "task-0001", "status": "SUCCEEDED", "fileName": file_name,
+                                               "resultKey": "results/u/j/task-0001/1/result"}]}
+        with patch.object(get_job_status.dynamodb, "Table", side_effect=lambda name: jobs if name == "Jobs" else tasks), \
+             patch.object(get_job_status, "generate_presigned_download_url", return_value="https://signed") as sign:
+            get_job_status.lambda_handler({"requestContext": {"authorizer": {"userId": USER_ID}},
+                                           "pathParameters": {"id": JOB_ID}}, None)
+        return sign.call_args.kwargs
+
+    def test_script_result_opens_as_utf8_text_named_after_the_script(self):
+        args = self._result_link_args("script", "test_checkpoint.py")
+        self.assertEqual("test_checkpoint-ketqua.txt", args["filename"])
+        self.assertEqual("text/plain; charset=utf-8", args["content_type"])
+
+    def test_video_result_opens_as_mp4(self):
+        args = self._result_link_args("video", "video_150s.mov")
+        self.assertEqual("video_150s-ketqua.mp4", args["filename"])
+        self.assertEqual("video/mp4", args["content_type"])
+
+    def test_disposition_keeps_vietnamese_name_and_escapes_quotes(self):
+        from services.api import helper
+        value = helper.content_disposition('bài "1".txt')
+        self.assertTrue(value.startswith('inline; filename="b_i__1_.txt"; '))
+        self.assertIn("filename*=UTF-8''b%C3%A0i%20%221%22.txt", value)
+
+    def test_signed_link_carries_name_and_type(self):
+        from services.api import helper
+        from botocore.credentials import Credentials
+        with patch.object(helper.s3_client._request_signer, "_credentials", Credentials("AKIATEST", "secret")):
+            url = helper.generate_presigned_download_url("output-test", "k/result", filename="a-ketqua.txt",
+                                                         content_type="text/plain; charset=utf-8")
+        self.assertIn("response-content-type=text%2Fplain", url)
+        self.assertIn("response-content-disposition=inline", url)
+
+
 if __name__ == "__main__":
     unittest.main()
