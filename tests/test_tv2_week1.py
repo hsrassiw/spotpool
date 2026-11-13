@@ -246,7 +246,7 @@ class WorkerContractTests(unittest.TestCase):
                 self.assertEqual(["Update", "Update"], [next(iter(a)) for a in actions])
                 task_update, job_update = (action["Update"] for action in actions)
                 self.assertEqual({"jobId": JOB, "taskId": "task-0001"}, task_update["Key"])
-                self.assertEqual("FAILED", task_update["ExpressionAttributeValues"][":failed"])
+                self.assertEqual("FAILED", task_update["ExpressionAttributeValues"][":status"])
                 self.assertEqual(100, task_update["ExpressionAttributeValues"][":now"])
                 self.assertEqual(fingerprint(message), task_update["ExpressionAttributeValues"][":fp"])
                 self.assertEqual({"jobId": JOB}, job_update["Key"])

@@ -5,9 +5,47 @@ import os
 import time
 
 from spotpool_core.contracts import (
-    JOB_FAILED, JOB_PAUSED, JOB_QUEUED, JOB_RUNNING, JOB_SUCCEEDED, TASK_FAILED,
-    TASK_QUEUED, TASK_RUNNING, fingerprint, validate_message,
+    JOB_CANCELLED, JOB_FAILED, JOB_PAUSED, JOB_QUEUED, JOB_RUNNING, JOB_SUCCEEDED,
+    TASK_CANCELLED, TASK_FAILED, TASK_QUEUED, TASK_RUNNING, fingerprint, validate_message,
 )
+
+
+def _close_task(message, dynamodb, tasks_table, jobs_table, now, cancelled):
+    """Đóng task và bớt bộ đếm của job trong cùng một giao dịch.
+
+    Job đã CANCELLED thì task thành CANCELLED, giống worker đóng task của máy đã chết
+    (worker/agent.py). Billing chỉ quyết toán job bị hủy khi không còn task RUNNING;
+    giao dịch đổi bản ghi job nên Jobs stream gọi lại billing.
+    """
+    if cancelled:
+        task_status, error = TASK_CANCELLED, "SQS retries exhausted after job was cancelled"
+        job_condition, job_states = "#s IN (:cancelled) AND tasksRemaining>:zero", {":cancelled": JOB_CANCELLED}
+    else:
+        task_status, error = TASK_FAILED, "SQS retries exhausted"
+        job_condition = "#s IN (:queued,:running,:paused) AND tasksRemaining>:zero"
+        job_states = {":queued": JOB_QUEUED, ":running": JOB_RUNNING, ":paused": JOB_PAUSED}
+    dynamodb.meta.client.transact_write_items(TransactItems=[
+        {"Update": {
+            "TableName": tasks_table,
+            "Key": {"jobId": message["jobId"], "taskId": message["taskId"]},
+            "UpdateExpression": "SET #s=:status, finishedAt=:now, #error=:error",
+            "ConditionExpression": "fingerprint=:fp AND (#s=:queued OR (#s=:running AND leaseUntil<:now))",
+            "ExpressionAttributeNames": {"#s": "status", "#error": "error"},
+            "ExpressionAttributeValues": {":status": task_status, ":now": now,
+                                          ":error": error,
+                                          ":fp": fingerprint(message),
+                                          ":queued": TASK_QUEUED,
+                                          ":running": TASK_RUNNING},
+        }},
+        {"Update": {
+            "TableName": jobs_table,
+            "Key": {"jobId": message["jobId"]},
+            "UpdateExpression": "ADD tasksRemaining :minusOne, tasksFailed :one",
+            "ConditionExpression": job_condition,
+            "ExpressionAttributeNames": {"#s": "status"},
+            "ExpressionAttributeValues": {":minusOne": -1, ":one": 1, ":zero": 0, **job_states},
+        }},
+    ])
 
 
 def fail_exhausted(message, dynamodb, tasks_table, jobs_table, now=None):
@@ -22,38 +60,30 @@ def fail_exhausted(message, dynamodb, tasks_table, jobs_table, now=None):
     if not (task.get("status") == TASK_QUEUED or
             task.get("status") == TASK_RUNNING and int(task.get("leaseUntil", now + 1)) < now):
         return False
-    try:
-        dynamodb.meta.client.transact_write_items(TransactItems=[
-            {"Update": {
-                "TableName": tasks_table,
-                "Key": {"jobId": message["jobId"], "taskId": message["taskId"]},
-                "UpdateExpression": "SET #s=:failed, finishedAt=:now, #error=:error",
-                "ConditionExpression": "fingerprint=:fp AND (#s=:queued OR (#s=:running AND leaseUntil<:now))",
-                "ExpressionAttributeNames": {"#s": "status", "#error": "error"},
-                "ExpressionAttributeValues": {":failed": TASK_FAILED, ":now": now,
-                                              ":error": "SQS retries exhausted",
-                                              ":fp": fingerprint(message),
-                                              ":queued": TASK_QUEUED,
-                                              ":running": TASK_RUNNING},
-            }},
-            {"Update": {
-                "TableName": jobs_table,
-                "Key": {"jobId": message["jobId"]},
-                "UpdateExpression": "ADD tasksRemaining :minusOne, tasksFailed :one",
-                "ConditionExpression": "#s IN (:queued,:running,:paused) AND tasksRemaining>:zero",
-                "ExpressionAttributeNames": {"#s": "status"},
-                "ExpressionAttributeValues": {":minusOne": -1, ":one": 1,
-                                              ":queued": JOB_QUEUED,
-                                              ":running": JOB_RUNNING,
-                                              ":paused": JOB_PAUSED,
-                                              ":zero": 0},
-            }},
-        ])
-    except Exception as error:
-        if "TransactionCanceledException" in str(error):
-            return False
-        raise
     jobs = dynamodb.Table(jobs_table)
+
+    def job_status():
+        job = jobs.get_item(Key={"jobId": message["jobId"]}, ConsistentRead=True).get("Item")
+        return job.get("status") if job else None
+
+    cancelled = job_status() == JOB_CANCELLED
+    try:
+        _close_task(message, dynamodb, tasks_table, jobs_table, now, cancelled)
+    except Exception as error:
+        if "TransactionCanceledException" not in str(error):
+            raise
+        # Người dùng hủy job đúng lúc này: thử lại một lần theo nhánh job đã hủy.
+        if cancelled or job_status() != JOB_CANCELLED:
+            return False
+        cancelled = True
+        try:
+            _close_task(message, dynamodb, tasks_table, jobs_table, now, cancelled)
+        except Exception as retry_error:
+            if "TransactionCanceledException" in str(retry_error):
+                return False
+            raise
+    if cancelled:
+        return True
     for state, failed_condition in ((JOB_SUCCEEDED, "tasksFailed=:zero"),
                                     (JOB_FAILED, "tasksFailed>:zero")):
         try:

@@ -1,4 +1,4 @@
-"""DLQ hoàn tất task và bộ đếm nguyên tử dù job đang PAUSED, không gọi AWS."""
+"""DLQ hoàn tất task và bộ đếm nguyên tử dù job đang PAUSED hoặc đã bị hủy, không gọi AWS."""
 
 import json
 import re
@@ -63,7 +63,7 @@ class AtomicDB:
         job_ok = self.job["status"] in allowed_states(job_update) and self.job["tasksRemaining"] > jv[":zero"]
         if not task_ok or not job_ok:
             raise RuntimeError("TransactionCanceledException")
-        self.task.update(status=tv[":failed"], finishedAt=tv[":now"], error=tv[":error"])
+        self.task.update(status=tv[":status"], finishedAt=tv[":now"], error=tv[":error"])
         self.job["tasksRemaining"] += jv[":minusOne"]
         self.job["tasksFailed"] += jv[":one"]
         if self.after_transaction:
@@ -114,16 +114,34 @@ class DLQPausedTests(unittest.TestCase):
         self.assertEqual((1, 1), (db.job["tasksRemaining"], db.job["tasksFailed"]))
         self.assertEqual(1, len(db.transactions))
 
-    def test_terminal_job_or_concurrent_cancellation_rejects_whole_transaction(self):
-        for status in ("CANCELLED", "SUCCEEDED", "FAILED"):
+    def test_finished_job_rejects_whole_transaction(self):
+        for status in ("SUCCEEDED", "FAILED"):
             with self.subTest(status=status):
                 db = AtomicDB(status=status)
                 self.assertFalse(self.exhaust(db))
                 self.assertEqual(("QUEUED", 2, 0), (db.task["status"], db.job["tasksRemaining"], db.job["tasksFailed"]))
+
+    def test_cancelled_job_closes_stuck_task_so_billing_can_settle(self):
+        # Billing chỉ quyết toán job bị hủy khi không còn task RUNNING.
+        for task_status in ("RUNNING", "QUEUED"):
+            with self.subTest(task_status=task_status):
+                db = AtomicDB(status="CANCELLED", task_status=task_status)
+                self.assertTrue(self.exhaust(db))
+                self.assertEqual("CANCELLED", db.task["status"])
+                self.assertIn("cancelled", db.task["error"])
+                self.assertEqual(("CANCELLED", 1, 1), tuple(db.job[key] for key in ("status", "tasksRemaining", "tasksFailed")))
+                self.assertEqual([], db.finalizations)
+        live = AtomicDB(status="CANCELLED", task_status="RUNNING", lease=101)
+        self.assertFalse(self.exhaust(live))
+        self.assertEqual("RUNNING", live.task["status"])
+
+    def test_concurrent_cancellation_retries_as_cancelled_task(self):
         db = AtomicDB()
         db.before_transaction = lambda: db.job.update(status="CANCELLED")
-        self.assertFalse(self.exhaust(db))
-        self.assertEqual("QUEUED", db.task["status"])
+        self.assertTrue(self.exhaust(db))
+        self.assertEqual("CANCELLED", db.task["status"])
+        self.assertEqual(2, len(db.transactions))
+        self.assertEqual((1, 1), (db.job["tasksRemaining"], db.job["tasksFailed"]))
 
     def test_paused_between_transaction_and_finalization_still_finishes_last_task(self):
         db = AtomicDB(status="RUNNING", remaining=1)
