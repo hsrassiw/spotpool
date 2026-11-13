@@ -1,9 +1,11 @@
 import json
+import logging
 import os
 import boto3
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+logger = logging.getLogger(__name__)
 JOBS_TABLE = os.environ['JOBS_TABLE']
 TASKS_TABLE = os.environ['TASKS_TABLE']
 
@@ -83,9 +85,10 @@ def lambda_handler(event, context):
             'headers': {'Access-Control-Allow-Origin': '*'},
             'body': json.dumps({'message': 'Job cancelled successfully', 'jobId': job_id})
         }
-    except Exception as e:
+    except Exception:
+        logger.exception('Could not cancel job')
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': 'Could not cancel job'})
         }
