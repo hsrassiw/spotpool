@@ -1,4 +1,4 @@
-import { MAX_FILES, validateJobDraft } from './jobDraft.js';
+import { MAX_FILE_BYTES, MAX_FILES, validateJobDraft } from './jobDraft.js';
 
 const initial = () => ({ phase: 'draft', draft: { kind: 'script', tier: 'spot', costCap: '5000' }, files: [], rows: [],
   jobId: null, remoteStatus: null, errors: {}, error: null, notice: null, profileError: null, refreshingProfile: false });
@@ -200,7 +200,9 @@ export function createJobStore({ api, uploadFile, refreshProfile, now = Date.now
       const next = Array.from(selected);
       if (next.length > MAX_FILES) { update({ errors: { ...state.errors, files: 'Tối đa 100 file trong một job. Danh sách cũ được giữ nguyên.' } }); return; }
       files = next;
-      update({ files: files.map((file, index) => ({ index, name: file.name, size: file.size })), errors: {}, error: null });
+      const tooLarge = files.filter((file) => file.size > MAX_FILE_BYTES).map((file) => file.name);
+      const errors = tooLarge.length ? { files: `Mỗi file tối đa 500 MB. File quá lớn: ${tooLarge.join(', ')}.` } : {};
+      update({ files: files.map((file, index) => ({ index, name: file.name, size: file.size })), errors, error: null });
     },
     removeFile(index) {
       if (state.phase !== 'draft') return;

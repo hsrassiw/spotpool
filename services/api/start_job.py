@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 import boto3
@@ -9,10 +10,13 @@ dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
 dynamodb_client = boto3.client('dynamodb', region_name='ap-southeast-1')
 s3_client = boto3.client('s3', region_name='ap-southeast-1')
 
+logger = logging.getLogger(__name__)
 JOBS_TABLE = os.environ['JOBS_TABLE']
 USERS_TABLE = os.environ['USERS_TABLE']
 INPUT_BUCKET = os.environ['INPUT_BUCKET']
 OUTPUT_BUCKET = os.environ['OUTPUT_BUCKET']
+# Mỗi máy worker chạy 2 suất trên ổ đĩa chung; worker/agent.py dùng cùng giới hạn.
+MAX_INPUT_BYTES = 500 * 1024 * 1024
 
 def convert_decimals(obj):
     """Đổi tất cả kiểu Decimal thành int/float trước khi json.dumps"""
@@ -49,28 +53,42 @@ def lambda_handler(event, context):
             
         # Thu thập thông tin file trên S3
         missing_files = []
+        too_large = []
         task_count = int(job.get('taskCount', 0))
         files = job.get('files', [])
         inputs = []
         for idx in range(1, task_count + 1):
             task_id = f"task-{idx:04d}"
             s3_key = f"uploads/{user_id}/{job_id}/{task_id}"
+            file_name = files[idx - 1] if idx - 1 < len(files) else task_id
             try:
-                s3_client.head_object(Bucket=INPUT_BUCKET, Key=s3_key)
-                inputs.append({
-                    'taskId': task_id,
-                    'fileName': files[idx - 1] if idx - 1 < len(files) else task_id,
-                    'bucket': INPUT_BUCKET,
-                    'key': s3_key
-                })
+                head = s3_client.head_object(Bucket=INPUT_BUCKET, Key=s3_key)
             except ClientError:
                 missing_files.append(task_id)
-                
+                continue
+            # Link PUT không giới hạn được dung lượng, nên chặn ở đây trước khi giữ credit.
+            if int(head.get('ContentLength', 0)) > MAX_INPUT_BYTES:
+                too_large.append(file_name)
+                continue
+            inputs.append({
+                'taskId': task_id,
+                'fileName': file_name,
+                'bucket': INPUT_BUCKET,
+                'key': s3_key
+            })
+
         if missing_files:
             return {
                 'statusCode': 400,
                 'headers': {'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({'error': 'Missing files on S3', 'missingFiles': missing_files})
+            }
+        if too_large:
+            return {
+                'statusCode': 400,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': f'Each file must be at most {MAX_INPUT_BYTES // (1024 * 1024)} MB',
+                                    'maxBytes': MAX_INPUT_BYTES, 'tooLargeFiles': too_large})
             }
 
         # Đảm bảo params sạch Decimal trước khi ghi manifest
@@ -168,9 +186,10 @@ def lambda_handler(event, context):
             'headers': {'Access-Control-Allow-Origin': '*'},
             'body': json.dumps({'message': 'Job started successfully', 'jobId': job_id})
         }
-    except Exception as e:
+    except Exception:
+        logger.exception('Could not start job')
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': 'Could not start job'})
         }
