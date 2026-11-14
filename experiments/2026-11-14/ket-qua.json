@@ -1,0 +1,5965 @@
+[
+ {
+  "file": "burst1-011037",
+  "label": "burst1",
+  "ondemand": {
+   "jobs": [
+    {
+     "settledAt": "1794593414",
+     "billableVcpuSeconds": "732",
+     "vcpu": "1",
+     "finishedAt": "1794593414",
+     "queuedAt": "1794593046",
+     "taskCount": "12",
+     "startedAt": "1794593050",
+     "usedVcpuSeconds": "732",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "tasksSucceeded": "12",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "unitPrice": "6000",
+     "createdAt": "1794593037",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "tasksFailed": "0",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "status": "SUCCEEDED",
+     "platformCredit": "0",
+     "chargedCredit": "1220",
+     "files": [
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py"
+     ],
+     "params": {},
+     "kind": "script"
+    }
+   ],
+   "tasks": [
+    {
+     "heartbeatAt": "1794593111",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "leaseUntil": "1794593231",
+     "status": "SUCCEEDED",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "startedAt": "1794593050",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "finishedAt": "1794593111",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    },
+    {
+     "heartbeatAt": "1794593111",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "leaseUntil": "1794593231",
+     "status": "SUCCEEDED",
+     "taskId": "task-0002",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "startedAt": "1794593050",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "finishedAt": "1794593111",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794593293",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "taskId": "task-0003",
+     "leaseUntil": "1794593413",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand",
+     "startedAt": "1794593232",
+     "heartbeatAt": "1794593293"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "leaseUntil": "1794593291",
+     "queuedAt": "1794593050",
+     "error": "",
+     "finishedAt": "1794593172",
+     "heartbeatAt": "1794593171",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "taskId": "task-0004",
+     "startedAt": "1794593111",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "startedAt": "1794593293",
+     "finishedAt": "1794593353",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "heartbeatAt": "1794593353",
+     "interruptCount": "0",
+     "leaseUntil": "1794593473",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand",
+     "taskId": "task-0005"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "taskId": "task-0006",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "heartbeatAt": "1794593232",
+     "leaseUntil": "1794593352",
+     "queuedAt": "1794593050",
+     "error": "",
+     "finishedAt": "1794593232",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand",
+     "startedAt": "1794593172"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794593354",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "taskId": "task-0007",
+     "startedAt": "1794593293",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "heartbeatAt": "1794593353",
+     "interruptCount": "0",
+     "leaseUntil": "1794593473",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "leaseUntil": "1794593291",
+     "queuedAt": "1794593050",
+     "error": "",
+     "finishedAt": "1794593172",
+     "heartbeatAt": "1794593171",
+     "taskId": "task-0008",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "startedAt": "1794593111",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794593293",
+     "taskId": "task-0009",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "leaseUntil": "1794593412",
+     "heartbeatAt": "1794593292",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand",
+     "startedAt": "1794593232"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "startedAt": "1794593353",
+     "leaseUntil": "1794593534",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794593414",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "queuedAt": "1794593050",
+     "error": "",
+     "taskId": "task-0010",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "finishedAt": "1794593414",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "queue": "ondemand",
+     "taskId": "task-0011",
+     "vcpu": "1",
+     "heartbeatAt": "1794593232",
+     "leaseUntil": "1794593352",
+     "queuedAt": "1794593050",
+     "error": "",
+     "finishedAt": "1794593232",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand",
+     "startedAt": "1794593172"
+    },
+    {
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "schemaVersion": "1",
+     "taskId": "task-0012",
+     "leaseUntil": "1794593534",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794593414",
+     "queue": "ondemand",
+     "startedAt": "1794593354",
+     "vcpu": "1",
+     "queuedAt": "1794593050",
+     "error": "",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "attempt": "1",
+     "fileName": "busy_60s.py",
+     "interruptCount": "0",
+     "kind": "script",
+     "finishedAt": "1794593414",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "finishedAt": "1794593111",
+     "attempt": "1",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0001#1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "startedAt": "1794593050",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "startedAt": "1794593051",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "finishedAt": "1794593111",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0002#1",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "taskId": "task-0002",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "finishedAt": "1794593293",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "taskId": "task-0003",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0003#1",
+     "startedAt": "1794593232",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "taskId": "task-0004",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "finishedAt": "1794593172",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "startedAt": "1794593111",
+     "instanceId": "i-0b912af283ee3a224",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0004#1",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "finishedAt": "1794593353",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0005#1",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "taskId": "task-0005",
+     "startedAt": "1794593293",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0006#1",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "startedAt": "1794593172",
+     "day": "2026-11-14",
+     "finishedAt": "1794593232",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "taskId": "task-0006",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "finishedAt": "1794593354",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0007#1",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "taskId": "task-0007",
+     "startedAt": "1794593293",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "taskId": "task-0008",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "outcome": "SUCCEEDED",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0008#1",
+     "tier": "ondemand",
+     "finishedAt": "1794593172",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "startedAt": "1794593111",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "finishedAt": "1794593293",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "startedAt": "1794593232",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "taskId": "task-0009",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0009#1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "finishedAt": "1794593414",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0010#1",
+     "startedAt": "1794593354",
+     "vcpu": "1",
+     "az": "ap-southeast-1a",
+     "taskId": "task-0010"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "startedAt": "1794593172",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "finishedAt": "1794593232",
+     "taskId": "task-0011",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0011#1",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    },
+    {
+     "finishedAt": "1794593414",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "61",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "jobId": "0210db12-6294-4a0d-895a-dcae449f047a",
+     "usageId": "0210db12-6294-4a0d-895a-dcae449f047a#task-0012#1",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+     "taskId": "task-0012",
+     "instanceId": "i-0b912af283ee3a224",
+     "startedAt": "1794593354",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    }
+   ],
+   "user": {
+    "userId": "aed9ab97-b7cc-43a5-ba06-5f7734d6b04e",
+    "creditAvailable": "48780",
+    "creditHeld": "0"
+   }
+  },
+  "spot": {
+   "jobs": [
+    {
+     "platformCredit": "0",
+     "queuedAt": "1794593049",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "unitPrice": "3000",
+     "tasksFailed": "0",
+     "kind": "script",
+     "usedVcpuSeconds": "732",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "params": {},
+     "createdAt": "1794593046",
+     "vcpu": "1",
+     "image": "spotpool-script",
+     "taskCount": "12",
+     "billableVcpuSeconds": "732",
+     "finishedAt": "1794593418",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "startedAt": "1794593054",
+     "tier": "spot",
+     "chargedCredit": "610",
+     "files": [
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py"
+     ],
+     "tasksSucceeded": "12",
+     "costCap": "50000",
+     "settledAt": "1794593418"
+    }
+   ],
+   "tasks": [
+    {
+     "startedAt": "1794593054",
+     "heartbeatAt": "1794593114",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "finishedAt": "1794593114",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py",
+     "leaseUntil": "1794593234"
+    },
+    {
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794593357",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "taskId": "task-0002",
+     "attempt": "1",
+     "error": "",
+     "heartbeatAt": "1794593356",
+     "startedAt": "1794593296",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "leaseUntil": "1794593476",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "startedAt": "1794593054",
+     "heartbeatAt": "1794593114",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "taskId": "task-0003",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "finishedAt": "1794593114",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py",
+     "leaseUntil": "1794593234"
+    },
+    {
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794593175",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "finishedAt": "1794593175",
+     "error": "",
+     "leaseUntil": "1794593295",
+     "interruptCount": "0",
+     "startedAt": "1794593114",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "taskId": "task-0004",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "taskId": "task-0005",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794593175",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "finishedAt": "1794593175",
+     "error": "",
+     "leaseUntil": "1794593295",
+     "interruptCount": "0",
+     "startedAt": "1794593114",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794593235",
+     "taskId": "task-0006",
+     "finishedAt": "1794593236",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "leaseUntil": "1794593355",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py",
+     "startedAt": "1794593175"
+    },
+    {
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794593357",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "taskId": "task-0007",
+     "error": "",
+     "heartbeatAt": "1794593356",
+     "startedAt": "1794593296",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "leaseUntil": "1794593476",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "heartbeatAt": "1794593296",
+     "startedAt": "1794593236",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794593416",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "finishedAt": "1794593296",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "taskId": "task-0008",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "heartbeatAt": "1794593417",
+     "taskId": "task-0009",
+     "leaseUntil": "1794593537",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "startedAt": "1794593357",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "finishedAt": "1794593417",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "heartbeatAt": "1794593417",
+     "leaseUntil": "1794593537",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794593418",
+     "startedAt": "1794593357",
+     "taskId": "task-0010",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py"
+    },
+    {
+     "taskId": "task-0011",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794593235",
+     "finishedAt": "1794593236",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "leaseUntil": "1794593355",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "fileName": "busy_60s.py",
+     "startedAt": "1794593175"
+    },
+    {
+     "heartbeatAt": "1794593296",
+     "startedAt": "1794593236",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794593416",
+     "queuedAt": "1794593053",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "finishedAt": "1794593296",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "taskId": "task-0012",
+     "fileName": "busy_60s.py"
+    }
+   ],
+   "usage": [
+    {
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0001#1",
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "startedAt": "1794593054",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "instanceType": "m7i-flex.large",
+     "finishedAt": "1794593114"
+    },
+    {
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "finishedAt": "1794593357",
+     "vcpuSeconds": "61",
+     "startedAt": "1794593296",
+     "outcome": "SUCCEEDED",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0002#1",
+     "attempt": "1",
+     "taskId": "task-0002",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0003#1",
+     "startedAt": "1794593054",
+     "day": "2026-11-14",
+     "taskId": "task-0003",
+     "instanceType": "m7i-flex.large",
+     "finishedAt": "1794593114"
+    },
+    {
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "taskId": "task-0004",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "startedAt": "1794593115",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0004#1",
+     "instanceType": "m7i-flex.large",
+     "finishedAt": "1794593175"
+    },
+    {
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "startedAt": "1794593115",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "instanceType": "m7i-flex.large",
+     "taskId": "task-0005",
+     "finishedAt": "1794593175",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0005#1"
+    },
+    {
+     "startedAt": "1794593175",
+     "taskId": "task-0006",
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0006#1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "instanceType": "m7i-flex.large",
+     "finishedAt": "1794593236"
+    },
+    {
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0007#1",
+     "lifecycle": "spot",
+     "finishedAt": "1794593357",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "startedAt": "1794593296",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "taskId": "task-0007",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "startedAt": "1794593236",
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0008#1",
+     "day": "2026-11-14",
+     "finishedAt": "1794593296",
+     "instanceType": "m7i-flex.large",
+     "taskId": "task-0008"
+    },
+    {
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794593417",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "taskId": "task-0009",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0009#1",
+     "day": "2026-11-14",
+     "startedAt": "1794593357",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "lifecycle": "spot",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0010#1",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "taskId": "task-0010",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "finishedAt": "1794593418",
+     "startedAt": "1794593357",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "startedAt": "1794593175",
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0011#1",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "day": "2026-11-14",
+     "taskId": "task-0011",
+     "instanceType": "m7i-flex.large",
+     "finishedAt": "1794593236"
+    },
+    {
+     "startedAt": "1794593236",
+     "lifecycle": "spot",
+     "jobId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "taskId": "task-0012",
+     "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0493de603d6f62e20",
+     "usageId": "76efb998-f8f9-4412-a07c-3a7a6430cfbd#task-0012#1",
+     "day": "2026-11-14",
+     "finishedAt": "1794593296",
+     "instanceType": "m7i-flex.large"
+    }
+   ],
+   "user": {
+    "userId": "271926fe-aa88-46b2-ab97-9da466feecb5",
+    "creditAvailable": "49390",
+    "creditHeld": "0"
+   }
+  }
+ },
+ {
+  "file": "burst2-012352",
+  "label": "burst2",
+  "ondemand": {
+   "jobs": [
+    {
+     "status": "SUCCEEDED",
+     "unitPrice": "6000",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "createdAt": "1794594079",
+     "startedAt": "1794594088",
+     "chargedCredit": "1220",
+     "finishedAt": "1794594209",
+     "taskCount": "12",
+     "kind": "script",
+     "billableVcpuSeconds": "732",
+     "tier": "ondemand",
+     "files": [
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py"
+     ],
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "queuedAt": "1794594083",
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "tasksSucceeded": "12",
+     "usedVcpuSeconds": "732",
+     "settledAt": "1794594210",
+     "tasksRemaining": "0",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f"
+    }
+   ],
+   "tasks": [
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794594148",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "taskId": "task-0002",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "finishedAt": "1794594149",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "taskId": "task-0003",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794594148",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "finishedAt": "1794594149",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "taskId": "task-0004",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "taskId": "task-0005",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794594148",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "queue": "ondemand",
+     "taskId": "task-0006",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794594148",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "finishedAt": "1794594149",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "taskId": "task-0007",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "heartbeatAt": "1794594148",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "taskId": "task-0008",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594268",
+     "finishedAt": "1794594149",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594088"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "heartbeatAt": "1794594209",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594329",
+     "finishedAt": "1794594209",
+     "queue": "ondemand",
+     "taskId": "task-0009",
+     "kind": "script",
+     "startedAt": "1794594148",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": ""
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "heartbeatAt": "1794594209",
+     "schemaVersion": "1",
+     "taskId": "task-0010",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594329",
+     "finishedAt": "1794594209",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594149"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "heartbeatAt": "1794594209",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594329",
+     "finishedAt": "1794594209",
+     "queue": "ondemand",
+     "taskId": "task-0011",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "startedAt": "1794594149"
+    },
+    {
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "fileName": "busy_60s.py",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "heartbeatAt": "1794594209",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "leaseUntil": "1794594329",
+     "finishedAt": "1794594209",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queuedAt": "1794594088",
+     "params": {},
+     "error": "",
+     "taskId": "task-0012",
+     "startedAt": "1794594149"
+    }
+   ],
+   "usage": [
+    {
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794594148",
+     "vcpu": "1",
+     "instanceId": "i-040e4a75097c493b2",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0001#1",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "az": "ap-southeast-1b"
+    },
+    {
+     "instanceId": "i-011b95c62028317a0",
+     "finishedAt": "1794594149",
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "taskId": "task-0002",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0002#1",
+     "day": "2026-11-14"
+    },
+    {
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0003#1",
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794594148",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0003",
+     "instanceId": "i-08fdbc971c71ada3b"
+    },
+    {
+     "finishedAt": "1794594149",
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0004#1",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "taskId": "task-0004",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceId": "i-0b912af283ee3a224",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14"
+    },
+    {
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794594148",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0005#1",
+     "vcpu": "1",
+     "instanceId": "i-040e4a75097c493b2",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0005",
+     "az": "ap-southeast-1b"
+    },
+    {
+     "taskId": "task-0006",
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794594148",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0006#1",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "instanceId": "i-08fdbc971c71ada3b"
+    },
+    {
+     "instanceId": "i-011b95c62028317a0",
+     "finishedAt": "1794594149",
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "taskId": "task-0007",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0007#1"
+    },
+    {
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0008#1",
+     "finishedAt": "1794594149",
+     "vcpuSeconds": "61",
+     "startedAt": "1794594088",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceId": "i-0b912af283ee3a224",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0008"
+    },
+    {
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0009#1",
+     "attempt": "1",
+     "taskId": "task-0009",
+     "finishedAt": "1794594209",
+     "vcpu": "1",
+     "instanceId": "i-040e4a75097c493b2",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "startedAt": "1794594149",
+     "az": "ap-southeast-1b"
+    },
+    {
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794594209",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0010#1",
+     "taskId": "task-0010",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "startedAt": "1794594149",
+     "instanceId": "i-08fdbc971c71ada3b"
+    },
+    {
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794594209",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0011#1",
+     "startedAt": "1794594149",
+     "taskId": "task-0011",
+     "instanceId": "i-08fdbc971c71ada3b"
+    },
+    {
+     "instanceId": "i-011b95c62028317a0",
+     "usageId": "12b43630-1069-4eff-ac95-097f7f848b1f#task-0012#1",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "taskId": "task-0012",
+     "az": "ap-southeast-1c",
+     "finishedAt": "1794594209",
+     "vcpu": "1",
+     "jobId": "12b43630-1069-4eff-ac95-097f7f848b1f",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "startedAt": "1794594149"
+    }
+   ],
+   "user": {
+    "userId": "5ff09bad-861b-4f6e-92c9-cdffe0beb7cc",
+    "creditAvailable": "48780",
+    "creditHeld": "0"
+   }
+  },
+  "spot": {
+   "jobs": [
+    {
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "usedVcpuSeconds": "732",
+     "taskCount": "12",
+     "status": "SUCCEEDED",
+     "files": [
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py",
+      "busy_60s.py"
+     ],
+     "chargedCredit": "610",
+     "billableVcpuSeconds": "732",
+     "finishedAt": "1794594212",
+     "params": {},
+     "tasksSucceeded": "12",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "createdAt": "1794594083",
+     "queuedAt": "1794594086",
+     "startedAt": "1794594091",
+     "vcpu": "1",
+     "settledAt": "1794594213",
+     "tier": "spot",
+     "unitPrice": "3000",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    }
+   ],
+   "tasks": [
+    {
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "taskId": "task-0002",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "taskId": "task-0003",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "taskId": "task-0004",
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "taskId": "task-0005",
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "taskId": "task-0006",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794594332",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594212",
+     "attempt": "1",
+     "taskId": "task-0007",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "finishedAt": "1794594212",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794594151",
+     "fileName": "busy_60s.py",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "taskId": "task-0008",
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "taskId": "task-0009",
+     "leaseUntil": "1794594271",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594151",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594151",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "startedAt": "1794594152",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794594332",
+     "taskId": "task-0010",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594212",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "finishedAt": "1794594212",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "busy_60s.py",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "taskId": "task-0011",
+     "queuedAt": "1794594090",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "tier": "spot",
+     "leaseUntil": "1794594331",
+     "attempt": "1",
+     "error": "",
+     "heartbeatAt": "1794594211",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "finishedAt": "1794594212",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794594151",
+     "fileName": "busy_60s.py",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    },
+    {
+     "queuedAt": "1794594090",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794594332",
+     "vcpu": "1",
+     "tier": "spot",
+     "heartbeatAt": "1794594212",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "finishedAt": "1794594212",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794594151",
+     "taskId": "task-0012",
+     "fileName": "busy_60s.py",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "spot",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0001#1",
+     "vcpuSeconds": "61",
+     "instanceId": "i-0aa22087b4e4b9cd0",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "tier": "spot",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "taskId": "task-0001"
+    },
+    {
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "taskId": "task-0002",
+     "tier": "spot",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "instanceId": "i-0b6c4e3d23bdb86c8",
+     "az": "ap-southeast-1b",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0002#1"
+    },
+    {
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "instanceId": "i-0493de603d6f62e20",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0003#1",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "taskId": "task-0003",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "instanceId": "i-07b7db3c13f260e49",
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0004#1",
+     "attempt": "1",
+     "taskId": "task-0004",
+     "tier": "spot",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "az": "ap-southeast-1b"
+    },
+    {
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0005#1",
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "instanceId": "i-0aa22087b4e4b9cd0",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "tier": "spot",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "taskId": "task-0005"
+    },
+    {
+     "taskId": "task-0006",
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "instanceId": "i-0493de603d6f62e20",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0006#1",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "taskId": "task-0007",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0007#1",
+     "instanceId": "i-0493de603d6f62e20",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "startedAt": "1794594152",
+     "finishedAt": "1794594212",
+     "day": "2026-11-14",
+     "instanceType": "m7i-flex.large"
+    },
+    {
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0008#1",
+     "tier": "spot",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "instanceId": "i-0b6c4e3d23bdb86c8",
+     "az": "ap-southeast-1b",
+     "taskId": "task-0008"
+    },
+    {
+     "instanceId": "i-07b7db3c13f260e49",
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "taskId": "task-0009",
+     "tier": "spot",
+     "vcpu": "1",
+     "startedAt": "1794594091",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0009#1",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594151",
+     "day": "2026-11-14",
+     "az": "ap-southeast-1b"
+    },
+    {
+     "instanceId": "i-07b7db3c13f260e49",
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "tier": "spot",
+     "vcpu": "1",
+     "taskId": "task-0010",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "startedAt": "1794594152",
+     "finishedAt": "1794594212",
+     "day": "2026-11-14",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0010#1",
+     "az": "ap-southeast-1b"
+    },
+    {
+     "startedAt": "1794594151",
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "instanceId": "i-0aa22087b4e4b9cd0",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "tier": "spot",
+     "vcpu": "1",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0011#1",
+     "finishedAt": "1794594212",
+     "day": "2026-11-14",
+     "taskId": "task-0011"
+    },
+    {
+     "lifecycle": "spot",
+     "vcpuSeconds": "61",
+     "instanceId": "i-0aa22087b4e4b9cd0",
+     "outcome": "SUCCEEDED",
+     "usageId": "aa70dc11-3d1e-481d-be4f-1390862d5889#task-0012#1",
+     "attempt": "1",
+     "taskId": "task-0012",
+     "az": "ap-southeast-1c",
+     "tier": "spot",
+     "vcpu": "1",
+     "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+     "jobId": "aa70dc11-3d1e-481d-be4f-1390862d5889",
+     "instanceType": "c7i-flex.large",
+     "startedAt": "1794594152",
+     "finishedAt": "1794594212",
+     "day": "2026-11-14"
+    }
+   ],
+   "user": {
+    "userId": "255b7d46-6263-492e-ad3e-5fbf702c03b3",
+    "creditAvailable": "49390",
+    "creditHeld": "0"
+   }
+  }
+ },
+ {
+  "file": "func-cancel-003801",
+  "label": "func-cancel",
+  "timeline": {
+   "allRunningAt": 1794591449,
+   "cancelAt": 1794591465,
+   "cancelStatus": 200,
+   "statusRightAfterCancel": "CANCELLED",
+   "tasksStoppedSeenAt": 1794591480
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "files": [
+      "busy_360s.py",
+      "busy_360s.py"
+     ],
+     "unitPrice": "6000",
+     "userId": "8a3e6024-3dae-487c-b61f-7dedbde2821d",
+     "createdAt": "1794591431",
+     "queuedAt": "1794591432",
+     "jobId": "9350a862-09e1-486c-92ba-1ae5a956ffa3",
+     "startedAt": "1794591434",
+     "platformCredit": "104",
+     "status": "CANCELLED",
+     "usedVcpuSeconds": "62",
+     "kind": "script",
+     "tasksFailed": "2",
+     "billableVcpuSeconds": "0",
+     "tier": "ondemand",
+     "settledAt": "1794591465",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "chargedCredit": "0",
+     "image": "spotpool-script",
+     "tasksRemaining": "0",
+     "tasksSucceeded": "0",
+     "taskCount": "2"
+    }
+   ],
+   "tasks": [
+    {
+     "error": "Job cancelled by user",
+     "userId": "8a3e6024-3dae-487c-b61f-7dedbde2821d",
+     "startedAt": "1794591434",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "finishedAt": "1794591464",
+     "taskId": "task-0001",
+     "heartbeatAt": "1794591434",
+     "jobId": "9350a862-09e1-486c-92ba-1ae5a956ffa3",
+     "queue": "ondemand",
+     "status": "CANCELLED",
+     "leaseUntil": "1794591554",
+     "kind": "script",
+     "queuedAt": "1794591433",
+     "attempt": "1",
+     "fileName": "busy_360s.py",
+     "params": {}
+    },
+    {
+     "error": "Job cancelled by user",
+     "userId": "8a3e6024-3dae-487c-b61f-7dedbde2821d",
+     "startedAt": "1794591434",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "taskId": "task-0002",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "finishedAt": "1794591464",
+     "heartbeatAt": "1794591434",
+     "jobId": "9350a862-09e1-486c-92ba-1ae5a956ffa3",
+     "queue": "ondemand",
+     "status": "CANCELLED",
+     "leaseUntil": "1794591554",
+     "kind": "script",
+     "queuedAt": "1794591433",
+     "attempt": "1",
+     "fileName": "busy_360s.py",
+     "params": {}
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "instanceId": "i-01eb68d50b27a875e",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "jobId": "9350a862-09e1-486c-92ba-1ae5a956ffa3",
+     "day": "2026-11-14",
+     "usageId": "9350a862-09e1-486c-92ba-1ae5a956ffa3#task-0001#1",
+     "taskId": "task-0001",
+     "tier": "ondemand",
+     "finishedAt": "1794591464",
+     "vcpuSeconds": "31",
+     "outcome": "CANCELLED",
+     "az": "ap-southeast-1c",
+     "userId": "8a3e6024-3dae-487c-b61f-7dedbde2821d",
+     "startedAt": "1794591434",
+     "vcpu": "1"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "instanceId": "i-01eb68d50b27a875e",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "jobId": "9350a862-09e1-486c-92ba-1ae5a956ffa3",
+     "day": "2026-11-14",
+     "tier": "ondemand",
+     "finishedAt": "1794591464",
+     "vcpuSeconds": "31",
+     "outcome": "CANCELLED",
+     "az": "ap-southeast-1c",
+     "usageId": "9350a862-09e1-486c-92ba-1ae5a956ffa3#task-0002#1",
+     "userId": "8a3e6024-3dae-487c-b61f-7dedbde2821d",
+     "startedAt": "1794591434",
+     "taskId": "task-0002",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "8a3e6024-3dae-487c-b61f-7dedbde2821d",
+    "creditAvailable": "50000",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "busy_360s.py",
+    "status": "CANCELLED",
+    "log": "Đang chạy giây 0\nĐang chạy giây 15\n"
+   },
+   "task-0002": {
+    "fileName": "busy_360s.py",
+    "status": "CANCELLED",
+    "log": "Đang chạy giây 0\nĐang chạy giây 15\n"
+   }
+  }
+ },
+ {
+  "file": "func-cap-003724",
+  "label": "func-cap",
+  "timeline": {
+   "pausedSeenAt": 1794591346,
+   "pausedStatus": "PAUSED",
+   "pausedUsed": 31,
+   "topupAt": 1794591348,
+   "topupStatus": 200,
+   "topupBody": {
+    "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+    "costCap": 350,
+    "status": "QUEUED",
+    "requestId": "284210f4-cb3f-4f2d-9960-475b3e1be477"
+   },
+   "runningAgainSeenAt": 1794591348
+  },
+  "snapshotPaused": {
+   "jobs": [
+    {
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+     "unitPrice": "6000",
+     "createdAt": "1794591298",
+     "tasksRemaining": "1",
+     "costCap": "50",
+     "startedAt": "1794591300",
+     "usedVcpuSeconds": "31",
+     "taskCount": "1",
+     "kind": "script",
+     "queuedAt": "1794591298",
+     "status": "PAUSED",
+     "tier": "ondemand",
+     "vcpu": "1",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "files": [
+      "busy_90s.py"
+     ],
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "tasksSucceeded": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "heartbeatAt": "1794591330",
+     "error": "Cost cap reached",
+     "leaseUntil": "1794591450",
+     "vcpu": "1",
+     "queuedAt": "1794591299",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "startedAt": "1794591300",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "PAUSED",
+     "fileName": "busy_90s.py",
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "attempt": "1",
+     "finishedAt": "1794591330",
+     "params": {},
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "vcpuSeconds": "31",
+     "tier": "ondemand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "startedAt": "1794591300",
+     "attempt": "1",
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "taskId": "task-0001",
+     "outcome": "PAUSED",
+     "usageId": "1dd47118-62dc-4d40-a25b-22affc2a83e7#task-0001#1",
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+     "finishedAt": "1794591330",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "day": "2026-11-14"
+    }
+   ],
+   "user": {
+    "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+    "creditAvailable": "49950",
+    "creditHeld": "50"
+   }
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "settledAt": "1794591424",
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+     "status": "SUCCEEDED",
+     "unitPrice": "6000",
+     "usedVcpuSeconds": "122",
+     "createdAt": "1794591298",
+     "chargedCredit": "204",
+     "finishedAt": "1794591424",
+     "startedAt": "1794591300",
+     "tasksSucceeded": "1",
+     "billableVcpuSeconds": "122",
+     "costCap": "350",
+     "taskCount": "1",
+     "kind": "script",
+     "queuedAt": "1794591298",
+     "tier": "ondemand",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "files": [
+      "busy_90s.py"
+     ],
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "tasksRemaining": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "finishedAt": "1794591424",
+     "vcpu": "1",
+     "queuedAt": "1794591299",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "startedAt": "1794591300",
+     "taskId": "task-0001",
+     "attempt": "2",
+     "queue": "ondemand",
+     "heartbeatAt": "1794591423",
+     "kind": "script",
+     "fileName": "busy_90s.py",
+     "status": "SUCCEEDED",
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "leaseUntil": "1794591543",
+     "params": {},
+     "error": "",
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "vcpuSeconds": "31",
+     "tier": "ondemand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "startedAt": "1794591300",
+     "attempt": "1",
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "taskId": "task-0001",
+     "outcome": "PAUSED",
+     "usageId": "1dd47118-62dc-4d40-a25b-22affc2a83e7#task-0001#1",
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+     "finishedAt": "1794591330",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "day": "2026-11-14"
+    },
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "91",
+     "lifecycle": "on-demand",
+     "tier": "ondemand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "finishedAt": "1794591424",
+     "usageId": "1dd47118-62dc-4d40-a25b-22affc2a83e7#task-0001#2",
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "day": "2026-11-14",
+     "attempt": "2",
+     "startedAt": "1794591333"
+    },
+    {
+     "amount": "300",
+     "usageId": "topup#284210f4-cb3f-4f2d-9960-475b3e1be477",
+     "createdAt": "1794591333",
+     "jobId": "1dd47118-62dc-4d40-a25b-22affc2a83e7",
+     "operation": "topup",
+     "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0"
+    }
+   ],
+   "user": {
+    "userId": "36c01881-99b6-4d9e-b354-2f73125d66e0",
+    "creditAvailable": "49796",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "busy_90s.py",
+    "status": "SUCCEEDED",
+    "log": "Đang chạy giây 0\nĐang chạy giây 15\nĐang chạy giây 30\nĐang chạy giây 45\nĐang chạy giây 60\nĐang chạy giây 75\nĐang chạy giây 90\n",
+    "result": "Xong sau 90 giây, 655326861655500 phép tính\n"
+   }
+  }
+ },
+ {
+  "file": "func-cap-checkpoint-021331",
+  "label": "func-cap-checkpoint",
+  "timeline": {
+   "pausedSeenAt": 1794597051,
+   "pausedStatus": "PAUSED",
+   "pausedUsed": 31,
+   "topupAt": 1794597053,
+   "topupStatus": 200,
+   "topupBody": {
+    "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+    "costCap": 350,
+    "status": "QUEUED",
+    "requestId": "e1ee1c58-b08c-46ea-b8f9-4d558f799866"
+   },
+   "runningAgainSeenAt": 1794597053
+  },
+  "snapshotPaused": {
+   "jobs": [
+    {
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "startedAt": "1794597004",
+     "vcpu": "1",
+     "usedVcpuSeconds": "31",
+     "createdAt": "1794596656",
+     "queuedAt": "1794596657",
+     "unitPrice": "6000",
+     "files": [
+      "test_checkpoint.py"
+     ],
+     "tasksSucceeded": "0",
+     "costCap": "50",
+     "tasksFailed": "0",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "tasksRemaining": "1",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "params": {},
+     "taskCount": "1",
+     "kind": "script",
+     "status": "PAUSED"
+    }
+   ],
+   "tasks": [
+    {
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "schemaVersion": "1",
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "heartbeatAt": "1794597034",
+     "queue": "ondemand",
+     "leaseUntil": "1794597154",
+     "vcpu": "1",
+     "status": "PAUSED",
+     "checkpointFiles": "1",
+     "checkpointBytes": "110",
+     "error": "Cost cap reached",
+     "checkpointAt": "1794597034",
+     "attempt": "1",
+     "checkpointAttempt": "1",
+     "fileName": "test_checkpoint.py",
+     "interruptCount": "0",
+     "queuedAt": "1794596663",
+     "startedAt": "1794597004",
+     "kind": "script",
+     "checkpointSha256": "3b21ca2c511704ce2ed539d647b135b22d28d7bfeeb8ead84379e986dc225c69",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand",
+     "finishedAt": "1794597034"
+    }
+   ],
+   "usage": [
+    {
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "instanceId": "i-0e07d37fca494458e",
+     "taskId": "task-0001",
+     "outcome": "PAUSED",
+     "startedAt": "1794597004",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "tier": "ondemand",
+     "vcpuSeconds": "31",
+     "az": "ap-southeast-1c",
+     "usageId": "b5795844-362d-4624-86b5-570b8e481bc6#task-0001#1",
+     "vcpu": "1",
+     "finishedAt": "1794597034"
+    }
+   ],
+   "user": {
+    "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+    "creditAvailable": "49950",
+    "creditHeld": "50"
+   }
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "startedAt": "1794597004",
+     "vcpu": "1",
+     "chargedCredit": "309",
+     "usedVcpuSeconds": "185",
+     "createdAt": "1794596656",
+     "queuedAt": "1794596657",
+     "billableVcpuSeconds": "185",
+     "unitPrice": "6000",
+     "files": [
+      "test_checkpoint.py"
+     ],
+     "tasksRemaining": "0",
+     "tasksSucceeded": "1",
+     "tasksFailed": "0",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794597192",
+     "platformCredit": "0",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "params": {},
+     "settledAt": "1794597192",
+     "costCap": "350",
+     "taskCount": "1",
+     "kind": "script"
+    }
+   ],
+   "tasks": [
+    {
+     "checkpointAt": "1794597189",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "schemaVersion": "1",
+     "finishedAt": "1794597192",
+     "status": "SUCCEEDED",
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "leaseUntil": "1794597309",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "attempt": "2",
+     "checkpointAttempt": "2",
+     "checkpointBytes": "456",
+     "error": "",
+     "checkpointFiles": "6",
+     "checkpointSha256": "f2c0bc01eb75b55cf1b9f12be02337885e7066639e10fbf7ab82098e0ae6d61a",
+     "fileName": "test_checkpoint.py",
+     "heartbeatAt": "1794597189",
+     "interruptCount": "0",
+     "queuedAt": "1794596663",
+     "startedAt": "1794597004",
+     "kind": "script",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {},
+     "tier": "ondemand"
+    }
+   ],
+   "usage": [
+    {
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "instanceId": "i-0e07d37fca494458e",
+     "taskId": "task-0001",
+     "outcome": "PAUSED",
+     "startedAt": "1794597004",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "tier": "ondemand",
+     "vcpuSeconds": "31",
+     "az": "ap-southeast-1c",
+     "usageId": "b5795844-362d-4624-86b5-570b8e481bc6#task-0001#1",
+     "vcpu": "1",
+     "finishedAt": "1794597034"
+    },
+    {
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "attempt": "2",
+     "usageId": "b5795844-362d-4624-86b5-570b8e481bc6#task-0001#2",
+     "day": "2026-11-14",
+     "vcpuSeconds": "154",
+     "instanceId": "i-0e07d37fca494458e",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "finishedAt": "1794597192",
+     "tier": "ondemand",
+     "az": "ap-southeast-1c",
+     "startedAt": "1794597038",
+     "vcpu": "1"
+    },
+    {
+     "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+     "usageId": "topup#e1ee1c58-b08c-46ea-b8f9-4d558f799866",
+     "operation": "topup",
+     "jobId": "b5795844-362d-4624-86b5-570b8e481bc6",
+     "amount": "300",
+     "createdAt": "1794597038"
+    }
+   ],
+   "user": {
+    "userId": "7e4add94-4af4-4aa8-8b3b-8bfd69d3df53",
+    "creditAvailable": "49691",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "test_checkpoint.py",
+    "status": "SUCCEEDED",
+    "log": "[SpotPool] Khôi phục checkpoint của lượt chạy 1: 1 file, 1 KB.\n[02:10:38] KHÔI PHỤC: lượt 2, chạy tiếp từ bước 30/180, tổng tạm 65037316513334300000; nhat-ky/ có 0 file: (trống)\n[02:10:38] Xong bước 30/180.\n[02:11:09] Xong bước 60/180.\n[02:11:39] Xong bước 90/180.\n[02:12:10] Xong bước 120/180.\n[02:12:40] Xong bước 150/180.\n[02:13:10] Xong bước 180/180.\n[02:13:11] Xong. Kết quả ĐÚNG.\n",
+    "result": "Tổng bình phương từ 0 đến 35999999: 15551999352000006000000\nTheo công thức: 15551999352000006000000 -> ĐÚNG\nSố lượt chạy: 2\n  Lượt 1: bắt đầu từ bước 1 lúc 2026-11-14 02:10:05\n  Lượt 2: bắt đầu từ bước 30 lúc 2026-11-14 02:10:38\n"
+   }
+  }
+ },
+ {
+  "file": "func-script-003426",
+  "label": "func-script",
+  "snapshot": {
+   "jobs": [
+    {
+     "tasksFailed": "1",
+     "startedAt": "1794591244",
+     "tasksRemaining": "0",
+     "createdAt": "1794591237",
+     "platformCredit": "1",
+     "chargedCredit": "4",
+     "kind": "script",
+     "taskCount": "3",
+     "params": {},
+     "tasksSucceeded": "2",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "unitPrice": "6000",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "settledAt": "1794591246",
+     "status": "FAILED",
+     "usedVcpuSeconds": "3",
+     "queuedAt": "1794591239",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "costCap": "50000",
+     "billableVcpuSeconds": "2",
+     "files": [
+      "calc_primes.py",
+      "calc_matrix.py",
+      "fail_on_purpose.py"
+     ],
+     "finishedAt": "1794591246"
+    }
+   ],
+   "tasks": [
+    {
+     "heartbeatAt": "1794591245",
+     "schemaVersion": "1",
+     "leaseUntil": "1794591365",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "fileName": "calc_primes.py",
+     "vcpu": "1",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "queue": "ondemand",
+     "attempt": "1",
+     "error": "",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "finishedAt": "1794591245",
+     "startedAt": "1794591244",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "queuedAt": "1794591244"
+    },
+    {
+     "heartbeatAt": "1794591245",
+     "finishedAt": "1794591246",
+     "schemaVersion": "1",
+     "leaseUntil": "1794591365",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "taskId": "task-0002",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "queue": "ondemand",
+     "attempt": "1",
+     "error": "",
+     "startedAt": "1794591245",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "calc_matrix.py",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "queuedAt": "1794591244"
+    },
+    {
+     "heartbeatAt": "1794591245",
+     "schemaVersion": "1",
+     "leaseUntil": "1794591365",
+     "status": "FAILED",
+     "vcpu": "1",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "queue": "ondemand",
+     "attempt": "1",
+     "fileName": "fail_on_purpose.py",
+     "taskId": "task-0003",
+     "error": "Container exit code 1; result file missing or invalid",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "finishedAt": "1794591245",
+     "startedAt": "1794591244",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "queuedAt": "1794591244"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "on-demand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "vcpuSeconds": "1",
+     "usageId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8#task-0001#1",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "taskId": "task-0001",
+     "az": "ap-southeast-1c",
+     "tier": "ondemand",
+     "startedAt": "1794591245",
+     "outcome": "SUCCEEDED",
+     "finishedAt": "1794591245",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "day": "2026-11-14",
+     "vcpu": "1"
+    },
+    {
+     "finishedAt": "1794591246",
+     "lifecycle": "on-demand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "vcpuSeconds": "1",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "az": "ap-southeast-1c",
+     "tier": "ondemand",
+     "startedAt": "1794591245",
+     "usageId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8#task-0002#1",
+     "outcome": "SUCCEEDED",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "day": "2026-11-14",
+     "vcpu": "1",
+     "taskId": "task-0002"
+    },
+    {
+     "lifecycle": "on-demand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "vcpuSeconds": "1",
+     "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "az": "ap-southeast-1c",
+     "tier": "ondemand",
+     "startedAt": "1794591245",
+     "taskId": "task-0003",
+     "finishedAt": "1794591245",
+     "jobId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8",
+     "usageId": "d4719786-ce3e-4438-a4e0-1ff1920be6b8#task-0003#1",
+     "day": "2026-11-14",
+     "vcpu": "1",
+     "outcome": "FAILED"
+    }
+   ],
+   "user": {
+    "userId": "51da64a4-315a-4c9f-9bbc-4dc7a36443a1",
+    "creditAvailable": "49996",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "calc_primes.py",
+    "status": "SUCCEEDED",
+    "log": "Đã đếm xong.\n",
+    "result": "Số nguyên tố nhỏ hơn 2000000: 148933\n"
+   },
+   "task-0002": {
+    "fileName": "calc_matrix.py",
+    "status": "SUCCEEDED",
+    "log": "",
+    "result": "Vết của A×B: 72876\n"
+   },
+   "task-0003": {
+    "fileName": "fail_on_purpose.py",
+    "status": "FAILED",
+    "log": "Bắt đầu đọc cấu hình...\nLỗi cố ý: không tìm thấy tham số bắt buộc 'nguong'\n"
+   }
+  }
+ },
+ {
+  "file": "func-video-003502",
+  "label": "func-video",
+  "snapshot": {
+   "jobs": [
+    {
+     "kind": "video",
+     "image": "spotpool-video",
+     "userId": "3a7284b9-2b7a-4aa3-86d4-c41f0e17d70a",
+     "vcpu": "1",
+     "files": [
+      "clip_1080p_20s.mp4",
+      "clip_960p_15s.mp4"
+     ],
+     "tasksSucceeded": "2",
+     "chargedCredit": "54",
+     "params": {
+      "height": "720"
+     },
+     "startedAt": "1794591256",
+     "createdAt": "1794591252",
+     "jobId": "1d7f159e-6891-4612-aa0d-ea77ee1af352",
+     "unitPrice": "6000",
+     "taskCount": "2",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "queuedAt": "1794591255",
+     "tasksFailed": "0",
+     "tier": "ondemand",
+     "usedVcpuSeconds": "32",
+     "finishedAt": "1794591280",
+     "status": "SUCCEEDED",
+     "platformCredit": "0",
+     "billableVcpuSeconds": "32",
+     "settledAt": "1794591280"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "heartbeatAt": "1794591257",
+     "userId": "3a7284b9-2b7a-4aa3-86d4-c41f0e17d70a",
+     "fileName": "clip_1080p_20s.mp4",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794591377",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "image": "spotpool-video",
+     "kind": "video",
+     "error": "",
+     "params": {
+      "height": "720"
+     },
+     "jobId": "1d7f159e-6891-4612-aa0d-ea77ee1af352",
+     "attempt": "1",
+     "finishedAt": "1794591280",
+     "interruptCount": "0",
+     "queuedAt": "1794591256",
+     "taskId": "task-0001",
+     "tier": "ondemand",
+     "startedAt": "1794591256"
+    },
+    {
+     "schemaVersion": "1",
+     "userId": "3a7284b9-2b7a-4aa3-86d4-c41f0e17d70a",
+     "fileName": "clip_960p_15s.mp4",
+     "status": "SUCCEEDED",
+     "taskId": "task-0002",
+     "queue": "ondemand",
+     "vcpu": "1",
+     "heartbeatAt": "1794591256",
+     "image": "spotpool-video",
+     "kind": "video",
+     "error": "",
+     "leaseUntil": "1794591376",
+     "params": {
+      "height": "720"
+     },
+     "jobId": "1d7f159e-6891-4612-aa0d-ea77ee1af352",
+     "attempt": "1",
+     "interruptCount": "0",
+     "queuedAt": "1794591256",
+     "finishedAt": "1794591264",
+     "tier": "ondemand",
+     "startedAt": "1794591256"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "usageId": "1d7f159e-6891-4612-aa0d-ea77ee1af352#task-0001#1",
+     "instanceId": "i-01eb68d50b27a875e",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "startedAt": "1794591257",
+     "userId": "3a7284b9-2b7a-4aa3-86d4-c41f0e17d70a",
+     "jobId": "1d7f159e-6891-4612-aa0d-ea77ee1af352",
+     "vcpuSeconds": "24",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "finishedAt": "1794591280"
+    },
+    {
+     "vcpuSeconds": "8",
+     "instanceType": "c7i-flex.large",
+     "instanceId": "i-01eb68d50b27a875e",
+     "lifecycle": "on-demand",
+     "attempt": "1",
+     "startedAt": "1794591257",
+     "userId": "3a7284b9-2b7a-4aa3-86d4-c41f0e17d70a",
+     "finishedAt": "1794591264",
+     "jobId": "1d7f159e-6891-4612-aa0d-ea77ee1af352",
+     "day": "2026-11-14",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "az": "ap-southeast-1c",
+     "taskId": "task-0002",
+     "vcpu": "1",
+     "usageId": "1d7f159e-6891-4612-aa0d-ea77ee1af352#task-0002#1"
+    }
+   ],
+   "user": {
+    "userId": "3a7284b9-2b7a-4aa3-86d4-c41f0e17d70a",
+    "creditAvailable": "49946",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "clip_1080p_20s.mp4",
+    "status": "SUCCEEDED",
+    "log": "Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/input/payload':\n  Metadata:\n    major_brand     : isom\n    minor_version   : 512\n    compatible_brands: isomiso2avc1mp41\n    encoder         : Lavf59.27.100\n  Duration: 00:00:20.00, start: 0.000000, bitrate: 6491 kb/s\n  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 1920x1080 [SAR 1:1 DAR 16:9], 6413 kb/s, 30 fps, 30 tbr, 15360 tbn (default)\n    Metadata:\n      handler_name    : VideoHandler\n      vendor_id       : [0][0][0][0]\n      encoder         : Lavc59.37.100 libx264\n  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, mono, fltp, 69 kb/s (default)\n    Metadata:\n      handler_name    : SoundHandler\n      vendor_id       : [0][0][0][0]\nStream mapping:\n  Stream #0:0 -> #0:0 (h264 (native) -> h264 (libx264))\n  Stream #0:1 -> #0:1 (aac (native) -> aac (native))\n[libx264 @ 0x55dbde406240] using SAR=1/1\n[libx264 @ 0x55dbde406240] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512\n[libx264 @ 0x55dbde406240] profile High, level 3.1, 4:2:0, 8-bit\n[libx264 @ 0x55dbde406240] 264 - core 164 r3095 baee400 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=2 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00\nOutput #0, mp4, to '/output/result':\n  Metadata:\n    major_brand     : isom\n    minor_version   : 512\n    compatible_brands: isomiso2avc1mp41\n    encoder         : Lavf59.27.100\n  Stream #0:0(und): Video: h264 (avc1 / 0x31637661), yuv420p(tv, progressive), 1280x720 [SAR 1:1 DAR 16:9], q=2-31, 30 fps, 15360 tbn (default)\n    Metadata:\n      handler_name    : VideoHandler\n      vendor_id       : [0][0][0][0]\n      encoder         : Lavc59.37.100 libx264\n    Side data:\n      cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A\n  Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, mono, fltp, 128 kb/s (default)\n    Metadata:\n      handler_name    : SoundHandler\n      vendor_id       : [0][0][0][0]\n      encoder         : Lavc59.37.100 aac\nframe=    1 fps=0.0 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x    \rframe=   42 fps=0.0 q=0.0 size=       0kB time=00:00:01.38 bitrate=   0.3kbits/s speed=2.58x    \rframe=   52 fps= 50 q=29.0 size=       0kB time=00:00:01.72 bitrate=   0.2kbits/s speed=1.65x    \rframe=   66 fps= 41 q=29.0 size=       0kB time=00:00:02.19 bitrate=   0.2kbits/s speed=1.36x    \rframe=   79 fps= 37 q=29.0 size=       0kB time=00:00:02.62 bitrate=   0.1kbits/s speed=1.24x    \rframe=   93 fps= 35 q=29.0 size=     256kB time=00:00:03.09 bitrate= 678.1kbits/s speed=1.18x    \rframe=  107 fps= 34 q=29.0 size=     256kB time=00:00:03.56 bitrate= 588.8kbits/s speed=1.14x    \rframe=  121 fps= 33 q=29.0 size=     256kB time=00:00:04.03 bitrate= 520.2kbits/s speed= 1.1x    \rframe=  135 fps= 32 q=29.0 size=     512kB time=00:00:04.48 bitrate= 936.3kbits/s speed=1.07x    \rframe=  147 fps= 31 q=29.0 size=     512kB time=00:00:04.88 bitrate= 858.6kbits/s speed=1.04x    \rframe=  160 fps= 31 q=29.0 size=     512kB time=00:00:05.31 bitrate= 789.7kbits/s speed=1.02x    \rframe=  172 fps= 30 q=29.0 size=     768kB time=00:00:05.71 bitrate=1100.5kbits/s speed=   1x    \rframe=  185 fps= 30 q=29.0 size=     768kB time=00:00:06.16 bitrate=1020.5kbits/s speed=0.989x    \rframe=  198 fps= 29 q=29.0 size=     768kB time=00:00:06.59 bitrate= 954.5kbits/s speed=0.979x    \rframe=  212 fps= 29 q=29.0 size=    1024kB time=00:00:07.06 bitrate=1188.0kbits/s speed=0.97x    \r",
+    "resultFile": "1d7f159e_task-0001.mp4"
+   },
+   "task-0002": {
+    "fileName": "clip_960p_15s.mp4",
+    "status": "SUCCEEDED",
+    "log": "Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/input/payload':\n  Metadata:\n    major_brand     : isom\n    minor_version   : 512\n    compatible_brands: isomiso2avc1mp41\n    encoder         : Lavf59.27.100\n  Duration: 00:00:15.00, start: 0.000000, bitrate: 131 kb/s\n  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 1280x960 [SAR 1:1 DAR 4:3], 128 kb/s, 30 fps, 30 tbr, 15360 tbn (default)\n    Metadata:\n      handler_name    : VideoHandler\n      vendor_id       : [0][0][0][0]\n      encoder         : Lavc59.37.100 libx264\nCodec AVOption b (set bitrate (in bits/s)) specified for output file #0 (/output/result) has not been used for any stream. The most likely reason is either wrong type (e.g. a video option with no video streams) or that it is a private option of some encoder which was not actually used for any stream.\nStream mapping:\n  Stream #0:0 -> #0:0 (h264 (native) -> h264 (libx264))\n[libx264 @ 0x560907355f00] using SAR=1/1\n[libx264 @ 0x560907355f00] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512\n[libx264 @ 0x560907355f00] profile High, level 3.1, 4:2:0, 8-bit\n[libx264 @ 0x560907355f00] 264 - core 164 r3095 baee400 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=2 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00\nOutput #0, mp4, to '/output/result':\n  Metadata:\n    major_brand     : isom\n    minor_version   : 512\n    compatible_brands: isomiso2avc1mp41\n    encoder         : Lavf59.27.100\n  Stream #0:0(und): Video: h264 (avc1 / 0x31637661), yuv420p(tv, progressive), 960x720 [SAR 1:1 DAR 4:3], q=2-31, 30 fps, 15360 tbn (default)\n    Metadata:\n      handler_name    : VideoHandler\n      vendor_id       : [0][0][0][0]\n      encoder         : Lavc59.37.100 libx264\n    Side data:\n      cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A\nframe=    1 fps=0.0 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x    \rframe=   56 fps=0.0 q=29.0 size=       0kB time=00:00:00.23 bitrate=   1.6kbits/s speed=0.457x    \rframe=   87 fps= 86 q=29.0 size=       0kB time=00:00:01.26 bitrate=   0.3kbits/s speed=1.25x    \rframe=  119 fps= 78 q=29.0 size=       0kB time=00:00:02.33 bitrate=   0.2kbits/s speed=1.54x    \rframe=  150 fps= 74 q=29.0 size=       0kB time=00:00:03.36 bitrate=   0.1kbits/s speed=1.66x    \rframe=  179 fps= 71 q=29.0 size=       0kB time=00:00:04.33 bitrate=   0.1kbits/s speed=1.71x    \rframe=  210 fps= 69 q=29.0 size=       0kB time=00:00:05.36 bitrate=   0.1kbits/s speed=1.77x    \rframe=  241 fps= 68 q=29.0 size=       0kB time=00:00:06.40 bitrate=   0.1kbits/s speed= 1.8x    \rframe=  273 fps= 67 q=29.0 size=       0kB time=00:00:07.46 bitrate=   0.1kbits/s speed=1.84x    \rframe=  298 fps= 65 q=29.0 size=       0kB time=00:00:08.30 bitrate=   0.0kbits/s speed=1.82x    \rframe=  332 fps= 65 q=29.0 size=       0kB time=00:00:09.43 bitrate=   0.0kbits/s speed=1.86x    \rframe=  363 fps= 65 q=29.0 size=       0kB time=00:00:10.46 bitrate=   0.0kbits/s speed=1.87x    \rframe=  396 fps= 65 q=29.0 size=       0kB time=00:00:11.56 bitrate=   0.0kbits/s speed= 1.9x    \rframe=  430 fps= 65 q=29.0 size=       0kB time=00:00:12.70 bitrate=   0.0kbits/s speed=1.92x    \r[mp4 @ 0x560907343780] Starting second pass: moving the moov atom to the beginning of the file\nframe=  450 fps= 61 q=-1.0 Lsize=     176kB time=00:00:14.90 bitrate=  96.9kbits/s speed=2.03x    \nvideo:170kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing ",
+    "resultFile": "1d7f159e_task-0002.mp4"
+   }
+  }
+ },
+ {
+  "file": "func-zip-003511",
+  "label": "func-zip",
+  "snapshot": {
+   "jobs": [
+    {
+     "status": "SUCCEEDED",
+     "unitPrice": "6000",
+     "files": [
+      "project_hinh.zip"
+     ],
+     "startedAt": "1794591291",
+     "jobId": "5d1c373c-76d1-40da-b522-bda6ece62002",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "settledAt": "1794591292",
+     "billableVcpuSeconds": "1",
+     "taskCount": "1",
+     "finishedAt": "1794591292",
+     "kind": "script",
+     "chargedCredit": "2",
+     "userId": "002d36af-97cf-49f1-a7f4-1c1643f23976",
+     "tier": "ondemand",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "createdAt": "1794591289",
+     "image": "spotpool-script",
+     "tasksRemaining": "0",
+     "queuedAt": "1794591290"
+    }
+   ],
+   "tasks": [
+    {
+     "startedAt": "1794591291",
+     "queuedAt": "1794591291",
+     "leaseUntil": "1794591411",
+     "vcpu": "1",
+     "fileName": "project_hinh.zip",
+     "userId": "002d36af-97cf-49f1-a7f4-1c1643f23976",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "jobId": "5d1c373c-76d1-40da-b522-bda6ece62002",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "heartbeatAt": "1794591291",
+     "finishedAt": "1794591292",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "params": {},
+     "error": ""
+    }
+   ],
+   "usage": [
+    {
+     "userId": "002d36af-97cf-49f1-a7f4-1c1643f23976",
+     "startedAt": "1794591291",
+     "outcome": "SUCCEEDED",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "jobId": "5d1c373c-76d1-40da-b522-bda6ece62002",
+     "vcpu": "1",
+     "finishedAt": "1794591292",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "instanceId": "i-01eb68d50b27a875e",
+     "usageId": "5d1c373c-76d1-40da-b522-bda6ece62002#task-0001#1",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0001"
+    }
+   ],
+   "user": {
+    "userId": "002d36af-97cf-49f1-a7f4-1c1643f23976",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "project_hinh.zip",
+    "status": "SUCCEEDED",
+    "log": "[log] Bắt đầu: nạp được package hinh/ và module tien_ich từ trong zip.\n[log] Xong 4 hình.\n",
+    "result": "Danh sách hình (mỗi lớp nằm ở file riêng trong package hinh/):\n  Hình chữ nhật  diện tích     12.00   chu vi   14.00\n  Hình tròn      diện tích     12.57   chu vi   12.57\n  Tam giác       diện tích      6.00   chu vi   12.00\n  Hình chữ nhật  diện tích      5.00   chu vi   21.00\nTổng diện tích: 35.57\nLớn nhất: Hình tròn (12.57)\n"
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012427",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "platformCredit": "0",
+     "tasksSucceeded": "1",
+     "startedAt": "1794594247",
+     "usedVcpuSeconds": "1",
+     "finishedAt": "1794594248",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "jobId": "da2bb8f1-7edf-47dd-a0ee-a6dbebe0e038",
+     "createdAt": "1794594244",
+     "tasksFailed": "0",
+     "kind": "script",
+     "settledAt": "1794594248",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "userId": "767c20e1-1faf-453b-9f15-3c12806d1d4c",
+     "params": {},
+     "chargedCredit": "2",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "unitPrice": "6000",
+     "queuedAt": "1794594246",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "queuedAt": "1794594247",
+     "schemaVersion": "1",
+     "startedAt": "1794594247",
+     "jobId": "da2bb8f1-7edf-47dd-a0ee-a6dbebe0e038",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794594248",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "attempt": "1",
+     "error": "",
+     "finishedAt": "1794594248",
+     "tier": "ondemand",
+     "leaseUntil": "1794594368",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py",
+     "userId": "767c20e1-1faf-453b-9f15-3c12806d1d4c"
+    }
+   ],
+   "usage": [
+    {
+     "instanceId": "i-011b95c62028317a0",
+     "userId": "767c20e1-1faf-453b-9f15-3c12806d1d4c",
+     "outcome": "SUCCEEDED",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "finishedAt": "1794594248",
+     "vcpu": "1",
+     "startedAt": "1794594248",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "usageId": "da2bb8f1-7edf-47dd-a0ee-a6dbebe0e038#task-0001#1",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "jobId": "da2bb8f1-7edf-47dd-a0ee-a6dbebe0e038"
+    }
+   ],
+   "user": {
+    "userId": "767c20e1-1faf-453b-9f15-3c12806d1d4c",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012450",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "settledAt": "1794594271",
+     "platformCredit": "0",
+     "tasksSucceeded": "1",
+     "usedVcpuSeconds": "1",
+     "finishedAt": "1794594271",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "startedAt": "1794594270",
+     "createdAt": "1794594268",
+     "files": [
+      "short.py"
+     ],
+     "jobId": "052db253-52da-4c62-828c-95f70f85c37c",
+     "params": {},
+     "chargedCredit": "2",
+     "userId": "33e8a827-659a-41fe-96c8-5caf41caebe0",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "queuedAt": "1794594269",
+     "image": "spotpool-script",
+     "unitPrice": "6000",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794594270",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "leaseUntil": "1794594390",
+     "attempt": "1",
+     "error": "",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "finishedAt": "1794594271",
+     "params": {},
+     "fileName": "short.py",
+     "queuedAt": "1794594270",
+     "jobId": "052db253-52da-4c62-828c-95f70f85c37c",
+     "userId": "33e8a827-659a-41fe-96c8-5caf41caebe0",
+     "startedAt": "1794594270"
+    }
+   ],
+   "usage": [
+    {
+     "finishedAt": "1794594271",
+     "outcome": "SUCCEEDED",
+     "userId": "33e8a827-659a-41fe-96c8-5caf41caebe0",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "az": "ap-southeast-1a",
+     "jobId": "052db253-52da-4c62-828c-95f70f85c37c",
+     "vcpu": "1",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "startedAt": "1794594271",
+     "usageId": "052db253-52da-4c62-828c-95f70f85c37c#task-0001#1",
+     "instanceId": "i-08fdbc971c71ada3b"
+    }
+   ],
+   "user": {
+    "userId": "33e8a827-659a-41fe-96c8-5caf41caebe0",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012514",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "createdAt": "1794594292",
+     "jobId": "56949f06-f894-48e7-bf2d-60e330850b9b",
+     "settledAt": "1794594295",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "tier": "ondemand",
+     "unitPrice": "6000",
+     "finishedAt": "1794594294",
+     "params": {},
+     "files": [
+      "short.py"
+     ],
+     "startedAt": "1794594294",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "queuedAt": "1794594292",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "userId": "c25c19d4-17ec-4096-8d07-daaf43e2203f",
+     "vcpu": "1",
+     "chargedCredit": "2"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "jobId": "56949f06-f894-48e7-bf2d-60e330850b9b",
+     "vcpu": "1",
+     "heartbeatAt": "1794594294",
+     "queue": "ondemand",
+     "userId": "c25c19d4-17ec-4096-8d07-daaf43e2203f",
+     "attempt": "1",
+     "error": "",
+     "tier": "ondemand",
+     "finishedAt": "1794594294",
+     "interruptCount": "0",
+     "queuedAt": "1794594293",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794594294",
+     "fileName": "short.py",
+     "leaseUntil": "1794594414"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "on-demand",
+     "jobId": "56949f06-f894-48e7-bf2d-60e330850b9b",
+     "usageId": "56949f06-f894-48e7-bf2d-60e330850b9b#task-0001#1",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "taskId": "task-0001",
+     "tier": "ondemand",
+     "instanceId": "i-0b912af283ee3a224",
+     "az": "ap-southeast-1a",
+     "startedAt": "1794594294",
+     "outcome": "SUCCEEDED",
+     "finishedAt": "1794594294",
+     "userId": "c25c19d4-17ec-4096-8d07-daaf43e2203f",
+     "day": "2026-11-14",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "c25c19d4-17ec-4096-8d07-daaf43e2203f",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012538",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "queuedAt": "1794594316",
+     "platformCredit": "0",
+     "tasksSucceeded": "1",
+     "userId": "d3a28610-6414-4791-8a72-53d3c096677f",
+     "createdAt": "1794594315",
+     "usedVcpuSeconds": "1",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "jobId": "f2e851f9-f1ee-4395-a68b-2b033f6d39ca",
+     "files": [
+      "short.py"
+     ],
+     "params": {},
+     "chargedCredit": "2",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "unitPrice": "6000",
+     "startedAt": "1794594317",
+     "settledAt": "1794594318",
+     "finishedAt": "1794594318",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "jobId": "f2e851f9-f1ee-4395-a68b-2b033f6d39ca",
+     "startedAt": "1794594317",
+     "finishedAt": "1794594318",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "queuedAt": "1794594317",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "userId": "d3a28610-6414-4791-8a72-53d3c096677f",
+     "attempt": "1",
+     "leaseUntil": "1794594437",
+     "error": "",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "heartbeatAt": "1794594317",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "jobId": "f2e851f9-f1ee-4395-a68b-2b033f6d39ca",
+     "instanceType": "c7i-flex.large",
+     "usageId": "f2e851f9-f1ee-4395-a68b-2b033f6d39ca#task-0001#1",
+     "lifecycle": "on-demand",
+     "vcpuSeconds": "1",
+     "userId": "d3a28610-6414-4791-8a72-53d3c096677f",
+     "attempt": "1",
+     "startedAt": "1794594317",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "finishedAt": "1794594318",
+     "instanceId": "i-0b912af283ee3a224",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    }
+   ],
+   "user": {
+    "userId": "d3a28610-6414-4791-8a72-53d3c096677f",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012602",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "jobId": "5568c0dd-c915-4102-adc1-1bae6da8e29b",
+     "status": "SUCCEEDED",
+     "unitPrice": "6000",
+     "createdAt": "1794594340",
+     "usedVcpuSeconds": "1",
+     "userId": "8ae4531e-8011-409c-9a44-da8c4671a376",
+     "tasksSucceeded": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "kind": "script",
+     "queuedAt": "1794594340",
+     "chargedCredit": "2",
+     "settledAt": "1794594343",
+     "finishedAt": "1794594343",
+     "tier": "ondemand",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "startedAt": "1794594342",
+     "image": "spotpool-script",
+     "tasksRemaining": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "vcpu": "1",
+     "queuedAt": "1794594342",
+     "tier": "ondemand",
+     "finishedAt": "1794594343",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "userId": "8ae4531e-8011-409c-9a44-da8c4671a376",
+     "startedAt": "1794594342",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "heartbeatAt": "1794594342",
+     "params": {},
+     "error": "",
+     "leaseUntil": "1794594462",
+     "jobId": "5568c0dd-c915-4102-adc1-1bae6da8e29b",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "usageId": "5568c0dd-c915-4102-adc1-1bae6da8e29b#task-0001#1",
+     "lifecycle": "on-demand",
+     "tier": "ondemand",
+     "instanceId": "i-0b912af283ee3a224",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "vcpuSeconds": "1",
+     "az": "ap-southeast-1a",
+     "outcome": "SUCCEEDED",
+     "jobId": "5568c0dd-c915-4102-adc1-1bae6da8e29b",
+     "userId": "8ae4531e-8011-409c-9a44-da8c4671a376",
+     "finishedAt": "1794594343",
+     "vcpu": "1",
+     "startedAt": "1794594342",
+     "day": "2026-11-14"
+    }
+   ],
+   "user": {
+    "userId": "8ae4531e-8011-409c-9a44-da8c4671a376",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012625",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "queuedAt": "1794594364",
+     "status": "SUCCEEDED",
+     "createdAt": "1794594363",
+     "usedVcpuSeconds": "1",
+     "settledAt": "1794594366",
+     "tasksSucceeded": "1",
+     "tier": "ondemand",
+     "finishedAt": "1794594366",
+     "unitPrice": "6000",
+     "params": {},
+     "files": [
+      "short.py"
+     ],
+     "tasksRemaining": "0",
+     "userId": "bc4cf07b-1729-4402-852f-ab9ba9bee3e1",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "jobId": "9b2db317-e11b-410b-9937-76367fba759f",
+     "vcpu": "1",
+     "chargedCredit": "2",
+     "startedAt": "1794594365"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "startedAt": "1794594365",
+     "queuedAt": "1794594365",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "jobId": "9b2db317-e11b-410b-9937-76367fba759f",
+     "userId": "bc4cf07b-1729-4402-852f-ab9ba9bee3e1",
+     "attempt": "1",
+     "error": "",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "leaseUntil": "1794594485",
+     "params": {},
+     "fileName": "short.py",
+     "heartbeatAt": "1794594365",
+     "finishedAt": "1794594366"
+    }
+   ],
+   "usage": [
+    {
+     "userId": "bc4cf07b-1729-4402-852f-ab9ba9bee3e1",
+     "finishedAt": "1794594366",
+     "outcome": "SUCCEEDED",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "jobId": "9b2db317-e11b-410b-9937-76367fba759f",
+     "startedAt": "1794594365",
+     "az": "ap-southeast-1a",
+     "vcpu": "1",
+     "instanceId": "i-0b912af283ee3a224",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "usageId": "9b2db317-e11b-410b-9937-76367fba759f#task-0001#1",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0001"
+    }
+   ],
+   "user": {
+    "userId": "bc4cf07b-1729-4402-852f-ab9ba9bee3e1",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012652",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "jobId": "14867e43-0023-468c-a084-3f12dd4e9635",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794594392",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "tier": "ondemand",
+     "unitPrice": "6000",
+     "createdAt": "1794594388",
+     "params": {},
+     "settledAt": "1794594393",
+     "files": [
+      "short.py"
+     ],
+     "userId": "9933ad9a-a67c-496e-924a-06a87ae816b0",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "queuedAt": "1794594390",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "startedAt": "1794594392",
+     "chargedCredit": "2"
+    }
+   ],
+   "tasks": [
+    {
+     "finishedAt": "1794594392",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "startedAt": "1794594392",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "queuedAt": "1794594392",
+     "leaseUntil": "1794594512",
+     "userId": "9933ad9a-a67c-496e-924a-06a87ae816b0",
+     "attempt": "1",
+     "error": "",
+     "jobId": "14867e43-0023-468c-a084-3f12dd4e9635",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py",
+     "heartbeatAt": "1794594392"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "finishedAt": "1794594392",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "usageId": "14867e43-0023-468c-a084-3f12dd4e9635#task-0001#1",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "instanceId": "i-08fdbc971c71ada3b",
+     "tier": "ondemand",
+     "startedAt": "1794594392",
+     "userId": "9933ad9a-a67c-496e-924a-06a87ae816b0",
+     "jobId": "14867e43-0023-468c-a084-3f12dd4e9635",
+     "vcpu": "1",
+     "az": "ap-southeast-1a"
+    }
+   ],
+   "user": {
+    "userId": "9933ad9a-a67c-496e-924a-06a87ae816b0",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012716",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "settledAt": "1794594416",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "createdAt": "1794594414",
+     "finishedAt": "1794594416",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "tier": "ondemand",
+     "unitPrice": "6000",
+     "jobId": "0d0db975-947b-4ebe-a629-e575b8a5f12f",
+     "params": {},
+     "files": [
+      "short.py"
+     ],
+     "userId": "5519aa98-e766-42d2-bdc2-9536739d7d36",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "queuedAt": "1794594414",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "startedAt": "1794594416",
+     "vcpu": "1",
+     "chargedCredit": "2"
+    }
+   ],
+   "tasks": [
+    {
+     "queuedAt": "1794594415",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "userId": "5519aa98-e766-42d2-bdc2-9536739d7d36",
+     "leaseUntil": "1794594536",
+     "vcpu": "1",
+     "heartbeatAt": "1794594416",
+     "queue": "ondemand",
+     "attempt": "1",
+     "error": "",
+     "tier": "ondemand",
+     "finishedAt": "1794594416",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794594416",
+     "fileName": "short.py",
+     "jobId": "0d0db975-947b-4ebe-a629-e575b8a5f12f"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "startedAt": "1794594416",
+     "tier": "ondemand",
+     "userId": "5519aa98-e766-42d2-bdc2-9536739d7d36",
+     "instanceId": "i-0b912af283ee3a224",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "vcpuSeconds": "1",
+     "az": "ap-southeast-1a",
+     "jobId": "0d0db975-947b-4ebe-a629-e575b8a5f12f",
+     "outcome": "SUCCEEDED",
+     "vcpu": "1",
+     "finishedAt": "1794594416",
+     "usageId": "0d0db975-947b-4ebe-a629-e575b8a5f12f#task-0001#1",
+     "day": "2026-11-14"
+    }
+   ],
+   "user": {
+    "userId": "5519aa98-e766-42d2-bdc2-9536739d7d36",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012739",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "queuedAt": "1794594438",
+     "platformCredit": "0",
+     "tasksSucceeded": "1",
+     "usedVcpuSeconds": "1",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "settledAt": "1794594440",
+     "params": {},
+     "chargedCredit": "2",
+     "userId": "8fbb508a-4f97-49b0-a762-c72a650b5216",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "finishedAt": "1794594440",
+     "image": "spotpool-script",
+     "unitPrice": "6000",
+     "createdAt": "1794594437",
+     "jobId": "93d39054-eaef-44a7-945f-859f1b52d9dc",
+     "startedAt": "1794594439",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "userId": "8fbb508a-4f97-49b0-a762-c72a650b5216",
+     "finishedAt": "1794594440",
+     "attempt": "1",
+     "error": "",
+     "queuedAt": "1794594439",
+     "tier": "ondemand",
+     "heartbeatAt": "1794594440",
+     "interruptCount": "0",
+     "kind": "script",
+     "startedAt": "1794594439",
+     "image": "spotpool-script",
+     "leaseUntil": "1794594560",
+     "params": {},
+     "fileName": "short.py",
+     "jobId": "93d39054-eaef-44a7-945f-859f1b52d9dc"
+    }
+   ],
+   "usage": [
+    {
+     "instanceId": "i-011b95c62028317a0",
+     "userId": "8fbb508a-4f97-49b0-a762-c72a650b5216",
+     "usageId": "93d39054-eaef-44a7-945f-859f1b52d9dc#task-0001#1",
+     "outcome": "SUCCEEDED",
+     "vcpuSeconds": "1",
+     "startedAt": "1794594440",
+     "attempt": "1",
+     "az": "ap-southeast-1c",
+     "jobId": "93d39054-eaef-44a7-945f-859f1b52d9dc",
+     "vcpu": "1",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794594440",
+     "lifecycle": "on-demand",
+     "tier": "ondemand",
+     "day": "2026-11-14",
+     "taskId": "task-0001"
+    }
+   ],
+   "user": {
+    "userId": "8fbb508a-4f97-49b0-a762-c72a650b5216",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-012803",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "settledAt": "1794594464",
+     "status": "SUCCEEDED",
+     "unitPrice": "6000",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "queuedAt": "1794594461",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "jobId": "739650d1-5ea0-47ee-8e4f-2918c561cc68",
+     "taskCount": "1",
+     "startedAt": "1794594463",
+     "kind": "script",
+     "userId": "9be9d725-f2f5-4d4e-a9c3-a48fd96930dd",
+     "chargedCredit": "2",
+     "finishedAt": "1794594463",
+     "tier": "ondemand",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "createdAt": "1794594461",
+     "tasksRemaining": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "jobId": "739650d1-5ea0-47ee-8e4f-2918c561cc68",
+     "startedAt": "1794594463",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "leaseUntil": "1794594583",
+     "finishedAt": "1794594463",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "queuedAt": "1794594462",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "kind": "script",
+     "heartbeatAt": "1794594463",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "userId": "9be9d725-f2f5-4d4e-a9c3-a48fd96930dd",
+     "params": {},
+     "error": "",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "on-demand",
+     "instanceId": "i-040e4a75097c493b2",
+     "finishedAt": "1794594463",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "userId": "9be9d725-f2f5-4d4e-a9c3-a48fd96930dd",
+     "taskId": "task-0001",
+     "usageId": "739650d1-5ea0-47ee-8e4f-2918c561cc68#task-0001#1",
+     "tier": "ondemand",
+     "outcome": "SUCCEEDED",
+     "startedAt": "1794594463",
+     "jobId": "739650d1-5ea0-47ee-8e4f-2918c561cc68",
+     "day": "2026-11-14",
+     "vcpu": "1",
+     "az": "ap-southeast-1b"
+    }
+   ],
+   "user": {
+    "userId": "9be9d725-f2f5-4d4e-a9c3-a48fd96930dd",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-015158",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "userId": "dac68adf-8e78-464f-8d91-527c85b0bb93",
+     "vcpu": "1",
+     "tier": "spot",
+     "settledAt": "1794595899",
+     "queuedAt": "1794595536",
+     "createdAt": "1794595535",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "startedAt": "1794595897",
+     "chargedCredit": "1",
+     "jobId": "7a45afb6-7c67-4148-bbb7-9c06b74fc308",
+     "tasksSucceeded": "1",
+     "tasksFailed": "0",
+     "usedVcpuSeconds": "1",
+     "image": "spotpool-script",
+     "status": "SUCCEEDED",
+     "platformCredit": "0",
+     "unitPrice": "3000",
+     "params": {},
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "finishedAt": "1794595898",
+     "kind": "script"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "startedAt": "1794595897",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794596017",
+     "vcpu": "1",
+     "queuedAt": "1794595541",
+     "jobId": "7a45afb6-7c67-4148-bbb7-9c06b74fc308",
+     "queue": "spot",
+     "userId": "dac68adf-8e78-464f-8d91-527c85b0bb93",
+     "error": "",
+     "fileName": "short.py",
+     "attempt": "1",
+     "finishedAt": "1794595898",
+     "tier": "spot",
+     "heartbeatAt": "1794595897",
+     "interruptCount": "0",
+     "kind": "script",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {}
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "startedAt": "1794595897",
+     "jobId": "7a45afb6-7c67-4148-bbb7-9c06b74fc308",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "finishedAt": "1794595898",
+     "vcpuSeconds": "1",
+     "outcome": "SUCCEEDED",
+     "userId": "dac68adf-8e78-464f-8d91-527c85b0bb93",
+     "lifecycle": "spot",
+     "vcpu": "1",
+     "az": "ap-southeast-1b",
+     "day": "2026-11-14",
+     "tier": "spot",
+     "usageId": "7a45afb6-7c67-4148-bbb7-9c06b74fc308#task-0001#1",
+     "instanceId": "i-07de81e69c35873ff"
+    }
+   ],
+   "user": {
+    "userId": "dac68adf-8e78-464f-8d91-527c85b0bb93",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-021555",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "2",
+     "jobId": "82635382-ce4a-47ad-a84f-8eebf48ed184",
+     "vcpu": "1",
+     "usedVcpuSeconds": "2",
+     "queuedAt": "1794596980",
+     "settledAt": "1794597336",
+     "userId": "5142506c-4f54-4233-b9fc-79ee6e3764b9",
+     "tier": "spot",
+     "billableVcpuSeconds": "2",
+     "finishedAt": "1794597336",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "createdAt": "1794596979",
+     "tasksSucceeded": "1",
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "status": "SUCCEEDED",
+     "platformCredit": "0",
+     "unitPrice": "3000",
+     "params": {},
+     "taskCount": "1",
+     "files": [
+      "short.py"
+     ],
+     "kind": "script",
+     "startedAt": "1794597334"
+    }
+   ],
+   "tasks": [
+    {
+     "leaseUntil": "1794597454",
+     "queuedAt": "1794596985",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794597334",
+     "jobId": "82635382-ce4a-47ad-a84f-8eebf48ed184",
+     "vcpu": "1",
+     "queue": "spot",
+     "finishedAt": "1794597336",
+     "error": "",
+     "startedAt": "1794597334",
+     "userId": "5142506c-4f54-4233-b9fc-79ee6e3764b9",
+     "fileName": "short.py",
+     "attempt": "1",
+     "tier": "spot",
+     "interruptCount": "0",
+     "kind": "script",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {}
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "attempt": "1",
+     "instanceId": "i-0d8e6e2b1a5d662dc",
+     "taskId": "task-0001",
+     "startedAt": "1794597334",
+     "finishedAt": "1794597336",
+     "outcome": "SUCCEEDED",
+     "usageId": "82635382-ce4a-47ad-a84f-8eebf48ed184#task-0001#1",
+     "lifecycle": "spot",
+     "vcpu": "1",
+     "userId": "5142506c-4f54-4233-b9fc-79ee6e3764b9",
+     "az": "ap-southeast-1b",
+     "jobId": "82635382-ce4a-47ad-a84f-8eebf48ed184",
+     "vcpuSeconds": "2",
+     "day": "2026-11-14",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "5142506c-4f54-4233-b9fc-79ee6e3764b9",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "spot-cp-004543",
+  "label": "spot-cp",
+  "meta": {
+   "label": "spot-cp",
+   "userId": "c240f16d-1543-4648-beb2-e458784e5e40",
+   "submittedAt": 1794591255
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "status": "SUCCEEDED",
+     "tasksSucceeded": "1",
+     "createdAt": "1794591240",
+     "settledAt": "1794591926",
+     "params": {},
+     "usedVcpuSeconds": "96",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "jobId": "dce9c55a-50e6-4d88-8793-fdd8dbc2a833",
+     "files": [
+      "test_checkpoint.py"
+     ],
+     "kind": "script",
+     "image": "spotpool-script",
+     "tasksFailed": "0",
+     "billableVcpuSeconds": "96",
+     "platformCredit": "77",
+     "startedAt": "1794591520",
+     "userId": "c240f16d-1543-4648-beb2-e458784e5e40",
+     "vcpu": "1",
+     "chargedCredit": "80",
+     "finishedAt": "1794591923",
+     "tier": "spot",
+     "unitPrice": "3000",
+     "queuedAt": "1794591240"
+    }
+   ],
+   "tasks": [
+    {
+     "finishedAt": "1794591923",
+     "interruptCount": "1",
+     "userId": "c240f16d-1543-4648-beb2-e458784e5e40",
+     "checkpointAt": "1794591918",
+     "heartbeatAt": "1794591917",
+     "checkpointSha256": "51ac956680a0a3942eae23b2a73d460924b149af88f07419fdfdf0e1ce66dc8e",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "leaseUntil": "1794592037",
+     "attempt": "2",
+     "checkpointAttempt": "2",
+     "vcpu": "1",
+     "tier": "spot",
+     "checkpointBytes": "456",
+     "queuedAt": "1794591245",
+     "error": "",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "test_checkpoint.py",
+     "startedAt": "1794591520",
+     "checkpointFiles": "6",
+     "jobId": "dce9c55a-50e6-4d88-8793-fdd8dbc2a833"
+    }
+   ],
+   "usage": [
+    {
+     "jobId": "dce9c55a-50e6-4d88-8793-fdd8dbc2a833",
+     "startedAt": "1794591520",
+     "attempt": "1",
+     "instanceId": "i-04888ce6023ec54fd",
+     "instanceType": "m7i-flex.large",
+     "outcome": "INTERRUPTED",
+     "day": "2026-11-14",
+     "usageId": "dce9c55a-50e6-4d88-8793-fdd8dbc2a833#task-0001#1",
+     "vcpuSeconds": "92",
+     "taskId": "task-0001",
+     "userId": "c240f16d-1543-4648-beb2-e458784e5e40",
+     "lifecycle": "spot",
+     "finishedAt": "1794591612",
+     "vcpu": "1",
+     "az": "ap-southeast-1a",
+     "tier": "spot"
+    },
+    {
+     "jobId": "dce9c55a-50e6-4d88-8793-fdd8dbc2a833",
+     "finishedAt": "1794591923",
+     "instanceId": "i-097213aa76a75f515",
+     "attempt": "2",
+     "startedAt": "1794591827",
+     "instanceType": "m7i-flex.large",
+     "day": "2026-11-14",
+     "vcpuSeconds": "96",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "userId": "c240f16d-1543-4648-beb2-e458784e5e40",
+     "lifecycle": "spot",
+     "usageId": "dce9c55a-50e6-4d88-8793-fdd8dbc2a833#task-0001#2",
+     "vcpu": "1",
+     "az": "ap-southeast-1a",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "c240f16d-1543-4648-beb2-e458784e5e40",
+    "creditAvailable": "49920",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "test_checkpoint.py",
+    "status": "SUCCEEDED",
+    "log": "[SpotPool] Khôi phục checkpoint của lượt chạy 1: 4 file, 1 KB.\n[00:43:50] KHÔI PHỤC: lượt 2, chạy tiếp từ bước 91/180, tổng tạm 1943999838000003000000; nhat-ky/ có 3 file: buoc-030.txt, buoc-060.txt, buoc-090.txt\n[00:44:20] Xong bước 120/180.\n[00:44:51] Xong bước 150/180.\n[00:45:21] Xong bước 180/180.\n[00:45:22] Xong. Kết quả ĐÚNG.\n",
+    "result": "Tổng bình phương từ 0 đến 35999999: 15551999352000006000000\nTheo công thức: 15551999352000006000000 -> ĐÚNG\nSố lượt chạy: 2\n  Lượt 1: bắt đầu từ bước 1 lúc 2026-11-14 00:38:41\n  Lượt 2: bắt đầu từ bước 91 lúc 2026-11-14 00:43:50\n"
+   }
+  }
+ },
+ {
+  "file": "spot-video-cp-010148",
+  "label": "spot-video-cp",
+  "meta": {
+   "label": "spot-video-cp",
+   "userId": "429a582a-2d63-463d-af5d-7c877a8c9dc7",
+   "submittedAt": 1794592484
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "finishedAt": "1794592873",
+     "image": "spotpool-video",
+     "kind": "video",
+     "billableVcpuSeconds": "95",
+     "queuedAt": "1794592469",
+     "tasksSucceeded": "1",
+     "files": [
+      "video_150s.mp4"
+     ],
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "platformCredit": "61",
+     "usedVcpuSeconds": "95",
+     "unitPrice": "3000",
+     "userId": "429a582a-2d63-463d-af5d-7c877a8c9dc7",
+     "tasksFailed": "0",
+     "createdAt": "1794592464",
+     "taskCount": "1",
+     "jobId": "34255557-94c2-4570-a9e2-9e6c3443768f",
+     "settledAt": "1794592876",
+     "startedAt": "1794592474",
+     "vcpu": "1",
+     "chargedCredit": "80",
+     "params": {
+      "height": "720"
+     },
+     "tier": "spot",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "interruptCount": "1",
+     "startedAt": "1794592474",
+     "kind": "video",
+     "finishedAt": "1794592873",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "queuedAt": "1794592474",
+     "image": "spotpool-video",
+     "attempt": "2",
+     "checkpointAttempt": "2",
+     "fileName": "video_150s.mp4",
+     "checkpointFiles": "8",
+     "vcpu": "1",
+     "checkpointBytes": "41990164",
+     "tier": "spot",
+     "error": "",
+     "queue": "spot",
+     "checkpointAt": "1794592871",
+     "jobId": "34255557-94c2-4570-a9e2-9e6c3443768f",
+     "leaseUntil": "1794592989",
+     "params": {
+      "height": "720"
+     },
+     "checkpointSha256": "555f5f9fca2ebec3c608d30244b6c6ff9e1140229f5fe681b7f25e920ece71b0",
+     "heartbeatAt": "1794592869",
+     "userId": "429a582a-2d63-463d-af5d-7c877a8c9dc7"
+    }
+   ],
+   "usage": [
+    {
+     "instanceId": "i-097213aa76a75f515",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "az": "ap-southeast-1a",
+     "userId": "429a582a-2d63-463d-af5d-7c877a8c9dc7",
+     "lifecycle": "spot",
+     "finishedAt": "1794592548",
+     "vcpuSeconds": "74",
+     "tier": "spot",
+     "jobId": "34255557-94c2-4570-a9e2-9e6c3443768f",
+     "instanceType": "m7i-flex.large",
+     "usageId": "34255557-94c2-4570-a9e2-9e6c3443768f#task-0001#1",
+     "day": "2026-11-14",
+     "startedAt": "1794592474",
+     "vcpu": "1",
+     "outcome": "INTERRUPTED"
+    },
+    {
+     "taskId": "task-0001",
+     "usageId": "34255557-94c2-4570-a9e2-9e6c3443768f#task-0001#2",
+     "az": "ap-southeast-1a",
+     "instanceId": "i-0493de603d6f62e20",
+     "outcome": "SUCCEEDED",
+     "userId": "429a582a-2d63-463d-af5d-7c877a8c9dc7",
+     "startedAt": "1794592779",
+     "finishedAt": "1794592873",
+     "lifecycle": "spot",
+     "attempt": "2",
+     "tier": "spot",
+     "vcpuSeconds": "95",
+     "jobId": "34255557-94c2-4570-a9e2-9e6c3443768f",
+     "instanceType": "m7i-flex.large",
+     "day": "2026-11-14",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "429a582a-2d63-463d-af5d-7c877a8c9dc7",
+    "creditAvailable": "49920",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "video_150s.mp4",
+    "status": "SUCCEEDED",
+    "log": "[SpotPool] Khôi phục checkpoint của lượt chạy 1: 4 file, 16471 KB.\nTiếp tục từ đoạn 4/7 (đã nén xong 3 đoạn, mỗi đoạn 20 giây).\nXong đoạn 4/7.\nXong đoạn 5/7.\nXong đoạn 6/7.\nXong đoạn 7/7.\nGhép 7 đoạn và nén âm thanh.\n",
+    "resultFile": "34255557_task-0001.mp4"
+   }
+  }
+ },
+ {
+  "file": "spot-zero-nocp-005411",
+  "label": "spot-zero-nocp",
+  "meta": {
+   "label": "spot-zero-nocp",
+   "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+   "submittedAt": 1794591253
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "506",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+     "createdAt": "1794591237",
+     "unitPrice": "3000",
+     "tasksFailed": "0",
+     "kind": "script",
+     "params": {},
+     "usedVcpuSeconds": "607",
+     "jobId": "254fa1b1-5743-487d-b8b5-7146f2755cc1",
+     "tasksSucceeded": "2",
+     "vcpu": "1",
+     "image": "spotpool-script",
+     "finishedAt": "1794592430",
+     "platformCredit": "80",
+     "settledAt": "1794592434",
+     "billableVcpuSeconds": "607",
+     "files": [
+      "busy_600s.py",
+      "short.py"
+     ],
+     "startedAt": "1794591516",
+     "tier": "spot",
+     "queuedAt": "1794591239",
+     "costCap": "50000",
+     "taskCount": "2"
+    }
+   ],
+   "tasks": [
+    {
+     "leaseUntil": "1794592548",
+     "interruptCount": "1",
+     "fileName": "busy_600s.py",
+     "queuedAt": "1794591243",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794592430",
+     "attempt": "2",
+     "heartbeatAt": "1794592428",
+     "vcpu": "1",
+     "tier": "spot",
+     "error": "",
+     "startedAt": "1794591516",
+     "kind": "script",
+     "queue": "spot",
+     "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+     "jobId": "254fa1b1-5743-487d-b8b5-7146f2755cc1",
+     "image": "spotpool-script",
+     "params": {}
+    },
+    {
+     "queuedAt": "1794591243",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794591516",
+     "vcpu": "1",
+     "leaseUntil": "1794591636",
+     "tier": "spot",
+     "taskId": "task-0002",
+     "attempt": "1",
+     "finishedAt": "1794591520",
+     "error": "",
+     "startedAt": "1794591516",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+     "jobId": "254fa1b1-5743-487d-b8b5-7146f2755cc1",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "instanceId": "i-04888ce6023ec54fd",
+     "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+     "finishedAt": "1794591612",
+     "startedAt": "1794591516",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "az": "ap-southeast-1a",
+     "jobId": "254fa1b1-5743-487d-b8b5-7146f2755cc1",
+     "lifecycle": "spot",
+     "vcpu": "1",
+     "vcpuSeconds": "96",
+     "instanceType": "m7i-flex.large",
+     "usageId": "254fa1b1-5743-487d-b8b5-7146f2755cc1#task-0001#1",
+     "day": "2026-11-14",
+     "tier": "spot",
+     "outcome": "INTERRUPTED"
+    },
+    {
+     "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+     "instanceId": "i-097213aa76a75f515",
+     "usageId": "254fa1b1-5743-487d-b8b5-7146f2755cc1#task-0001#2",
+     "taskId": "task-0001",
+     "az": "ap-southeast-1a",
+     "jobId": "254fa1b1-5743-487d-b8b5-7146f2755cc1",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "vcpu": "1",
+     "vcpuSeconds": "603",
+     "instanceType": "m7i-flex.large",
+     "day": "2026-11-14",
+     "tier": "spot",
+     "attempt": "2",
+     "finishedAt": "1794592430",
+     "startedAt": "1794591827"
+    },
+    {
+     "instanceId": "i-04888ce6023ec54fd",
+     "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+     "startedAt": "1794591516",
+     "attempt": "1",
+     "az": "ap-southeast-1a",
+     "jobId": "254fa1b1-5743-487d-b8b5-7146f2755cc1",
+     "finishedAt": "1794591520",
+     "outcome": "SUCCEEDED",
+     "usageId": "254fa1b1-5743-487d-b8b5-7146f2755cc1#task-0002#1",
+     "lifecycle": "spot",
+     "vcpu": "1",
+     "instanceType": "m7i-flex.large",
+     "day": "2026-11-14",
+     "taskId": "task-0002",
+     "tier": "spot",
+     "vcpuSeconds": "4"
+    }
+   ],
+   "user": {
+    "userId": "3728d4e6-ae44-4046-988c-e1672fa1c4d2",
+    "creditAvailable": "49494",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "busy_600s.py",
+    "status": "SUCCEEDED",
+    "log": "Đang chạy giây 0\nĐang chạy giây 15\nĐang chạy giây 30\nĐang chạy giây 45\nĐang chạy giây 60\nĐang chạy giây 75\nĐang chạy giây 90\nĐang chạy giây 105\nĐang chạy giây 120\nĐang chạy giây 135\nĐang chạy giây 150\nĐang chạy giây 165\nĐang chạy giây 180\nĐang chạy giây 195\nĐang chạy giây 210\nĐang chạy giây 225\nĐang chạy giây 240\nĐang chạy giây 255\nĐang chạy giây 270\nĐang chạy giây 285\nĐang chạy giây 300\nĐang chạy giây 315\nĐang chạy giây 330\nĐang chạy giây 345\nĐang chạy giây 360\nĐang chạy giây 375\nĐang chạy giây 390\nĐang chạy giây 405\nĐang chạy giây 420\nĐang chạy giây 435\nĐang chạy giây 450\nĐang chạy giây 465\nĐang chạy giây 480\nĐang chạy giây 495\nĐang chạy giây 510\nĐang chạy giây 525\nĐang chạy giây 540\nĐang chạy giây 555\nĐang chạy giây 570\nĐang chạy giây 585\nĐang chạy giây 600\n",
+    "result": "Xong sau 600 giây, 4305003286567500 phép tính\n"
+   },
+   "task-0002": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": "",
+    "result": "Xin chào từ SpotPool\n"
+   }
+  }
+ },
+ {
+  "file": "spot-cp-fast-044611",
+  "label": "spot-cp-fast",
+  "meta": {
+   "label": "spot-cp-fast",
+   "userId": "37a6f367-e3d6-47bc-bf01-56038fa6ba83",
+   "submittedAt": 1794605685
+  },
+  "snapshot": {
+   "jobs": [
+    {
+     "startedAt": "1794606086",
+     "chargedCredit": "73",
+     "platformCredit": "84",
+     "tasksSucceeded": "1",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "unitPrice": "3000",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "files": [
+      "test_checkpoint.py"
+     ],
+     "params": {},
+     "settledAt": "1794606349",
+     "vcpu": "1",
+     "finishedAt": "1794606349",
+     "queuedAt": "1794605669",
+     "billableVcpuSeconds": "87",
+     "image": "spotpool-script",
+     "userId": "37a6f367-e3d6-47bc-bf01-56038fa6ba83",
+     "tier": "spot",
+     "costCap": "50000",
+     "createdAt": "1794605668",
+     "jobId": "05d76194-0bf3-4b22-a3a3-c0d6e523a991",
+     "usedVcpuSeconds": "87"
+    }
+   ],
+   "tasks": [
+    {
+     "interruptCount": "1",
+     "checkpointAt": "1794606323",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "attempt": "2",
+     "checkpointAttempt": "2",
+     "checkpointBytes": "455",
+     "vcpu": "1",
+     "tier": "spot",
+     "startedAt": "1794606086",
+     "jobId": "05d76194-0bf3-4b22-a3a3-c0d6e523a991",
+     "error": "",
+     "finishedAt": "1794606349",
+     "heartbeatAt": "1794606323",
+     "queuedAt": "1794605674",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "userId": "37a6f367-e3d6-47bc-bf01-56038fa6ba83",
+     "params": {},
+     "fileName": "test_checkpoint.py",
+     "checkpointSha256": "ebe96646df59baed9e2b4d614af0169192ad75558131c78cf6ecc8e824e2f713",
+     "checkpointFiles": "6",
+     "leaseUntil": "1794606443"
+    }
+   ],
+   "usage": [
+    {
+     "az": "ap-southeast-1b",
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794606186",
+     "attempt": "1",
+     "outcome": "INTERRUPTED",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "lifecycle": "spot",
+     "userId": "37a6f367-e3d6-47bc-bf01-56038fa6ba83",
+     "vcpuSeconds": "101",
+     "usageId": "05d76194-0bf3-4b22-a3a3-c0d6e523a991#task-0001#1",
+     "instanceId": "i-0a3719f9e246ea41e",
+     "vcpu": "1",
+     "startedAt": "1794606086",
+     "tier": "spot",
+     "jobId": "05d76194-0bf3-4b22-a3a3-c0d6e523a991"
+    },
+    {
+     "instanceId": "i-0935e8ad39f7e37ff",
+     "attempt": "2",
+     "instanceType": "m7i-flex.large",
+     "usageId": "05d76194-0bf3-4b22-a3a3-c0d6e523a991#task-0001#2",
+     "day": "2026-11-14",
+     "finishedAt": "1794606349",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "az": "ap-southeast-1c",
+     "userId": "37a6f367-e3d6-47bc-bf01-56038fa6ba83",
+     "startedAt": "1794606263",
+     "vcpuSeconds": "87",
+     "vcpu": "1",
+     "tier": "spot",
+     "jobId": "05d76194-0bf3-4b22-a3a3-c0d6e523a991"
+    }
+   ],
+   "user": {
+    "userId": "37a6f367-e3d6-47bc-bf01-56038fa6ba83",
+    "creditAvailable": "49927",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "test_checkpoint.py",
+    "status": "SUCCEEDED",
+    "log": "[SpotPool] Khôi phục checkpoint của lượt chạy 1: 4 file, 1 KB.\n[04:44:26] KHÔI PHỤC: lượt 2, chạy tiếp từ bước 99/180, tổng tạm 2509845141253336600000; nhat-ky/ có 3 file: buoc-030.txt, buoc-060.txt, buoc-090.txt\n[04:44:47] Xong bước 120/180.\n[04:45:17] Xong bước 150/180.\n[04:45:48] Xong bước 180/180.\n[04:45:49] Xong. Kết quả ĐÚNG.\n",
+    "result": "Tổng bình phương từ 0 đến 35999999: 15551999352000006000000\nTheo công thức: 15551999352000006000000 -> ĐÚNG\nSố lượt chạy: 2\n  Lượt 1: bắt đầu từ bước 1 lúc 2026-11-14 04:41:27\n  Lượt 2: bắt đầu từ bước 99 lúc 2026-11-14 04:44:26\n"
+   }
+  }
+ },
+ {
+  "file": "sample-spot-023957",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "1",
+     "userId": "66e20d5e-8ac1-47b7-8dc9-d7391a631b9c",
+     "tier": "spot",
+     "status": "SUCCEEDED",
+     "createdAt": "1794598415",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "unitPrice": "3000",
+     "settledAt": "1794598780",
+     "queuedAt": "1794598417",
+     "kind": "script",
+     "jobId": "8f3537aa-a01a-45a3-b655-cb230a8872b4",
+     "platformCredit": "0",
+     "startedAt": "1794598776",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "finishedAt": "1794598777",
+     "image": "spotpool-script",
+     "tasksRemaining": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "tier": "spot",
+     "vcpu": "1",
+     "finishedAt": "1794598777",
+     "startedAt": "1794598776",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "queuedAt": "1794598422",
+     "userId": "66e20d5e-8ac1-47b7-8dc9-d7391a631b9c",
+     "taskId": "task-0001",
+     "heartbeatAt": "1794598777",
+     "jobId": "8f3537aa-a01a-45a3-b655-cb230a8872b4",
+     "kind": "script",
+     "leaseUntil": "1794598897",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queue": "spot",
+     "params": {},
+     "error": "",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "finishedAt": "1794598777",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceId": "i-0bbd16240da2201be",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "jobId": "8f3537aa-a01a-45a3-b655-cb230a8872b4",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "az": "ap-southeast-1c",
+     "startedAt": "1794598777",
+     "userId": "66e20d5e-8ac1-47b7-8dc9-d7391a631b9c",
+     "usageId": "8f3537aa-a01a-45a3-b655-cb230a8872b4#task-0001#1",
+     "vcpu": "1",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "66e20d5e-8ac1-47b7-8dc9-d7391a631b9c",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-030455",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "usedVcpuSeconds": "4",
+     "vcpu": "1",
+     "chargedCredit": "4",
+     "createdAt": "1794599918",
+     "billableVcpuSeconds": "4",
+     "settledAt": "1794600276",
+     "tier": "spot",
+     "tasksRemaining": "0",
+     "userId": "613bb220-9be0-4ca3-a8d7-07446b7a33c8",
+     "costCap": "50000",
+     "tasksSucceeded": "1",
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "startedAt": "1794600272",
+     "status": "SUCCEEDED",
+     "platformCredit": "0",
+     "unitPrice": "3000",
+     "params": {},
+     "queuedAt": "1794599920",
+     "finishedAt": "1794600275",
+     "taskCount": "1",
+     "files": [
+      "short.py"
+     ],
+     "jobId": "59df1801-74a4-4433-8369-2bbff9ce15de",
+     "kind": "script"
+    }
+   ],
+   "tasks": [
+    {
+     "startedAt": "1794600272",
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "queue": "spot",
+     "error": "",
+     "leaseUntil": "1794600392",
+     "queuedAt": "1794599925",
+     "fileName": "short.py",
+     "heartbeatAt": "1794600272",
+     "attempt": "1",
+     "finishedAt": "1794600275",
+     "tier": "spot",
+     "interruptCount": "0",
+     "jobId": "59df1801-74a4-4433-8369-2bbff9ce15de",
+     "kind": "script",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "userId": "613bb220-9be0-4ca3-a8d7-07446b7a33c8",
+     "params": {}
+    }
+   ],
+   "usage": [
+    {
+     "attempt": "1",
+     "instanceType": "m7i-flex.large",
+     "vcpuSeconds": "4",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "userId": "613bb220-9be0-4ca3-a8d7-07446b7a33c8",
+     "outcome": "SUCCEEDED",
+     "usageId": "59df1801-74a4-4433-8369-2bbff9ce15de#task-0001#1",
+     "lifecycle": "spot",
+     "instanceId": "i-04f9c25f8eb8d1eef",
+     "az": "ap-southeast-1c",
+     "finishedAt": "1794600275",
+     "vcpu": "1",
+     "jobId": "59df1801-74a4-4433-8369-2bbff9ce15de",
+     "startedAt": "1794600272",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "613bb220-9be0-4ca3-a8d7-07446b7a33c8",
+    "creditAvailable": "49996",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-032857",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "2",
+     "userId": "a93a20ba-1c77-4d6d-bb15-8ed6fb6ed0d1",
+     "vcpu": "1",
+     "usedVcpuSeconds": "2",
+     "queuedAt": "1794601359",
+     "finishedAt": "1794601717",
+     "tier": "spot",
+     "settledAt": "1794601717",
+     "billableVcpuSeconds": "2",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "startedAt": "1794601715",
+     "tasksSucceeded": "1",
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "jobId": "de3565a9-de23-4220-b284-e54b500ed904",
+     "status": "SUCCEEDED",
+     "createdAt": "1794601357",
+     "platformCredit": "0",
+     "unitPrice": "3000",
+     "params": {},
+     "taskCount": "1",
+     "files": [
+      "short.py"
+     ],
+     "kind": "script"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794601715",
+     "queuedAt": "1794601364",
+     "vcpu": "1",
+     "finishedAt": "1794601717",
+     "leaseUntil": "1794601835",
+     "queue": "spot",
+     "userId": "a93a20ba-1c77-4d6d-bb15-8ed6fb6ed0d1",
+     "error": "",
+     "fileName": "short.py",
+     "startedAt": "1794601715",
+     "attempt": "1",
+     "tier": "spot",
+     "interruptCount": "0",
+     "jobId": "de3565a9-de23-4220-b284-e54b500ed904",
+     "kind": "script",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {}
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "startedAt": "1794601715",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "jobId": "de3565a9-de23-4220-b284-e54b500ed904",
+     "usageId": "de3565a9-de23-4220-b284-e54b500ed904#task-0001#1",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "userId": "a93a20ba-1c77-4d6d-bb15-8ed6fb6ed0d1",
+     "vcpu": "1",
+     "instanceId": "i-016826c413a07ed03",
+     "az": "ap-southeast-1b",
+     "finishedAt": "1794601717",
+     "vcpuSeconds": "2",
+     "day": "2026-11-14",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "a93a20ba-1c77-4d6d-bb15-8ed6fb6ed0d1",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-035257",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "settledAt": "1794603157",
+     "vcpu": "1",
+     "jobId": "d4f96cec-9d41-43b1-8ac9-e9071ee9af57",
+     "tier": "spot",
+     "finishedAt": "1794603156",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "chargedCredit": "1",
+     "tasksSucceeded": "1",
+     "tasksFailed": "0",
+     "userId": "d2cb50cb-bdcd-4df8-b27b-daadee7ef1e1",
+     "usedVcpuSeconds": "1",
+     "image": "spotpool-script",
+     "status": "SUCCEEDED",
+     "platformCredit": "0",
+     "queuedAt": "1794602861",
+     "unitPrice": "3000",
+     "params": {},
+     "startedAt": "1794603155",
+     "createdAt": "1794602860",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "kind": "script"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "finishedAt": "1794603156",
+     "status": "SUCCEEDED",
+     "startedAt": "1794603155",
+     "vcpu": "1",
+     "queue": "spot",
+     "userId": "d2cb50cb-bdcd-4df8-b27b-daadee7ef1e1",
+     "error": "",
+     "heartbeatAt": "1794603155",
+     "fileName": "short.py",
+     "attempt": "1",
+     "leaseUntil": "1794603275",
+     "tier": "spot",
+     "jobId": "d4f96cec-9d41-43b1-8ac9-e9071ee9af57",
+     "interruptCount": "0",
+     "kind": "script",
+     "taskId": "task-0001",
+     "image": "spotpool-script",
+     "params": {},
+     "queuedAt": "1794602866"
+    }
+   ],
+   "usage": [
+    {
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "taskId": "task-0001",
+     "userId": "d2cb50cb-bdcd-4df8-b27b-daadee7ef1e1",
+     "outcome": "SUCCEEDED",
+     "jobId": "d4f96cec-9d41-43b1-8ac9-e9071ee9af57",
+     "usageId": "d4f96cec-9d41-43b1-8ac9-e9071ee9af57#task-0001#1",
+     "lifecycle": "spot",
+     "finishedAt": "1794603156",
+     "startedAt": "1794603155",
+     "instanceId": "i-06e694361312d37e4",
+     "tier": "spot",
+     "day": "2026-11-14",
+     "vcpu": "1",
+     "az": "ap-southeast-1b"
+    }
+   ],
+   "user": {
+    "userId": "d2cb50cb-bdcd-4df8-b27b-daadee7ef1e1",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-041753",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "tier": "spot",
+     "status": "SUCCEEDED",
+     "tasksSucceeded": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "queuedAt": "1794604363",
+     "unitPrice": "3000",
+     "startedAt": "1794604652",
+     "kind": "script",
+     "chargedCredit": "2",
+     "platformCredit": "0",
+     "usedVcpuSeconds": "2",
+     "userId": "d786e3b6-9ef9-47e1-8cbc-f44ad6594d1e",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "settledAt": "1794604655",
+     "tasksRemaining": "0",
+     "billableVcpuSeconds": "2",
+     "createdAt": "1794604361",
+     "finishedAt": "1794604653",
+     "jobId": "2e8eb162-7f00-4746-b528-2f68bd8a0244"
+    }
+   ],
+   "tasks": [
+    {
+     "tier": "spot",
+     "vcpu": "1",
+     "finishedAt": "1794604653",
+     "startedAt": "1794604652",
+     "queuedAt": "1794604368",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "taskId": "task-0001",
+     "heartbeatAt": "1794604652",
+     "userId": "d786e3b6-9ef9-47e1-8cbc-f44ad6594d1e",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "queue": "spot",
+     "params": {},
+     "error": "",
+     "jobId": "2e8eb162-7f00-4746-b528-2f68bd8a0244",
+     "fileName": "short.py",
+     "leaseUntil": "1794604772"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "userId": "d786e3b6-9ef9-47e1-8cbc-f44ad6594d1e",
+     "usageId": "2e8eb162-7f00-4746-b528-2f68bd8a0244#task-0001#1",
+     "instanceId": "i-0e034b3288a8a85ce",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "startedAt": "1794604652",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "jobId": "2e8eb162-7f00-4746-b528-2f68bd8a0244",
+     "vcpu": "1",
+     "az": "ap-southeast-1b",
+     "vcpuSeconds": "2",
+     "day": "2026-11-14",
+     "tier": "spot",
+     "finishedAt": "1794604653"
+    }
+   ],
+   "user": {
+    "userId": "d786e3b6-9ef9-47e1-8cbc-f44ad6594d1e",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-044148",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "userId": "e9311f0b-21cd-45b5-876d-cc9160bd59f8",
+     "status": "SUCCEEDED",
+     "createdAt": "1794605734",
+     "jobId": "4960a845-616e-4315-8b3b-761448f8498a",
+     "tasksSucceeded": "1",
+     "params": {},
+     "billableVcpuSeconds": "2",
+     "files": [
+      "short.py"
+     ],
+     "queuedAt": "1794605734",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "settledAt": "1794606089",
+     "image": "spotpool-script",
+     "finishedAt": "1794606087",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "usedVcpuSeconds": "2",
+     "startedAt": "1794606086",
+     "vcpu": "1",
+     "chargedCredit": "2",
+     "tier": "spot",
+     "unitPrice": "3000"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "queuedAt": "1794605739",
+     "vcpu": "1",
+     "leaseUntil": "1794606206",
+     "tier": "spot",
+     "startedAt": "1794606086",
+     "attempt": "1",
+     "jobId": "4960a845-616e-4315-8b3b-761448f8498a",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "heartbeatAt": "1794606086",
+     "userId": "e9311f0b-21cd-45b5-876d-cc9160bd59f8",
+     "params": {},
+     "fileName": "short.py",
+     "finishedAt": "1794606087"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "spot",
+     "startedAt": "1794606086",
+     "outcome": "SUCCEEDED",
+     "finishedAt": "1794606087",
+     "attempt": "1",
+     "instanceId": "i-0a3719f9e246ea41e",
+     "tier": "spot",
+     "userId": "e9311f0b-21cd-45b5-876d-cc9160bd59f8",
+     "vcpu": "1",
+     "instanceType": "c7i-flex.large",
+     "jobId": "4960a845-616e-4315-8b3b-761448f8498a",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "usageId": "4960a845-616e-4315-8b3b-761448f8498a#task-0001#1",
+     "az": "ap-southeast-1b",
+     "vcpuSeconds": "2"
+    }
+   ],
+   "user": {
+    "userId": "e9311f0b-21cd-45b5-876d-cc9160bd59f8",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-050955",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "platformCredit": "0",
+     "chargedCredit": "1",
+     "createdAt": "1794607416",
+     "tasksSucceeded": "1",
+     "usedVcpuSeconds": "1",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "unitPrice": "3000",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "params": {},
+     "startedAt": "1794607773",
+     "vcpu": "1",
+     "settledAt": "1794607776",
+     "image": "spotpool-script",
+     "userId": "deeabd7b-a309-44c7-a04f-5b43fca18cc9",
+     "queuedAt": "1794607418",
+     "jobId": "02fd30c1-aec5-45d2-a8c3-c156c228fd8e",
+     "finishedAt": "1794607774",
+     "tier": "spot",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "finishedAt": "1794607774",
+     "jobId": "02fd30c1-aec5-45d2-a8c3-c156c228fd8e",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794607773",
+     "userId": "deeabd7b-a309-44c7-a04f-5b43fca18cc9",
+     "vcpu": "1",
+     "tier": "spot",
+     "attempt": "1",
+     "startedAt": "1794607773",
+     "error": "",
+     "queuedAt": "1794607423",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py",
+     "leaseUntil": "1794607893"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "userId": "deeabd7b-a309-44c7-a04f-5b43fca18cc9",
+     "jobId": "02fd30c1-aec5-45d2-a8c3-c156c228fd8e",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "instanceId": "i-02fb2d4344310a7ea",
+     "vcpuSeconds": "1",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "az": "ap-southeast-1c",
+     "finishedAt": "1794607774",
+     "vcpu": "1",
+     "startedAt": "1794607773",
+     "usageId": "02fd30c1-aec5-45d2-a8c3-c156c228fd8e#task-0001#1",
+     "day": "2026-11-14",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "deeabd7b-a309-44c7-a04f-5b43fca18cc9",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-053416",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "1",
+     "tier": "spot",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "createdAt": "1794608859",
+     "settledAt": "1794609239",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "queuedAt": "1794608860",
+     "unitPrice": "3000",
+     "kind": "script",
+     "finishedAt": "1794609236",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "startedAt": "1794609235",
+     "tasksRemaining": "0",
+     "userId": "f682d4df-719d-4b2d-8a38-aa0b58e68cd5",
+     "jobId": "9411f4f0-e7c2-422b-ad44-321760aea3f1"
+    }
+   ],
+   "tasks": [
+    {
+     "tier": "spot",
+     "vcpu": "1",
+     "finishedAt": "1794609236",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "startedAt": "1794609235",
+     "userId": "f682d4df-719d-4b2d-8a38-aa0b58e68cd5",
+     "taskId": "task-0001",
+     "kind": "script",
+     "queuedAt": "1794608866",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "jobId": "9411f4f0-e7c2-422b-ad44-321760aea3f1",
+     "heartbeatAt": "1794609235",
+     "queue": "spot",
+     "leaseUntil": "1794609355",
+     "params": {},
+     "error": "",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "startedAt": "1794609235",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "userId": "f682d4df-719d-4b2d-8a38-aa0b58e68cd5",
+     "jobId": "9411f4f0-e7c2-422b-ad44-321760aea3f1",
+     "lifecycle": "spot",
+     "instanceId": "i-081e3f5306530f4a9",
+     "az": "ap-southeast-1c",
+     "usageId": "9411f4f0-e7c2-422b-ad44-321760aea3f1#task-0001#1",
+     "finishedAt": "1794609236",
+     "vcpu": "1",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "f682d4df-719d-4b2d-8a38-aa0b58e68cd5",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-055809",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "platformCredit": "0",
+     "chargedCredit": "1",
+     "createdAt": "1794610321",
+     "tasksSucceeded": "1",
+     "usedVcpuSeconds": "1",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "userId": "e244b1bf-ee18-4d98-b2c6-e7c1c8df00dc",
+     "unitPrice": "3000",
+     "jobId": "ddf47b53-3f37-47a2-8cb7-2c0cec99756d",
+     "finishedAt": "1794610669",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "params": {},
+     "queuedAt": "1794610323",
+     "vcpu": "1",
+     "image": "spotpool-script",
+     "settledAt": "1794610672",
+     "tier": "spot",
+     "costCap": "50000",
+     "startedAt": "1794610668"
+    }
+   ],
+   "tasks": [
+    {
+     "queuedAt": "1794610328",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "userId": "e244b1bf-ee18-4d98-b2c6-e7c1c8df00dc",
+     "heartbeatAt": "1794610668",
+     "vcpu": "1",
+     "tier": "spot",
+     "leaseUntil": "1794610788",
+     "attempt": "1",
+     "error": "",
+     "jobId": "ddf47b53-3f37-47a2-8cb7-2c0cec99756d",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "finishedAt": "1794610669",
+     "params": {},
+     "fileName": "short.py",
+     "startedAt": "1794610668"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "spot",
+     "instanceId": "i-00aafaee7692659c6",
+     "outcome": "SUCCEEDED",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "usageId": "ddf47b53-3f37-47a2-8cb7-2c0cec99756d#task-0001#1",
+     "tier": "spot",
+     "az": "ap-southeast-1a",
+     "finishedAt": "1794610669",
+     "vcpu": "1",
+     "instanceType": "c7i-flex.large",
+     "jobId": "ddf47b53-3f37-47a2-8cb7-2c0cec99756d",
+     "day": "2026-11-14",
+     "startedAt": "1794610668",
+     "taskId": "task-0001",
+     "userId": "e244b1bf-ee18-4d98-b2c6-e7c1c8df00dc"
+    }
+   ],
+   "user": {
+    "userId": "e244b1bf-ee18-4d98-b2c6-e7c1c8df00dc",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-062139",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "1",
+     "queuedAt": "1794611765",
+     "tier": "spot",
+     "startedAt": "1794612093",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "jobId": "c46a8992-313f-43fe-b925-2767c5bca70a",
+     "tasksSucceeded": "1",
+     "userId": "086b0828-d464-4375-b55b-2047902f43b4",
+     "settledAt": "1794612094",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "unitPrice": "3000",
+     "finishedAt": "1794612094",
+     "kind": "script",
+     "createdAt": "1794611763",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "tasksRemaining": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "tier": "spot",
+     "vcpu": "1",
+     "heartbeatAt": "1794612093",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "userId": "086b0828-d464-4375-b55b-2047902f43b4",
+     "taskId": "task-0001",
+     "jobId": "c46a8992-313f-43fe-b925-2767c5bca70a",
+     "queuedAt": "1794611769",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "startedAt": "1794612093",
+     "attempt": "1",
+     "queue": "spot",
+     "params": {},
+     "error": "",
+     "leaseUntil": "1794612213",
+     "finishedAt": "1794612094",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "startedAt": "1794612093",
+     "az": "ap-southeast-1b",
+     "instanceType": "c7i-flex.large",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "outcome": "SUCCEEDED",
+     "finishedAt": "1794612094",
+     "lifecycle": "spot",
+     "instanceId": "i-064c6b90a367c9c76",
+     "userId": "086b0828-d464-4375-b55b-2047902f43b4",
+     "usageId": "c46a8992-313f-43fe-b925-2767c5bca70a#task-0001#1",
+     "jobId": "c46a8992-313f-43fe-b925-2767c5bca70a",
+     "vcpu": "1",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "086b0828-d464-4375-b55b-2047902f43b4",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-064546",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "chargedCredit": "3",
+     "tier": "spot",
+     "createdAt": "1794613180",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "3",
+     "queuedAt": "1794613181",
+     "tasksSucceeded": "1",
+     "jobId": "7dc6d443-adf8-4274-81d6-2f911303f97b",
+     "billableVcpuSeconds": "3",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "unitPrice": "3000",
+     "kind": "script",
+     "settledAt": "1794613539",
+     "finishedAt": "1794613539",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "userId": "f1cb7204-ab00-4049-9a7c-e2927ff4a099",
+     "startedAt": "1794613536",
+     "tasksRemaining": "0"
+    }
+   ],
+   "tasks": [
+    {
+     "tier": "spot",
+     "leaseUntil": "1794613656",
+     "vcpu": "1",
+     "queuedAt": "1794613186",
+     "startedAt": "1794613536",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "userId": "f1cb7204-ab00-4049-9a7c-e2927ff4a099",
+     "taskId": "task-0001",
+     "jobId": "7dc6d443-adf8-4274-81d6-2f911303f97b",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "attempt": "1",
+     "finishedAt": "1794613539",
+     "queue": "spot",
+     "params": {},
+     "error": "",
+     "fileName": "short.py",
+     "heartbeatAt": "1794613536"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "spot",
+     "outcome": "SUCCEEDED",
+     "attempt": "1",
+     "startedAt": "1794613536",
+     "az": "ap-southeast-1c",
+     "vcpuSeconds": "3",
+     "tier": "spot",
+     "finishedAt": "1794613539",
+     "vcpu": "1",
+     "usageId": "7dc6d443-adf8-4274-81d6-2f911303f97b#task-0001#1",
+     "day": "2026-11-14",
+     "userId": "f1cb7204-ab00-4049-9a7c-e2927ff4a099",
+     "taskId": "task-0001",
+     "jobId": "7dc6d443-adf8-4274-81d6-2f911303f97b",
+     "instanceId": "i-081e5dffd650e1782",
+     "instanceType": "m7i-flex.large"
+    }
+   ],
+   "user": {
+    "userId": "f1cb7204-ab00-4049-9a7c-e2927ff4a099",
+    "creditAvailable": "49997",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-070948",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "queuedAt": "1794614625",
+     "createdAt": "1794614624",
+     "finishedAt": "1794614982",
+     "platformCredit": "0",
+     "chargedCredit": "1",
+     "jobId": "3a46a117-d39f-46e6-8e35-bb073129f182",
+     "tasksSucceeded": "1",
+     "usedVcpuSeconds": "1",
+     "startedAt": "1794614981",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "settledAt": "1794614984",
+     "unitPrice": "3000",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "params": {},
+     "vcpu": "1",
+     "image": "spotpool-script",
+     "userId": "e4101903-ec25-4cb7-9164-0238c735beea",
+     "tier": "spot",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "jobId": "3a46a117-d39f-46e6-8e35-bb073129f182",
+     "startedAt": "1794614981",
+     "queuedAt": "1794614630",
+     "finishedAt": "1794614982",
+     "vcpu": "1",
+     "tier": "spot",
+     "leaseUntil": "1794615101",
+     "userId": "e4101903-ec25-4cb7-9164-0238c735beea",
+     "attempt": "1",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py",
+     "heartbeatAt": "1794614981"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "startedAt": "1794614981",
+     "instanceId": "i-0503f8acba51f235e",
+     "finishedAt": "1794614982",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "jobId": "3a46a117-d39f-46e6-8e35-bb073129f182",
+     "vcpuSeconds": "1",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "vcpu": "1",
+     "az": "ap-southeast-1b",
+     "userId": "e4101903-ec25-4cb7-9164-0238c735beea",
+     "usageId": "3a46a117-d39f-46e6-8e35-bb073129f182#task-0001#1",
+     "day": "2026-11-14",
+     "tier": "spot"
+    }
+   ],
+   "user": {
+    "userId": "e4101903-ec25-4cb7-9164-0238c735beea",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-073335",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "platformCredit": "0",
+     "chargedCredit": "1",
+     "tasksSucceeded": "1",
+     "usedVcpuSeconds": "1",
+     "jobId": "e99d8f82-5fae-4b1c-81e3-4ce7ebc6cb59",
+     "queuedAt": "1794616067",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "unitPrice": "3000",
+     "tasksFailed": "0",
+     "kind": "script",
+     "settledAt": "1794616413",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "params": {},
+     "userId": "2a7bdd40-2d7f-4beb-8d1e-b12e9eb7b8f2",
+     "createdAt": "1794616065",
+     "vcpu": "1",
+     "finishedAt": "1794616410",
+     "image": "spotpool-script",
+     "startedAt": "1794616409",
+     "tier": "spot",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "startedAt": "1794616409",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794616410",
+     "queuedAt": "1794616072",
+     "userId": "2a7bdd40-2d7f-4beb-8d1e-b12e9eb7b8f2",
+     "vcpu": "1",
+     "tier": "spot",
+     "leaseUntil": "1794616529",
+     "attempt": "1",
+     "heartbeatAt": "1794616409",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "jobId": "e99d8f82-5fae-4b1c-81e3-4ce7ebc6cb59",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "spot",
+     "outcome": "SUCCEEDED",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceId": "i-05f98d99326f747bc",
+     "tier": "spot",
+     "vcpu": "1",
+     "finishedAt": "1794616410",
+     "instanceType": "c7i-flex.large",
+     "usageId": "e99d8f82-5fae-4b1c-81e3-4ce7ebc6cb59#task-0001#1",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "userId": "2a7bdd40-2d7f-4beb-8d1e-b12e9eb7b8f2",
+     "az": "ap-southeast-1b",
+     "jobId": "e99d8f82-5fae-4b1c-81e3-4ce7ebc6cb59",
+     "startedAt": "1794616409"
+    }
+   ],
+   "user": {
+    "userId": "2a7bdd40-2d7f-4beb-8d1e-b12e9eb7b8f2",
+    "creditAvailable": "49999",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ }
+]

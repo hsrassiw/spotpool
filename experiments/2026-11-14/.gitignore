@@ -1,0 +1,5 @@
+.keys.json
+.pending.json
+# Kết quả từng job ghi tạm ở đây; bản nộp gộp vào ket-qua.json bằng: python run.py merge
+results/
+inputs/*.mp4

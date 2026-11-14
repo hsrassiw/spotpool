@@ -1,0 +1,25 @@
+07:33:20 launched i-0f861cc82c046e4ab
+07:34:38 COLD: worker active sau 72 s kể từ lệnh bật máy
+   Nov 14 00:34:33 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[28630]:   File "/usr/local/lib/python3.13/site-packages/botocore/client.py", line 1094, in _make_api_call
+   Nov 14 00:34:33 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[28630]:     raise error_class(parsed_response, operation_name)
+   Nov 14 00:34:33 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[28630]: botocore.exceptions.ClientError: An error occurred (ValidationError) when calling the SetInstanceProtection operation: The instance i-0f861cc82c046e4ab is not part of Auto Scaling group spotpool-worker-ondemand.
+   
+07:35:03 stopped (cycle 1)
+07:35:23 WARM 1: worker active sau 8 s kể từ lệnh start
+   Nov 14 00:35:14 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[2865]:     raise error_class(parsed_response, operation_name)
+   Nov 14 00:35:14 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[2865]: botocore.exceptions.ClientError: An error occurred (ValidationError) when calling the SetInstanceProtection operation: The instance i-0f861cc82c046e4ab is not part of Auto Scaling group spotpool-worker-ondemand.
+   2
+   
+07:35:48 stopped (cycle 2)
+07:36:08 WARM 2: worker active sau 10 s kể từ lệnh start
+   Nov 14 00:36:00 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[2853]:     raise error_class(parsed_response, operation_name)
+   Nov 14 00:36:00 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[2853]: botocore.exceptions.ClientError: An error occurred (ValidationError) when calling the SetInstanceProtection operation: The instance i-0f861cc82c046e4ab is not part of Auto Scaling group spotpool-worker-ondemand.
+   2
+   
+07:36:48 stopped (cycle 3)
+07:37:09 WARM 3: worker active sau 9 s kể từ lệnh start
+   Nov 14 00:37:00 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[2858]:     raise error_class(parsed_response, operation_name)
+   Nov 14 00:37:00 ip-10-0-2-222.ap-southeast-1.compute.internal python3.13[2858]: botocore.exceptions.ClientError: An error occurred (ValidationError) when calling the SetInstanceProtection operation: The instance i-0f861cc82c046e4ab is not part of Auto Scaling group spotpool-worker-ondemand.
+   2
+   
+07:37:15 terminating i-0f861cc82c046e4ab

@@ -39,6 +39,24 @@ if [ "$MOCK" != "active" ]; then
   exit 1
 fi
 
+terminate() {
+  aws ec2 terminate-instances --region "$REGION" --instance-ids "$INSTANCE" \
+    --query 'TerminatingInstances[0].CurrentState.Name' --output text
+}
+
+# Sau cảnh báo, worker tự tách máy khỏi ASG nên ASG không còn tắt máy này nữa.
+# Nếu script bị ngắt giữa chừng (Ctrl+C, lỗi), vẫn phải tắt máy để không chạy sót ngoài ASG.
+DONE=0
+on_exit() {
+  if [ "$DONE" = 0 ]; then
+    DONE=1
+    echo "$(date '+%H:%M:%S') Script bị ngắt, tắt máy $INSTANCE" >&2
+    terminate || echo "Không tắt được $INSTANCE, hãy tắt tay trên EC2 console" >&2
+  fi
+}
+trap on_exit EXIT
+trap 'exit 130' INT TERM
+
 echo "$(date '+%H:%M:%S') Bật cảnh báo thu hồi"
 run_on_instance "touch /run/spotpool-interrupt && date -u +%FT%TZ"
 
@@ -48,6 +66,6 @@ run_on_instance "journalctl -u spotpool-worker -n 30 --no-pager"
 
 sleep 90
 echo "$(date '+%H:%M:%S') Hết 2 phút, tắt máy"
-aws ec2 terminate-instances --region "$REGION" --instance-ids "$INSTANCE" \
-  --query 'TerminatingInstances[0].CurrentState.Name' --output text
+DONE=1
+terminate
 echo "Xem task chạy lại trên máy mới: trạng thái và interruptCount trong bảng Tasks, số máy trên dashboard spotpool."
