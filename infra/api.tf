@@ -107,8 +107,8 @@ resource "aws_lambda_function" "submit_job" {
       JOBS_TABLE     = aws_dynamodb_table.jobs.name
       TASKS_TABLE    = aws_dynamodb_table.tasks.name
       INPUT_BUCKET   = aws_s3_bucket.input_bucket.id
-      PRICE_ONDEMAND = "6000"
-      PRICE_SPOT     = "3000"
+      PRICE_ONDEMAND = "4000"
+      PRICE_SPOT     = "2000"
     }
   }
 }
@@ -130,8 +130,8 @@ resource "aws_lambda_function" "start_job" {
       USERS_TABLE    = aws_dynamodb_table.users.name
       INPUT_BUCKET   = aws_s3_bucket.input_bucket.id
       OUTPUT_BUCKET  = aws_s3_bucket.output_bucket.id
-      PRICE_ONDEMAND = "6000"
-      PRICE_SPOT     = "3000"
+      PRICE_ONDEMAND = "4000"
+      PRICE_SPOT     = "2000"
     }
   }
 }

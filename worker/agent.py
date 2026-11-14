@@ -928,11 +928,19 @@ def main():
     region = config["AWS_DEFAULT_REGION"]
     aws_config = Config(connect_timeout=3, read_timeout=5,
                         retries={"mode": "standard", "total_max_attempts": 2})
+    autoscaling = boto3.client("autoscaling", region_name=region, config=aws_config)
+    # Máy gói Ổn định có lifecycle hook: máy vào warm pool thì không nhận task, chỉ báo đã cài xong
+    hook = os.environ.get("SPOTPOOL_LIFECYCLE_HOOK")
+    if hook:
+        from worker.spot import InstanceMetadata
+        from worker.warm import wait_until_in_service
+
+        wait_until_in_service(InstanceMetadata(), autoscaling, hook,
+                              os.environ.get("SPOTPOOL_ASG"), os.environ.get("SPOTPOOL_INSTANCE_ID"))
     Worker(dynamodb=boto3.resource("dynamodb", region_name=region, config=aws_config),
            s3=boto3.client("s3", region_name=region, config=aws_config),
            sqs=boto3.client("sqs", region_name=region, config=aws_config.merge(Config(read_timeout=30))),
-           autoscaling=boto3.client("autoscaling", region_name=region, config=aws_config),
-           config=config, queue=queue).run()
+           autoscaling=autoscaling, config=config, queue=queue).run()
 
 
 if __name__ == "__main__":

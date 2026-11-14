@@ -83,10 +83,11 @@ data "aws_iam_policy_document" "worker" {
   }
 
   # Máy đang chạy task tự bật bảo vệ để ASG không chọn tắt khi giảm máy.
+  # Máy gói Ổn định báo lifecycle hook khi worker đã sẵn sàng (warm pool).
   # Máy Spot nhận thông báo thu hồi thì tự tách khỏi ASG (giữ DesiredCapacity) để ASG bật máy thay ngay.
   statement {
     sid       = "ScaleInProtection"
-    actions   = ["autoscaling:SetInstanceProtection", "autoscaling:DetachInstances"]
+    actions   = ["autoscaling:SetInstanceProtection", "autoscaling:DetachInstances", "autoscaling:CompleteLifecycleAction"]
     resources = ["arn:aws:autoscaling:${var.region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${var.name_prefix}-worker-*"]
   }
 
@@ -185,6 +186,19 @@ data "aws_iam_policy_document" "lambda" {
       "dynamodb:TransactWriteItems",
     ]
     resources = local.ddb_arns
+  }
+
+  # Dispatcher bật máy gói Ổn định đầu tiên ngay khi có job (warm pool), không chờ alarm CloudWatch
+  statement {
+    sid       = "DescribeWorkerGroups"
+    actions   = ["autoscaling:DescribeAutoScalingGroups"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "StartFirstWorker"
+    actions   = ["autoscaling:SetDesiredCapacity"]
+    resources = ["arn:aws:autoscaling:${var.region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${var.name_prefix}-worker-ondemand"]
   }
 
   statement {

@@ -48,6 +48,24 @@ Co giãn (hạng mục 11):
 - Gói Tiết kiệm hết việc thì về 0 máy. Gói Ổn định giữ sẵn 1 máy từ 8h đến 23h giờ Việt Nam, ngoài giờ cũng về 0. Đổi giờ hôm demo: `terraform apply -var enable_worker=true -var ondemand_hours_end=23 -var ondemand_hours_start=6`.
 - Hết việc thì giảm máy sau khoảng 15 phút (target tracking chờ đủ 15 điểm dữ liệu mới giảm).
 
+### Warm pool cho gói Ổn định (`ondemand_warm_pool`)
+
+Thay máy chạy sẵn 8h–23h (khoảng 1,54 USD/ngày) bằng 1 máy đã cài sẵn ở trạng thái tắt, chỉ trả tiền ổ đĩa:
+
+- Máy mới vào warm pool chạy user data như thường. Worker thấy trạng thái đích là `Warmed:Stopped` (IMDS `autoscaling/target-lifecycle-state`) thì không nhận task, chỉ báo lifecycle hook `worker-ready`; ASG tắt máy.
+- Có job gói Ổn định lúc nhóm 0 máy thì Lambda dispatcher gọi `SetDesiredCapacity` = 1 ngay, không chờ alarm CloudWatch (chỉ số SQS trễ 2–3 phút). Máy trong warm pool bật lại trong khoảng 10 s (đo ngày 14/11, `experiments/2026-11-14/warm-pool.log`). Alarm `from-zero` vẫn giữ làm dự phòng.
+- Hết việc, target tracking giảm về 0 và máy quay lại warm pool (`reuse_on_scale_in`). Lịch giờ hoạt động không còn dùng.
+
+Hook phải có trước khi bật warm pool, nên lần đầu bật làm hai lần apply:
+
+```bash
+python3 services/dispatcher/build.py
+terraform apply -var enable_worker=true                              # tạo hook, đẩy code worker mới; vẫn chạy như cũ
+terraform apply -var enable_worker=true -var ondemand_warm_pool=true # bật warm pool
+```
+
+Các lần apply sau luôn thêm `-var ondemand_warm_pool=true`. Quay về máy chạy sẵn: apply không có biến này.
+
 ## Giả lập thu hồi Spot (hạng mục 17)
 
 Tài khoản Free không dùng được AWS FIS nên thay bằng IMDS giả trên máy Spot (`worker/imds_mock.py`). IMDS giả chuyển tiếp mọi request tới IMDS thật, chỉ trả cảnh báo thu hồi khi có file `/run/spotpool-interrupt`.

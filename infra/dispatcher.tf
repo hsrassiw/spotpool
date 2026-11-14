@@ -16,14 +16,17 @@ resource "aws_lambda_function" "dispatcher" {
   memory_size      = 256
 
   environment {
-    variables = {
+    variables = merge({
       INPUT_BUCKET     = local.input_bucket
       OUTPUT_BUCKET    = local.output_bucket
       JOBS_TABLE       = "Jobs"
       TASKS_TABLE      = "Tasks"
       SQS_ONDEMAND_URL = aws_sqs_queue.ondemand.url
       SQS_SPOT_URL     = aws_sqs_queue.spot.url
-    }
+      },
+      # Có warm pool thì dispatcher tự bật máy gói Ổn định đầu tiên
+      var.enable_worker && var.ondemand_warm_pool ? { ONDEMAND_ASG = local.worker_asg_names["ondemand"] } : {}
+    )
   }
 }
 

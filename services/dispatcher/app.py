@@ -1,6 +1,7 @@
 """Tạo một task và message SQS cho mỗi file trong manifest."""
 
 import json
+import logging
 import os
 import re
 import time
@@ -15,6 +16,24 @@ from spotpool_core.contracts import (
 MANIFEST_KEY_RE = re.compile(
     r"submissions/([0-9a-f-]+)/([0-9a-f-]+)/manifest\.json\Z", re.I
 )
+logger = logging.getLogger(__name__)
+
+
+def start_first_instance(autoscaling, asg_name):
+    """Nhóm đang 0 máy thì bật 1 máy ngay (lấy từ warm pool), không chờ alarm CloudWatch 2–3 phút.
+
+    Lỗi chỉ ghi log: task đã vào hàng đợi, alarm bật máy từ 0 vẫn là đường dự phòng.
+    """
+    try:
+        groups = autoscaling.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])["AutoScalingGroups"]
+        if not groups or groups[0]["DesiredCapacity"] > 0 or groups[0]["MaxSize"] < 1:
+            return False
+        autoscaling.set_desired_capacity(AutoScalingGroupName=asg_name, DesiredCapacity=1, HonorCooldown=False)
+        logger.info("Started first instance of %s", asg_name)
+        return True
+    except Exception:
+        logger.exception("Cannot start first instance of %s; CloudWatch alarm will start it", asg_name)
+        return False
 
 
 def _manifest_messages(manifest, key, input_bucket, output_bucket):
@@ -54,7 +73,7 @@ def _manifest_messages(manifest, key, input_bucket, output_bucket):
     return messages
 
 
-def dispatch_record(record, *, s3, dynamodb, sqs, config, now=None):
+def dispatch_record(record, *, s3, dynamodb, sqs, config, now=None, autoscaling=None):
     bucket = record["s3"]["bucket"]["name"]
     key = unquote_plus(record["s3"]["object"]["key"])
     if bucket != config["INPUT_BUCKET"]:
@@ -99,17 +118,23 @@ def dispatch_record(record, *, s3, dynamodb, sqs, config, now=None):
                 raise ValueError("Existing task conflicts with manifest") from error
         # Gửi lại để khôi phục nếu lần trước dừng sau PutItem.
         sqs.send_message(QueueUrl=queue_url, MessageBody=canonical_json(message))
+    # Gói Ổn định dùng warm pool: bật máy sau khi task đã vào hàng đợi
+    if manifest["tier"] == "ondemand" and autoscaling is not None and config.get("ONDEMAND_ASG"):
+        start_first_instance(autoscaling, config["ONDEMAND_ASG"])
     return len(entries)
 
 
 def lambda_handler(event, context):
     import boto3
 
+    logging.getLogger().setLevel(logging.INFO)
     config = {key: os.environ[key] for key in (
         "INPUT_BUCKET", "OUTPUT_BUCKET", "JOBS_TABLE", "TASKS_TABLE",
         "SQS_ONDEMAND_URL", "SQS_SPOT_URL",
     )}
+    config["ONDEMAND_ASG"] = os.environ.get("ONDEMAND_ASG", "")
     s3, dynamodb, sqs = boto3.client("s3"), boto3.resource("dynamodb"), boto3.client("sqs")
+    autoscaling = boto3.client("autoscaling") if config["ONDEMAND_ASG"] else None
     return {"dispatched": sum(dispatch_record(record, s3=s3, dynamodb=dynamodb,
-                                               sqs=sqs, config=config)
+                                               sqs=sqs, config=config, autoscaling=autoscaling)
                               for record in event["Records"])}
