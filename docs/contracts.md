@@ -59,6 +59,8 @@ Biến môi trường do Terraform truyền vào. Code **không đặt giá tr�
 | `AWS_DEFAULT_REGION` | worker (`ap-southeast-1`; Lambda tự có sẵn) |
 | `SPOTPOOL_QUEUE` | worker: `ondemand` hoặc `spot`, hàng đợi máy này nhận việc (mục 8) |
 | `SPOTPOOL_ASG` | worker: tên ASG của máy, để bật/tắt bảo vệ khi giảm máy (mục 8) |
+| `SPOTPOOL_LIFECYCLE_HOOK` | worker gói Ổn định: tên lifecycle hook báo khi sẵn sàng; máy đang vào warm pool thì không nhận task |
+| `ONDEMAND_ASG` | dispatcher, chỉ có khi bật warm pool: nhóm Ổn định đang 0 máy thì bật 1 máy ngay khi có job |
 
 ## 3. Luồng chính
 
@@ -583,7 +585,7 @@ Code:
 
 | Vấn đề | Đề xuất | Ai chốt |
 |---|---|---|
-| Đơn giá mỗi gói | Chốt sau khi đo ở tuần 3–4 như báo cáo. Tạm dùng `PRICE_ONDEMAND = 6000`, `PRICE_SPOT = 3000` | Cả nhóm |
+| Đơn giá mỗi gói | Đã chốt sau thực nghiệm 14/11: `PRICE_ONDEMAND = 4000`, `PRICE_SPOT = 2000` credit/vCPU-giờ, hòa vốn khi bán khoảng 33% (Ổn định) và 35–42% (Tiết kiệm) số suất của máy đang chạy. Thực nghiệm 11–14/11 chạy với giá tạm 6000/3000; mỗi job lưu `unitPrice` lúc nộp nên hóa đơn cũ giữ nguyên | Cả nhóm |
 | Hạn mức mặc định | Credit ban đầu 50.000; 2 job đồng thời; 3 job lỗi miễn phí mỗi ngày | Cả nhóm |
 | Định dạng job script | Tạm thời một file `.py`, kết quả là stdout (image hiện tại). Có cần `.zip` kèm dữ liệu không | Khuê, hạng mục 8 |
 | Giới hạn dung lượng file tải lên | Link `PUT` không giới hạn được dung lượng; cần thì đổi sang presigned POST | Ngọc Anh |
@@ -591,7 +593,7 @@ Code:
 | Suất đôi trên worker | Trường `vcpu` đã có; API chỉ mở `vcpu = 2` khi worker hỗ trợ | Khuê |
 | Job `PAUSED` quá 7 ngày | File đầu vào đã bị xóa nên không chạy tiếp được, coi như hủy | Cả nhóm |
 | Quy đổi credit | Đã chốt: 1 credit = 1 đồng. Trang quản trị quy đổi chi phí AWS theo tỷ giá cố định 1 USD = 26.000 credit | Cả nhóm |
-| Giờ hoạt động của gói Ổn định | Đã chốt: mặc định 8h–23h giờ Việt Nam, mọi ngày; đổi được qua biến Terraform `ondemand_hours_start`, `ondemand_hours_end` (ví dụ mở rộng hôm demo). Ngoài giờ ASG Ổn định về 0 máy, job vẫn chạy nhờ luật bật máy từ 0 nhưng không cam kết chờ ≤ 1 phút | Nghĩa, hạng mục 11 |
+| Giờ hoạt động của gói Ổn định | Đã chốt: mặc định 8h–23h giờ Việt Nam, mọi ngày; đổi được qua biến Terraform `ondemand_hours_start`, `ondemand_hours_end` (ví dụ mở rộng hôm demo). Ngoài giờ ASG Ổn định về 0 máy, job vẫn chạy nhờ luật bật máy từ 0 nhưng không cam kết chờ ≤ 1 phút. Khi bật `ondemand_warm_pool`, không giữ máy chạy sẵn nữa mà giữ 1 máy đã cài sẵn ở trạng thái tắt; dispatcher bật máy này ngay khi có job lúc nhóm 0 máy, áp dụng mọi giờ | Nghĩa, hạng mục 11 |
 
 ## 14. Đổi hợp đồng
 

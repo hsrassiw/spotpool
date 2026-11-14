@@ -89,6 +89,12 @@ variable "ondemand_hours_end" {
   }
 }
 
+variable "ondemand_warm_pool" {
+  description = "Gói Ổn định giữ 1 máy đã cài sẵn ở trạng thái tắt (warm pool) thay cho máy chạy sẵn trong giờ hoạt động; dispatcher bật máy ngay khi có job lúc nhóm 0 máy. Lần đầu bật: apply với false trước để tạo lifecycle hook."
+  type        = bool
+  default     = false
+}
+
 variable "api_rate_limit" {
   description = "Số request/giây trung bình tối đa cho mỗi method của stage prod. Giữ dưới hạn mức 10 Lambda chạy cùng lúc của tài khoản."
   type        = number

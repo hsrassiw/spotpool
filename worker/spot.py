@@ -64,6 +64,26 @@ class InstanceMetadata:
             return notice
         raise RuntimeError("Unable to refresh IMDSv2 token")
 
+    def target_lifecycle_state(self):
+        """Trạng thái ASG đang đưa máy tới (InService, Warmed:Stopped...); None nếu máy không thuộc ASG."""
+        for attempt in range(2):
+            request = Request(
+                f"{IMDS_BASE}/meta-data/autoscaling/target-lifecycle-state",
+                headers={"X-aws-ec2-metadata-token": self._token()},
+            )
+            try:
+                with self.opener.open(request, timeout=1) as response:
+                    return response.read().decode("utf-8").strip() or None
+            except HTTPError as error:
+                error.close()
+                if error.code == 404:
+                    return None
+                if error.code == 401 and attempt == 0:
+                    self.token = None
+                    continue
+                raise
+        raise RuntimeError("Unable to refresh IMDSv2 token")
+
 
 class SpotMonitor:
     def __init__(self, on_notice, metadata=None, interval=POLL_SECONDS):

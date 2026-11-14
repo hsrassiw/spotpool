@@ -42,6 +42,10 @@ SPOTPOOL_INSTANCE_TYPE=$(md instance-type)
 SPOTPOOL_AZ=$(md placement/availability-zone)
 SPOTPOOL_LIFECYCLE=$(md instance-life-cycle)
 EOF
+%{ if lifecycle_hook != "" ~}
+# Gói Ổn định: worker báo lifecycle hook khi sẵn sàng, máy đang vào warm pool thì không nhận task
+echo "SPOTPOOL_LIFECYCLE_HOOK=${lifecycle_hook}" >> /etc/spotpool-worker.env
+%{ endif ~}
 
 %{ if imds_mock ~}
 # Test HM17: worker đọc metadata qua IMDS giả, touch /run/spotpool-interrupt để giả lập cảnh báo thu hồi

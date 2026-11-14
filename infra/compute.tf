@@ -45,6 +45,10 @@ locals {
   # Giờ Việt Nam lúc tạo ASG, để tạo ngoài giờ thì không bật sẵn máy On-Demand
   vn_hour           = tonumber(formatdate("h", timeadd(timestamp(), "7h")))
   ondemand_in_hours = local.vn_hour >= var.ondemand_hours_start && local.vn_hour < var.ondemand_hours_end
+  # Có warm pool thì không giữ máy chạy sẵn: máy chờ nằm trong warm pool ở trạng thái tắt
+  ondemand_min_size = var.ondemand_warm_pool ? 0 : (local.ondemand_in_hours ? 1 : 0)
+  # Worker báo hook này khi đã cài xong (máy vào warm pool) hoặc khi được bật ra khỏi warm pool
+  ondemand_hook = "worker-ready"
 
   # Code worker để trên S3, máy tải về khi khởi động. User data giới hạn 16 KB nên không nhét code vào được nữa.
   worker_code_bucket = "worker-${local.suffix}"
@@ -53,6 +57,7 @@ locals {
     "worker/spot.py"             = "${path.module}/../worker/spot.py"
     "worker/checkpoint.py"       = "${path.module}/../worker/checkpoint.py"
     "worker/imds_mock.py"        = "${path.module}/../worker/imds_mock.py"
+    "worker/warm.py"             = "${path.module}/../worker/warm.py"
     "spotpool_core/__init__.py"  = "${path.module}/../spotpool_core/__init__.py"
     "spotpool_core/contracts.py" = "${path.module}/../spotpool_core/contracts.py"
   }
@@ -71,6 +76,7 @@ locals {
     code_url         = "s3://${aws_s3_bucket.worker_code.id}/${local.worker_code_version}"
     worker_files     = keys(local.worker_files)
     imds_mock        = var.spot_interrupt_test && tier == "spot"
+    lifecycle_hook   = tier == "ondemand" ? local.ondemand_hook : ""
   }) }
 }
 
@@ -124,11 +130,11 @@ resource "aws_launch_template" "worker" {
   depends_on = [aws_s3_object.worker_code]
 }
 
-# Gói Ổn định: On-Demand, giữ sẵn 1 máy trong giờ hoạt động
+# Gói Ổn định: On-Demand, giữ sẵn 1 máy: trong warm pool (đã cài, đang tắt) hoặc chạy sẵn trong giờ hoạt động
 resource "aws_autoscaling_group" "ondemand" {
   count                   = var.enable_worker ? 1 : 0
   name                    = local.worker_asg_names["ondemand"]
-  min_size                = local.ondemand_in_hours ? 1 : 0
+  min_size                = local.ondemand_min_size
   max_size                = var.ondemand_max_size
   vpc_zone_identifier     = aws_subnet.public[*].id
   default_instance_warmup = 180
@@ -147,10 +153,30 @@ resource "aws_autoscaling_group" "ondemand" {
     }
   }
 
-  # Sau khi tạo, min_size do lịch giờ hoạt động đặt
-  lifecycle {
-    ignore_changes = [min_size]
+  # 1 máy đã cài sẵn ở trạng thái stopped, chỉ trả tiền ổ đĩa. Dispatcher bật máy này khi có job lúc nhóm 0 máy
+  # (khoảng 10 s), hết việc thì máy quay lại warm pool.
+  dynamic "warm_pool" {
+    for_each = var.ondemand_warm_pool ? [1] : []
+    content {
+      pool_state                  = "Stopped"
+      min_size                    = 1
+      max_group_prepared_capacity = 1
+      instance_reuse_policy {
+        reuse_on_scale_in = true
+      }
+    }
   }
+}
+
+# Máy chỉ vào warm pool (rồi bị tắt) hay vào InService sau khi worker báo đã cài xong.
+# Phải có trước khi bật warm pool, nên lần đầu apply với ondemand_warm_pool=false (infra/README.md).
+resource "aws_autoscaling_lifecycle_hook" "ondemand_ready" {
+  count                  = var.enable_worker ? 1 : 0
+  name                   = local.ondemand_hook
+  autoscaling_group_name = aws_autoscaling_group.ondemand[0].name
+  lifecycle_transition   = "autoscaling:EC2_INSTANCE_LAUNCHING"
+  heartbeat_timeout      = 600
+  default_result         = "CONTINUE"
 }
 
 # Gói Tiết kiệm: toàn bộ là Spot, chọn loại máy và AZ ít bị thu hồi mà rẻ. Hết việc thì về 0 máy.
@@ -325,10 +351,10 @@ resource "aws_cloudwatch_metric_alarm" "from_zero" {
   }
 }
 
-# Giờ hoạt động gói Ổn định: trong giờ giữ ít nhất 1 máy chờ sẵn, ngoài giờ cho về 0.
+# Giờ hoạt động gói Ổn định (khi không dùng warm pool): trong giờ giữ ít nhất 1 máy chờ sẵn, ngoài giờ cho về 0.
 # Chỉ đổi min_size (-1 là giữ nguyên): đóng giờ không tắt máy ngay, co giãn theo backlog giảm dần khi hết việc.
 resource "aws_autoscaling_schedule" "ondemand_open" {
-  count                  = var.enable_worker ? 1 : 0
+  count                  = var.enable_worker && !var.ondemand_warm_pool ? 1 : 0
   scheduled_action_name  = "open"
   autoscaling_group_name = aws_autoscaling_group.ondemand[0].name
   recurrence             = "0 ${var.ondemand_hours_start} * * *"
@@ -339,7 +365,7 @@ resource "aws_autoscaling_schedule" "ondemand_open" {
 }
 
 resource "aws_autoscaling_schedule" "ondemand_close" {
-  count                  = var.enable_worker ? 1 : 0
+  count                  = var.enable_worker && !var.ondemand_warm_pool ? 1 : 0
   scheduled_action_name  = "close"
   autoscaling_group_name = aws_autoscaling_group.ondemand[0].name
   recurrence             = "0 ${var.ondemand_hours_end} * * *"
