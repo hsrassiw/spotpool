@@ -93,7 +93,30 @@ Gói Ổn định giữ 1 máy On-Demand chạy sẵn 8h–23h để đạt mụ
 
 Image Docker vẫn còn trên ổ đĩa nên start lại không phải kéo lại. Worker báo lỗi `SetInstanceProtection` vì máy thử không thuộc ASG; lỗi này được bắt và worker vẫn nhận việc.
 
-Warm pool chỉ cắt phần bật máy (72 s còn khoảng 10 s). Thời gian chờ khi cụm 0 máy chủ yếu nằm ở bước CloudWatch alarm thấy hàng đợi có việc (gói Tiết kiệm chờ 277–375 s, trong đó bật máy chỉ khoảng 72 s). Muốn bỏ máy chạy sẵn mà vẫn chờ ≤ 1 phút thì còn phải để API tự tăng desired capacity khi nộp job lúc cụm đang 0 máy, và worker không nhận việc trong lúc máy đang ở warm pool. Hai việc này chưa làm.
+Warm pool chỉ cắt phần bật máy (72 s còn khoảng 10 s). Thời gian chờ khi cụm 0 máy chủ yếu nằm ở bước CloudWatch alarm thấy hàng đợi có việc (gói Tiết kiệm chờ 277–375 s, trong đó bật máy chỉ khoảng 72 s). Muốn bỏ máy chạy sẵn mà vẫn chờ ≤ 1 phút thì còn phải để API tự tăng desired capacity khi nộp job lúc cụm đang 0 máy, và worker không nhận việc trong lúc máy đang ở warm pool. Hai việc này được làm ở PR #51.
+
+## Warm pool sau khi triển khai (PR #51)
+
+Từ PR #51, gói Ổn định không còn máy chạy sẵn 8h–23h. ASG `spotpool-worker-ondemand` có warm pool 1 máy ở trạng thái stopped; khi nộp job lúc nhóm đang 0 máy, Lambda dispatcher gọi `SetDesiredCapacity` = 1 để bật máy đó ngay (CloudWatch alarm vẫn giữ làm dự phòng). Worker chỉ nhận task khi máy vào `InService` (lifecycle hook `worker-ready`).
+
+`warm_measure.sh` lặp: đợi cụm 0 máy và warm pool có 1 máy đã tắt, nộp 1 job mẫu gói Ổn định (`run.py sample ondemand`), rồi đặt desired về 0 bằng tay để máy quay lại warm pool ngay thay vì chờ target tracking khoảng 15 phút. Log: `warm-pool-asg.log`. Lần chạy đầu dừng sau 4 mẫu vì bước kiểm tra sẵn sàng đọc trạng thái lúc máy đang chuyển; mẫu 5 được chạy riêng, và script đã sửa lại bước kiểm tra này.
+
+| Job | Chờ (từ lúc vào hàng đợi tới khi task chạy) |
+|---|---|
+| 0e2df49e | 23 s |
+| e4945479 | 23 s |
+| a3532dde | 16 s |
+| 318a94d3 | 18 s |
+| 0a478374 | 21 s |
+
+Cả 5 job chờ 16–23 s, đạt mục tiêu ≤ 1 phút. Trước PR #51, gói Ổn định ở 0 máy (ngoài giờ hoạt động) phải chờ alarm như gói Tiết kiệm (job b5795844 lúc 2 giờ sáng chờ 347 s). Mới có 5 mẫu, nên đây là kết quả minh họa.
+
+## Đơn giá chốt 4000/2000 (PR #51)
+
+Đơn giá đổi từ 6000/3000 (giá tạm của Báo cáo 2) sang 4000/2000 credit/vCPU-giờ. Mỗi job lưu `unitPrice` lúc nộp, nên các job trước đó giữ giá cũ. Kiểm tra sau khi triển khai (đều trong `ket-qua.json`):
+
+- 5 job gói Ổn định ở trên: `unitPrice` 4000, dùng 1 vCPU-giây, hóa đơn ⌈1 × 4000 / 3600⌉ = 2 credit.
+- Job 571f91ad gói Tiết kiệm, nộp lúc cụm 0 máy: `unitPrice` 2000, dùng 3 vCPU-giây, hóa đơn ⌈3 × 2000 / 3600⌉ = 2 credit; chờ 263 s.
 
 ## Chạy lại
 
@@ -105,6 +128,7 @@ python run.py func-script                  # tương tự: func-video, func-zip,
 python run.py func-cap test_checkpoint.py func-cap-checkpoint
 python run.py burst burst1                 # trước đó đặt mỗi cụm 1 máy (lần 2: 4 máy)
 python run.py sample ondemand
+bash warm_measure.sh 5                     # gói Ổn định khi cụm 0 máy, bật từ warm pool
 bash spot_loop.sh                          # lấy mẫu gói Tiết kiệm khi cụm 0 máy, tới 07:30
 python run.py stats                        # tóm tắt kết quả đã lưu
 python run.py merge                        # gộp results/ thành ket-qua.json

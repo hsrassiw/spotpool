@@ -5961,5 +5961,557 @@
     "log": ""
    }
   }
+ },
+ {
+  "file": "sample-ondemand-091733",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "createdAt": "1794622619",
+     "platformCredit": "0",
+     "queuedAt": "1794622620",
+     "tasksSucceeded": "1",
+     "startedAt": "1794622643",
+     "usedVcpuSeconds": "1",
+     "settledAt": "1794622646",
+     "status": "SUCCEEDED",
+     "tasksRemaining": "0",
+     "finishedAt": "1794622644",
+     "tasksFailed": "0",
+     "kind": "script",
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "params": {},
+     "chargedCredit": "2",
+     "vcpu": "1",
+     "tier": "ondemand",
+     "image": "spotpool-script",
+     "unitPrice": "4000",
+     "jobId": "0e2df49e-3471-4470-999b-450b7626b1cb",
+     "userId": "fcc7b31b-d050-44d6-bfa4-9b20604f0289",
+     "costCap": "50000"
+    }
+   ],
+   "tasks": [
+    {
+     "leaseUntil": "1794622763",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "queuedAt": "1794622625",
+     "jobId": "0e2df49e-3471-4470-999b-450b7626b1cb",
+     "vcpu": "1",
+     "finishedAt": "1794622644",
+     "queue": "ondemand",
+     "heartbeatAt": "1794622643",
+     "userId": "fcc7b31b-d050-44d6-bfa4-9b20604f0289",
+     "attempt": "1",
+     "error": "",
+     "tier": "ondemand",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794622643",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "on-demand",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "usageId": "0e2df49e-3471-4470-999b-450b7626b1cb#task-0001#1",
+     "taskId": "task-0001",
+     "tier": "ondemand",
+     "instanceId": "i-08b266b5761250bcf",
+     "outcome": "SUCCEEDED",
+     "finishedAt": "1794622644",
+     "jobId": "0e2df49e-3471-4470-999b-450b7626b1cb",
+     "day": "2026-11-14",
+     "startedAt": "1794622643",
+     "vcpu": "1",
+     "userId": "fcc7b31b-d050-44d6-bfa4-9b20604f0289",
+     "az": "ap-southeast-1b"
+    }
+   ],
+   "user": {
+    "userId": "fcc7b31b-d050-44d6-bfa4-9b20604f0289",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-091907",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "startedAt": "1794622738",
+     "userId": "6d6a3762-df39-4e6b-8bd9-2ebf4718447c",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "jobId": "e4945479-fd5d-4fad-bd05-7053babd945d",
+     "tasksSucceeded": "1",
+     "tier": "ondemand",
+     "createdAt": "1794622715",
+     "params": {},
+     "files": [
+      "short.py"
+     ],
+     "settledAt": "1794622741",
+     "finishedAt": "1794622739",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "queuedAt": "1794622715",
+     "vcpu": "1",
+     "chargedCredit": "2",
+     "unitPrice": "4000"
+    }
+   ],
+   "tasks": [
+    {
+     "leaseUntil": "1794622858",
+     "queuedAt": "1794622717",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "heartbeatAt": "1794622738",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "userId": "6d6a3762-df39-4e6b-8bd9-2ebf4718447c",
+     "attempt": "1",
+     "error": "",
+     "startedAt": "1794622738",
+     "tier": "ondemand",
+     "finishedAt": "1794622739",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "jobId": "e4945479-fd5d-4fad-bd05-7053babd945d",
+     "params": {},
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "az": "ap-southeast-1b",
+     "instanceType": "c7i-flex.large",
+     "lifecycle": "on-demand",
+     "userId": "6d6a3762-df39-4e6b-8bd9-2ebf4718447c",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "taskId": "task-0001",
+     "jobId": "e4945479-fd5d-4fad-bd05-7053babd945d",
+     "outcome": "SUCCEEDED",
+     "usageId": "e4945479-fd5d-4fad-bd05-7053babd945d#task-0001#1",
+     "tier": "ondemand",
+     "finishedAt": "1794622739",
+     "startedAt": "1794622738",
+     "instanceId": "i-08b266b5761250bcf",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "6d6a3762-df39-4e6b-8bd9-2ebf4718447c",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-092021",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "unitPrice": "4000",
+     "queuedAt": "1794622796",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "kind": "script",
+     "settledAt": "1794622815",
+     "userId": "51400993-3d94-4b78-8fac-e37056989d23",
+     "chargedCredit": "2",
+     "finishedAt": "1794622813",
+     "jobId": "a3532dde-6f82-4370-baf2-f9fdc1f622cb",
+     "tier": "ondemand",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "startedAt": "1794622812",
+     "image": "spotpool-script",
+     "tasksRemaining": "0",
+     "createdAt": "1794622796"
+    }
+   ],
+   "tasks": [
+    {
+     "leaseUntil": "1794622932",
+     "vcpu": "1",
+     "queuedAt": "1794622798",
+     "heartbeatAt": "1794622812",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "startedAt": "1794622812",
+     "finishedAt": "1794622813",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "jobId": "a3532dde-6f82-4370-baf2-f9fdc1f622cb",
+     "attempt": "1",
+     "userId": "51400993-3d94-4b78-8fac-e37056989d23",
+     "params": {},
+     "error": "",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "lifecycle": "on-demand",
+     "instanceId": "i-04a4c3b8787dffaf6",
+     "vcpuSeconds": "1",
+     "finishedAt": "1794622813",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "usageId": "a3532dde-6f82-4370-baf2-f9fdc1f622cb#task-0001#1",
+     "jobId": "a3532dde-6f82-4370-baf2-f9fdc1f622cb",
+     "userId": "51400993-3d94-4b78-8fac-e37056989d23",
+     "taskId": "task-0001",
+     "startedAt": "1794622812",
+     "az": "ap-southeast-1c",
+     "tier": "ondemand",
+     "outcome": "SUCCEEDED",
+     "day": "2026-11-14",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "51400993-3d94-4b78-8fac-e37056989d23",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-092131",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "billableVcpuSeconds": "1",
+     "jobId": "318a94d3-3f13-4912-b5e9-748b96df563c",
+     "status": "SUCCEEDED",
+     "settledAt": "1794622884",
+     "usedVcpuSeconds": "1",
+     "tasksSucceeded": "1",
+     "tier": "ondemand",
+     "userId": "51eac6d0-e13f-4f42-bf3d-4d19717a1d8e",
+     "params": {},
+     "files": [
+      "short.py"
+     ],
+     "finishedAt": "1794622883",
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "createdAt": "1794622863",
+     "vcpu": "1",
+     "chargedCredit": "2",
+     "queuedAt": "1794622864",
+     "startedAt": "1794622882",
+     "unitPrice": "4000"
+    }
+   ],
+   "tasks": [
+    {
+     "jobId": "318a94d3-3f13-4912-b5e9-748b96df563c",
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "vcpu": "1",
+     "queue": "ondemand",
+     "heartbeatAt": "1794622882",
+     "attempt": "1",
+     "queuedAt": "1794622865",
+     "error": "",
+     "tier": "ondemand",
+     "userId": "51eac6d0-e13f-4f42-bf3d-4d19717a1d8e",
+     "interruptCount": "0",
+     "kind": "script",
+     "image": "spotpool-script",
+     "params": {},
+     "startedAt": "1794622882",
+     "fileName": "short.py",
+     "finishedAt": "1794622883",
+     "leaseUntil": "1794623002"
+    }
+   ],
+   "usage": [
+    {
+     "instanceType": "c7i-flex.large",
+     "jobId": "318a94d3-3f13-4912-b5e9-748b96df563c",
+     "lifecycle": "on-demand",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "day": "2026-11-14",
+     "instanceId": "i-04a4c3b8787dffaf6",
+     "usageId": "318a94d3-3f13-4912-b5e9-748b96df563c#task-0001#1",
+     "taskId": "task-0001",
+     "userId": "51eac6d0-e13f-4f42-bf3d-4d19717a1d8e",
+     "outcome": "SUCCEEDED",
+     "tier": "ondemand",
+     "finishedAt": "1794622883",
+     "startedAt": "1794622882",
+     "az": "ap-southeast-1c",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "51eac6d0-e13f-4f42-bf3d-4d19717a1d8e",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-ondemand-092323",
+  "label": "sample-ondemand",
+  "snapshot": {
+   "jobs": [
+    {
+     "jobId": "0a478374-a5ce-41b3-a20f-fab58218e427",
+     "startedAt": "1794622994",
+     "status": "SUCCEEDED",
+     "usedVcpuSeconds": "1",
+     "settledAt": "1794622996",
+     "tasksSucceeded": "1",
+     "createdAt": "1794622973",
+     "unitPrice": "4000",
+     "billableVcpuSeconds": "1",
+     "files": [
+      "short.py"
+     ],
+     "taskCount": "1",
+     "finishedAt": "1794622995",
+     "kind": "script",
+     "chargedCredit": "2",
+     "tier": "ondemand",
+     "platformCredit": "0",
+     "vcpu": "1",
+     "costCap": "50000",
+     "params": {},
+     "tasksFailed": "0",
+     "image": "spotpool-script",
+     "queuedAt": "1794622973",
+     "tasksRemaining": "0",
+     "userId": "f4877c26-745a-4dcf-94d7-a8406481f5eb"
+    }
+   ],
+   "tasks": [
+    {
+     "vcpu": "1",
+     "leaseUntil": "1794623114",
+     "heartbeatAt": "1794622994",
+     "tier": "ondemand",
+     "schemaVersion": "1",
+     "image": "spotpool-script",
+     "interruptCount": "0",
+     "taskId": "task-0001",
+     "queue": "ondemand",
+     "startedAt": "1794622994",
+     "kind": "script",
+     "status": "SUCCEEDED",
+     "finishedAt": "1794622995",
+     "attempt": "1",
+     "params": {},
+     "error": "",
+     "userId": "f4877c26-745a-4dcf-94d7-a8406481f5eb",
+     "queuedAt": "1794622975",
+     "jobId": "0a478374-a5ce-41b3-a20f-fab58218e427",
+     "fileName": "short.py"
+    }
+   ],
+   "usage": [
+    {
+     "usageId": "0a478374-a5ce-41b3-a20f-fab58218e427#task-0001#1",
+     "lifecycle": "on-demand",
+     "vcpuSeconds": "1",
+     "attempt": "1",
+     "instanceType": "c7i-flex.large",
+     "taskId": "task-0001",
+     "tier": "ondemand",
+     "instanceId": "i-09b021d3a205e75d3",
+     "az": "ap-southeast-1a",
+     "outcome": "SUCCEEDED",
+     "jobId": "0a478374-a5ce-41b3-a20f-fab58218e427",
+     "startedAt": "1794622994",
+     "finishedAt": "1794622995",
+     "day": "2026-11-14",
+     "userId": "f4877c26-745a-4dcf-94d7-a8406481f5eb",
+     "vcpu": "1"
+    }
+   ],
+   "user": {
+    "userId": "f4877c26-745a-4dcf-94d7-a8406481f5eb",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
+ },
+ {
+  "file": "sample-spot-092846",
+  "label": "sample-spot",
+  "snapshot": {
+   "jobs": [
+    {
+     "taskCount": "1",
+     "jobId": "571f91ad-7c65-46b6-8391-0149b4bd23bf",
+     "billableVcpuSeconds": "3",
+     "status": "SUCCEEDED",
+     "tasksSucceeded": "1",
+     "createdAt": "1794623050",
+     "userId": "51377dfe-546d-411f-990d-2fee3b2abaa0",
+     "params": {},
+     "usedVcpuSeconds": "3",
+     "queuedAt": "1794623054",
+     "files": [
+      "short.py"
+     ],
+     "tasksRemaining": "0",
+     "costCap": "50000",
+     "kind": "script",
+     "image": "spotpool-script",
+     "startedAt": "1794623317",
+     "tasksFailed": "0",
+     "platformCredit": "0",
+     "settledAt": "1794623320",
+     "vcpu": "1",
+     "chargedCredit": "2",
+     "tier": "spot",
+     "unitPrice": "2000",
+     "finishedAt": "1794623320"
+    }
+   ],
+   "tasks": [
+    {
+     "schemaVersion": "1",
+     "taskId": "task-0001",
+     "status": "SUCCEEDED",
+     "queuedAt": "1794623056",
+     "vcpu": "1",
+     "tier": "spot",
+     "finishedAt": "1794623320",
+     "startedAt": "1794623317",
+     "attempt": "1",
+     "userId": "51377dfe-546d-411f-990d-2fee3b2abaa0",
+     "error": "",
+     "interruptCount": "0",
+     "kind": "script",
+     "queue": "spot",
+     "image": "spotpool-script",
+     "params": {},
+     "fileName": "short.py",
+     "heartbeatAt": "1794623317",
+     "jobId": "571f91ad-7c65-46b6-8391-0149b4bd23bf",
+     "leaseUntil": "1794623437"
+    }
+   ],
+   "usage": [
+    {
+     "usageId": "571f91ad-7c65-46b6-8391-0149b4bd23bf#task-0001#1",
+     "userId": "51377dfe-546d-411f-990d-2fee3b2abaa0",
+     "attempt": "1",
+     "taskId": "task-0001",
+     "vcpuSeconds": "3",
+     "startedAt": "1794623317",
+     "finishedAt": "1794623320",
+     "outcome": "SUCCEEDED",
+     "lifecycle": "spot",
+     "az": "ap-southeast-1c",
+     "vcpu": "1",
+     "instanceType": "m7i-flex.large",
+     "instanceId": "i-0577d25e58088da6f",
+     "day": "2026-11-14",
+     "tier": "spot",
+     "jobId": "571f91ad-7c65-46b6-8391-0149b4bd23bf"
+    }
+   ],
+   "user": {
+    "userId": "51377dfe-546d-411f-990d-2fee3b2abaa0",
+    "creditAvailable": "49998",
+    "creditHeld": "0"
+   }
+  },
+  "outputs": {
+   "task-0001": {
+    "fileName": "short.py",
+    "status": "SUCCEEDED",
+    "log": ""
+   }
+  }
  }
 ]
