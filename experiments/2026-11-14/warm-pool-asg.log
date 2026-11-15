@@ -1,0 +1,17 @@
+09:16:56 lần 1: cụm 0 máy, warm pool có 1 máy đã tắt
+09:17:32 job 0e2df49e ondemand SUCCEEDED queued 09:17:00 start 09:17:23 (chờ 23 s) end 09:17:24 (job 24 s) used 1 billable 1 charged 2
+09:17:34 đặt desired = 0
+09:18:34 lần 2: cụm 0 máy, warm pool có 1 máy đã tắt
+09:19:06 job e4945479 ondemand SUCCEEDED queued 09:18:35 start 09:18:58 (chờ 23 s) end 09:18:59 (job 24 s) used 1 billable 1 charged 2
+09:19:08 đặt desired = 0
+09:19:56 lần 3: cụm 0 máy, warm pool có 1 máy đã tắt
+09:20:21 job a3532dde ondemand SUCCEEDED queued 09:19:56 start 09:20:12 (chờ 16 s) end 09:20:13 (job 17 s) used 1 billable 1 charged 2
+09:20:23 đặt desired = 0
+09:21:00 lần 4: cụm 0 máy, warm pool có 1 máy đã tắt
+09:21:31 job 318a94d3 ondemand SUCCEEDED queued 09:21:04 start 09:21:22 (chờ 18 s) end 09:21:23 (job 19 s) used 1 billable 1 charged 2
+09:21:35 đặt desired = 0
+09:22:10 chưa sẵn sàng, dừng
+09:22:52 lần 1: cụm 0 máy, warm pool có 1 máy đã tắt
+09:23:22 job 0a478374 ondemand SUCCEEDED queued 09:22:53 start 09:23:14 (chờ 21 s) end 09:23:15 (job 22 s) used 1 billable 1 charged 2
+09:23:24 đặt desired = 0
+xong 09:23:54

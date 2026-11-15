@@ -2,7 +2,7 @@
 
 Các thực nghiệm chạy ngày 11/11/2026 (riêng thử checkpoint ở mục 3.2.2 chạy ngày 13/11/2026) trên hệ thống đã triển khai (region ap-southeast-1; gói Ổn định chạy trên c7i-flex.large, gói Tiết kiệm được Auto Scaling cấp m7i-flex.large ở mọi lần chạy trong ngày; cả hai loại đều 2 vCPU nên số vCPU-giây và hóa đơn không phụ thuộc loại máy), gọi qua API công khai như người dùng thật. Mỗi kịch bản dùng một tài khoản người dùng mới với 50.000 credit. Thời gian lấy từ bảng Jobs và Tasks (queuedAt, startedAt, finishedAt), chi phí lấy từ hóa đơn từng job (`GET /billing`) và từ AWS Cost Explorer.
 
-Đơn giá dùng trong toàn bộ thực nghiệm là đơn giá đã nêu ở Báo cáo 2: 6000 credit/vCPU-giờ cho gói Ổn định và 3000 credit/vCPU-giờ cho gói Tiết kiệm. Khi quy đổi, nhóm dùng tỷ giá 1 USD = 26.000 credit, cũng là tỷ giá trang quản trị đang dùng.
+Đơn giá dùng trong toàn bộ thực nghiệm là đơn giá đã nêu ở Báo cáo 2: 6000 credit/vCPU-giờ cho gói Ổn định và 3000 credit/vCPU-giờ cho gói Tiết kiệm. Khi quy đổi, nhóm dùng tỷ giá 1 USD = 26.000 credit, cũng là tỷ giá trang quản trị đang dùng. Sau thực nghiệm, nhóm chốt đơn giá 4000/2000 (mục 3.2.4). Mỗi job giữ đơn giá lúc nộp, nên các hóa đơn đã đo không đổi.
 
 ## 3.2.1. Kiểm thử chức năng đầu cuối
 
@@ -81,8 +81,11 @@ Bảng 3.4. Đối chiếu với mục tiêu thời gian chờ ở Báo cáo 2 (
 
 | Gói | Mục tiêu | Số job đo | Chờ dài nhất | Đánh giá |
 | --- | --- | --- | --- | --- |
-| Ổn định | ≤ 1 phút | 8 | 5 s | Đạt |
+| Ổn định, có máy chạy sẵn | ≤ 1 phút | 8 | 5 s | Đạt |
+| Ổn định, cụm 0 máy, bật từ warm pool (14/11) | ≤ 1 phút | 5 | 23 s | Đạt |
 | Tiết kiệm | ≤ 15 phút | 3 | 218 s (cụm đang 0 máy) | Đạt |
+
+Ngày 14/11, gói Ổn định chuyển sang warm pool: 1 máy đã cài sẵn ở trạng thái tắt, Lambda dispatcher bật máy này khi có job lúc nhóm 0 máy. Nhóm đo 5 job nộp lúc cụm 0 máy: chờ 16–23 s, đạt mục tiêu 1 phút. Trước đó, gói Ổn định ở 0 máy (ngoài giờ hoạt động) phải chờ alarm như gói Tiết kiệm (job b5795844 lúc 2 giờ sáng chờ 347 s). Số liệu ngày 14/11 nằm trong `experiments/2026-11-14/README.md`.
 
 Số job đo còn ít, chưa đủ để kết luận chắc chắn cho mức 95% số job. Mục tiêu được tính theo lúc job bắt đầu chạy. Trong một đợt lớn, các task cuối của job vẫn có thể chờ vài phút (Bảng 3.3, lần 1).
 
@@ -120,16 +123,16 @@ Bảng 3.5. Chi phí cho 12 task × 60 giây
 
 | Cách chạy | Chi phí | Quy ra credit | Ghi chú |
 | --- | --- | --- | --- |
-| SpotPool, gói Ổn định | 0,0469 USD | 1220 | Theo hóa đơn |
-| SpotPool, gói Tiết kiệm | 0,0235 USD | 610 | Theo hóa đơn |
+| SpotPool, gói Ổn định | 0,0313 USD | 814 | ⌈732 × 4000 / 3600⌉ theo đơn giá mới; hóa đơn thật với giá tạm: 1220 |
+| SpotPool, gói Tiết kiệm | 0,0157 USD | 407 | ⌈732 × 2000 / 3600⌉ theo đơn giá mới; hóa đơn thật với giá tạm: 610 |
 | EC2 On-Demand tự thuê, 1 máy | 0,0125 USD | 324 | Chạy 366 s + 71 s khởi động; xong sau khoảng 7,3 phút |
 | EC2 On-Demand tự thuê, 4 máy | 0,0225 USD | 585 | 4 máy × (126 s + 71 s); xong sau khoảng 3,3 phút |
 | Fargate | 0,0185 USD | 481 | 12 task × 90 s, mỗi task 1 vCPU + 2 GB |
 | AWS Batch | Bằng EC2 hoặc Fargate | | Cộng thời gian khởi tạo môi trường khi đang 0 máy |
 
-Tự thuê máy hoặc dùng Fargate rẻ hơn giá bán của SpotPool. Điều này khớp với nhận định ở Báo cáo 2: người thành thạo AWS có thể tự dùng AWS Batch với giá gốc. Giá của SpotPool gồm cả phần máy chờ sẵn, phần chạy lại khi bị thu hồi và biên lợi nhuận.
+Với đơn giá mới, gói Tiết kiệm (407 credit) rẻ hơn tự thuê 4 máy On-Demand (585) và Fargate (481); chỉ tự thuê 1 máy là rẻ hơn (324), nhưng xong chậm gấp đôi. Gói Ổn định (814) vẫn đắt hơn mọi cách tự làm. Điều này khớp với nhận định ở Báo cáo 2: người thành thạo AWS có thể tự dùng AWS Batch với giá gốc. Giá của SpotPool gồm cả phần máy chạy rảnh khi co giãn, phần chạy lại khi bị thu hồi và biên lợi nhuận.
 
-Đổi lại, người dùng SpotPool không cần tài khoản AWS hay thẻ quốc tế, biết trước trần chi phí và không phải tự tắt máy. Gói Tiết kiệm có giá bằng một nửa gói Ổn định đúng như thiết kế. Giá cho 732 vCPU-giây chỉ chênh khoảng 0,001 USD so với 4 máy On-Demand tự thuê.
+Đổi lại, người dùng SpotPool không cần tài khoản AWS hay thẻ quốc tế, biết trước trần chi phí và không phải tự tắt máy. Gói Tiết kiệm có giá bằng một nửa gói Ổn định đúng như thiết kế.
 
 ### Điểm hòa vốn
 
@@ -137,15 +140,15 @@ Bảng 3.6. Điểm hòa vốn theo hệ số sử dụng của cụm
 
 | | Ổn định | Tiết kiệm |
 | --- | --- | --- |
-| Doanh thu một máy đầy 2 suất trong 1 giờ | 2 × 6000 = 12.000 credit = 0,4615 USD | 2 × 3000 = 6000 credit = 0,2308 USD |
+| Doanh thu một máy đầy 2 suất trong 1 giờ | 2 × 4000 = 8000 credit = 0,3077 USD | 2 × 2000 = 4000 credit = 0,1538 USD |
 | Chi phí một máy trong 1 giờ (kể cả IPv4) | 0,1028 USD | 0,0639 USD (m7i-flex.large ngày 11/11) |
-| Hệ số sử dụng để hòa vốn | 22% | 28% |
+| Hệ số sử dụng để hòa vốn | 33% | 42% |
 
-Gói Tiết kiệm phụ thuộc vào loại máy mà Auto Scaling chọn theo giá Spot lúc đó. Nếu được cấp c7i-flex.large (khoảng 0,054 USD/giờ, kể cả IPv4) thì hệ số hòa vốn giảm còn khoảng 23%. Nghĩa là cụm chỉ cần bán được khoảng một phần tư số suất là đủ trả tiền máy. Phần còn lại bù cho máy chạy rảnh lúc co giãn, các lần chạy lại và lợi nhuận.
+Gói Tiết kiệm phụ thuộc vào loại máy mà Auto Scaling chọn theo giá Spot lúc đó. Nếu được cấp c7i-flex.large (khoảng 0,054 USD/giờ, kể cả IPv4) thì hệ số hòa vốn giảm còn khoảng 35%. Nghĩa là cụm cần bán được khoảng một phần ba đến hai phần năm số suất là đủ trả tiền máy. Phần còn lại bù cho máy chạy rảnh lúc co giãn, các lần chạy lại và lợi nhuận.
 
-Gói Ổn định có thêm chi phí cố định cho máy chờ sẵn trong giờ hoạt động (8h–23h): 15 giờ × 0,1028 USD = 1,54 USD mỗi ngày, tương đương 40.084 credit. Để bù riêng khoản này, mỗi ngày cần bán khoảng 6,7 vCPU-giờ ở gói Ổn định.
+Máy chờ của gói Ổn định là chi phí cố định. Máy chạy sẵn 8h–23h tốn 15 giờ × 0,1028 USD = 1,54 USD mỗi ngày (40.084 credit); với đơn giá mới, phải bán khoảng 10 vCPU-giờ mỗi ngày mới bù được. Máy trong warm pool chỉ tốn ổ đĩa gp3 8 GB: 8 × 0,096 USD/GB-tháng, khoảng 0,026 USD mỗi ngày (khoảng 670 credit), cộng vài phút máy chạy mỗi lần warm pool cài máy mới.
 
-Hai gói có hệ số hòa vốn gần nhau (22% và 23–28%). Vì vậy nhóm giữ nguyên đơn giá 6000 và 3000 credit/vCPU-giờ đã nêu ở Báo cáo 2.
+Với giá tạm 6000/3000 của Báo cáo 2, cụm chỉ cần bán 22–28% số suất, tức giá bán gấp khoảng 4,5 lần chi phí máy. Nhóm hạ xuống 4000 và 2000 credit/vCPU-giờ, giữ tỷ lệ 2:1 giữa hai gói. Điểm hòa vốn lên khoảng 33% và 35–42%, vẫn còn phần bù cho máy chạy rảnh lúc co giãn và các lần chạy lại. Giá mới áp dụng cho job nộp từ ngày 14/11: job 0e2df49e dùng 1 vCPU-giây, hóa đơn ⌈1 × 4000 / 3600⌉ = 2 credit.
 
 ## 3.2.5. Lỗi phát hiện qua thực nghiệm
 
